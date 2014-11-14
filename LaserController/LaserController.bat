@@ -1,0 +1,1 @@
+pythonw D:/Control/LaserController/main.py

@@ -1,0 +1,10 @@
+An incomplete list of names of USB devices
+"USB0::0x0699::0x03AA::C013639"	Textronix TDS1001C-EDU 2-channel oscilloscope
+"USB0::0x0957::0x1607::MY50003870"	Agilent 33521A function generator
+
+--Some devices for which we don't know the USB names------
+AvaSpec Spectrometer
+Thorlabs BSC201 motor controller
+Thorlabs MDT693A piezo driver
+PointGrey Chameleon camera
+NI USB 6008 DAQ device

@@ -1,0 +1,10 @@
+1. Create design in QtDesigner
+
+2. run this command (requited PyQt4-dev-tools):
+>>> pyuic4 -x InterfaceGUI.ui -o InterfaceGUI.py
+
+3. run this command
+>>>python InterfaceGUI.py
+
+4. Alternatively, load the GUI inside a main python file. Run:
+>>>python main.py

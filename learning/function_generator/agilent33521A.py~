@@ -1,0 +1,21 @@
+exit()
+
+#ipython --gui=qt
+#exec(open("tektronix.py").read())
+import visa
+from pylab import *
+
+#---------------------------------
+#USB-BASED AGILENT FUNCTION GENERATOR CLASS
+#---------------------------------
+
+
+#TESTING
+USB_function_generator_name = visa.get_instruments_list()[1] #not sure about the index here. [0] is for tektronix. Robustness?
+agilent=visa.instrument(USB_function_generator_name)
+agilent.write("FUNC:PULS:WIDT 3E-6\r\n") #set pulse width to 3 microseconds
+agilent.write("FREQ 2E5\r\n") #set pulse rate to 200 kHz
+agilent.write("OUTP ON\r\n") #output on
+
+
+pulse_width_text = agilent.ask("FUNC:PULS:WIDT"?)

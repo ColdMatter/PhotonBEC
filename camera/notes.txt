@@ -1,0 +1,58 @@
+camera remembers the parameters earlier.
+ so you can set up the shutter, gain and exposure you want in the gui, then run any API program and it will use the same parameters
+ 
+when opening the visual studio project files with our version of VS 2012, it wants to update the version from 2010 before doing anything
+ that seems to mean changing all version numbers from 100 to 110 including the names of the static libraries, so when i got an error i 
+ renamed the static libraries. for example FlyCapture2_v100.lib -> FlyCapture2_v110.lib
+
+it may say MSVCP100D.dll is missing, to make it run you need to build it as a Release instead of a Debug.
+
+oh and the binary is found in FlyCapture2/bin 
+ it seems VS is configured to put it there
+ 
+so it compiles and I can get it to save the output of the camera to a png file
+
+running the application causes the normal PointGrey FlyCapture GUI to stop receiving images, to get it back stop and then start the capture again.
+
+FlyCapture2Test needs to built to a dll in order to be loaded into a python cpp extention
+ Project -> FlyCapture2Test Properties
+ under Configuration Properties -> General, Configuration Type change to Dynamic Library (.dll)
+ 
+
+==== How to build ==========================
+ 1. open FlyCapture2Test_2010 project in MSVS  (D:\Control\camera\FlyCapture2\src\FlyCapture2Test\FlyCapture2Test_2010.sln)
+ 2. Build -> Build Solution
+ 3. Find FlyCapture2Test.dll in ./FlyCapture2/bin and copy it to this directory
+ 4. run build-pyflycapture.py
+ 
+ 
+==== Important files ==============
+lots of useful stuff is found in 
+C:\Program Files (x86)\Point Grey Research\FlyCapture2
+
+ 
+ 
+==== Notes on programmically controlling settings like shutter, gain, exposure etc, also the image boundaries left, top, width, height
+the enum PropertyType is used to choose which property (SHUTTER, GAIN, etc) you will set or get
+the struct Property includes a field PropertyType, as well as value, on/off, Auto/Manual Mode
+e.g.
+type=GAIN absControl=true onePush=false onOff=true autoManualMode=false absValue=12.0
+
+there is also the struct PropertyInfo which has lots of booleans on whether stuff is supported. autoSupported, onOffSupported, absValSupported, etc
+it also has min/max integers and absMin/absMax floats, also char arrays (strings) describing the units
+
+I think you can choose to use either the integers OR the floats
+"If auto is on, the integer and abs values returned may not be consistent with each other."
+"The absControl flag controls whether the absolute or integer value is written to the camera."
+
+Then in the Camera class you can use GetProperty() and SetProperty() to read in and out stuff
+
+
+
+==== Notes on changing region of interest
+Looks like you use Format7ImageStructure which contains offsetX, offsetY, width, height
+also has PixelFormat which looks good for changing it to 16bit images
+
+Setting a new Format7 in the protocol means the packet size has to be renegociated. What the FlyCap GUI does
+is find the max packet size with GetFormat7Info() and set the new packet size to the max
+Alternatively ValidateFormat7Settings() to get recommendedBytesPerPacket and use that

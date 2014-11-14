@@ -1,0 +1,33 @@
+the dll C:\Program Files (x86)\AvaSoft8\AS5216.dll supposedly contains functions to get data
+ product version 2.2.0.0
+
+the manual is in D:\Docs\Manuals\Avantes_spectrometer
+
+here is the driver directory?
+ C:\AS5216-DLL_2.2\
+contains example source files
+
+
+i installed mingw to get gdb and make
+ that requires putting the mingw/bin in the path
+ -actually dont use make, it may be really nice but it can be annoying to people who dont know it
+  so use many batch files instead
+after some searching im quite sure that you cant link to c++ DLLs across compilers, msvs and mingw
+
+so i have to use msvs..
+yes i can make the example project compile, however its a huge GUI app when we just need a small command line one
+ok so that works, you just copy over the .h, .lib and .dll files and tell msvs to use them
+
+as an aside, Rob's python dll loading attempt might actually be made to work, i only realise that after doing it in c++ to learn the whole API, i think Rob used ASV_Activate() wrong or something
+ naturally it will always be hard to learn the api, learning the internal details of the api and at the same time as learning python ctypes for me
+ 
+ the api has blocking and non-blocking kinds of data tranfer, for our application blocking functions make the most sense
+ 
+actually it seems like you can use the same settings as in the GUI AvaSoft program, use AVS_GetParameter
+
+use AVS_UseHighResAdc to get the full 16 bit measurement
+
+its possible to convert scope data (ADC counts) to power distribution, ctrl+f it in the manual
+
+btw for dlls in MSVS use dumpbin \exports <nameofdll> to see the names 
+ in the developer command promopt for VS2012

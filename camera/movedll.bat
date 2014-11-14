@@ -1,0 +1,1 @@
+copy FlyCapture2\bin\FlyCapture2Test.dll FlyCapture2Test.dll

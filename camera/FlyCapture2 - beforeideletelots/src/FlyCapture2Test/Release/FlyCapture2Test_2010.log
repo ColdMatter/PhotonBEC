@@ -1,0 +1,19 @@
+﻿Build started 16/10/2014 12:27:51.
+     1>Project "D:\Control\camera\FlyCapture2\src\FlyCapture2Test\FlyCapture2Test_2010.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I..\..\include /Zi /nologo /W3 /WX- /Od /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Release\FlyCapture2Test.pch" /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I..\..\include /Zi /nologo /W3 /WX- /Od /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Release\FlyCapture2Test.pch" /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt FlyCapture2Test.cpp
+         FlyCapture2Test.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"..\..\bin\FlyCapture2Test.dll" /INCREMENTAL:NO /NOLOGO /LIBPATH:..\..\lib FlyCapture2_v110.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcd.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"..\..\bin\FlyCapture2Test.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"..\..\bin\FlyCapture2Test.lib" /MACHINE:X86 /SAFESEH /DLL Release\FlyCapture2Test.obj
+         Release\stdafx.obj
+            Creating library ..\..\bin\FlyCapture2Test.lib and object ..\..\bin\FlyCapture2Test.exp
+         Generating code
+         Finished generating code
+         FlyCapture2Test_2010.vcxproj -> D:\Control\camera\FlyCapture2\src\FlyCapture2Test\..\..\bin\FlyCapture2Test.dll
+     1>Done Building Project "D:\Control\camera\FlyCapture2\src\FlyCapture2Test\FlyCapture2Test_2010.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.96

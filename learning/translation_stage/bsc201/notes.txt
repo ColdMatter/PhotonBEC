@@ -1,0 +1,106 @@
+17/10/14
+in the start menu find Device Manager
+ there you can configure the usb-to-serial connection and other stuff
+
+see pg14 for big/little endian data
+see pg15 for scaling factor between motor pulses and physical position/velocity/acceleration
+
+
+===== possible breakthrough, i got some communication
+1. turn off controller
+2. turn it on and at the same moment run a program which reads from the serial port
+3. you will get this data packet
+64 04 0e 00 80 00 01 00 00 00 00 00 00 00 00 00
+00 00 00 00
+which I identify as MGMSG_MOT_MOVE_COMPLETED, of the expected 20 bytes
+
+from manual
+"No response on initial message, but upon completion of the relative or absolute move
+ sequence, the controller sends a “move completed” message:"#
+ 
+a bit unexpected but okay
+
+
+===== would like a command that requests data so i can get a packet sent back to me
+MGMSG_HW_REQ_INFO 0x0005
+MGMSG_HW_GET_INFO 0x0006
+Sent to request hardware information from the controller.
+
+will use 
+MSMSG_MOT_REQ_STATUSUPDATE = 0x0480
+MSMSG_MOT_GET_STATUSUPDATE = 0x0481
+merely asks for the status / position and other stuff about the motor
+moving the stage around changes the returned position, so status update works(!)
+coded it up into getMotorPosition()
+
+===== lets try to make jog work
+using MGMSG_MOT_MOVE_JOG
+
+made MGMSG_MOT_MOVE_HOME work, dont know why it didnt work for rob, maybe
+ because he kept closing and opening the serial port?
+
+MGMSG_MOT_MOVE_RELATIVE looks useful
+MGMSG_MOT_MOVE_COMPLETED is a packet you get after a relative or absolute move sequence is finished
+
+ok done it,
+reading the other methods/commands, i dont actually see anything more useful
+ except maybe going to an absolute position
+ why does rob try changing the moving-to-home velocity?
+ 
+20/10/14
+turns out i havent finished
+i always ran the Thorlabs APT software which sends commands that set the motor velocity and other parameters
+ so if you restart the controller and dont run Thorlabs APT then everything messes up
+so i'll just run the REQ methods to get the values that the Thorlabs APT software sets, then hardcode them into
+ my package and it should run the same
+ 
+MGMSG_MOT_REQ_HOMEPARAMS
+newly switched on
+42 04 0e 00 81 50 01 00 02 00 01 00 00 00 00 00
+00 a0 00 00
+(1090, 14, 0, 129, 80, 1, 2, 1, 0, 40960)
+
+after Thorlabs APT
+42 04 0e 00 81 50 01 00 02 00 01 00 fc 7a 4f 01
+00 a0 00 00
+(1090, 14, 0, 129, 80, 1, 2, 1, 21986044, 40960)
+
+so Home Velocity changed to 21986044
+In [8]: 21986044 / encoder_unit_velocity * 1e3
+Out[8]: 0.9999416027268069 #i.e. 1mm per second
+
+
+I note the Thorlabs APT software has a nice GUI to set all options along with a Persist Settings to Hardware checkbox
+ so to save time, its better to just use Thorlabs APT in the rare occasions you want to change stuff, and not bother
+ repeating the coding into our own python packages
+Cant seem to actually make the settings persist in hardware.
+ looks like i will indeed have to code in the setting of parameters, it will be less hassle anyway since its self-recording
+ 
+the MGMSG_MOT_SET_HOMEPARAMS family appears to be wrongly documented, all the fields apart from velocity can be zero since
+ they are ignored according to the manual, but that didnt work for changing the velocity so i copied in the values
+ i got from MGMSG_MOT_REQ_HOMEPARAMS
+ it works for changing the velocity but not for setting everything up after the controller is restarted
+ 
+now doing the MGMSG_MOT_REQ_VELPARAMS
+after Thorlabs APT has been run, the returned values as 
+15 04 0e 00 81 50 01 00 00 00 00 00 97 11 00 00
+f8 f5 9e 02
+(1045, 14, 0, 129, 80, 1, 0, 4503, 43972088)
+min velocity = 0
+acceleration = 4503
+max velocity = 43972088
+
+looks like the VELPARAMS made it work when restarting the controller, set VELPARAMS and HOMEPARAMS and you can run
+ the relative motor move and go home
+ jog still doesnt work
+ 
+did some reading, need to do the MGMSG_MOT_SET_JOGPARAMS family
+ also MGMSG_MOT_SET_GENMOVEPARAMS, general movement, it can be used to set backlash correction
+ since we wont be using jog, i will leave them out
+ 
+after running Thorlabs APT and MGMSG_MOT_REQ_GENMOVEPARAMS i get
+3c 04 06 00 81 50 01 00 00 10 00 00
+(1084, 6, 0, 129, 80, 1, 4096)
+backlash correction = 4096
+
+24 hour bug fest, fixed by reading the manual CAREFULLY, cause was i set param1=0x0e when it should been param1=0x06

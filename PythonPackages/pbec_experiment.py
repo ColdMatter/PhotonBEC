@@ -1,0 +1,314 @@
+#modified by LZ to pass dll directory in setup functions for spectrometer and camera
+
+from pylab import *
+import pbec_analysis
+#import pbec_data_format
+import sys
+import numpy
+from scipy.misc import imsave
+
+sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"camera")
+sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"spectrometer")
+sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"PythonPackages")
+import pyflycap
+import pyspectro
+import SingleChannelAO, SingleChannelAI, LaserQuantum
+
+def getLambdaRange(lamb, fromL, toL):
+	assert(fromL <= toL)
+	assert(fromL >= lamb[0])
+	assert(toL <= lamb[-1])
+	hi = 0 #this is a crap way of doing it but this function
+	lo = 0 # isnt a bottleneck so the speed hit doesnt matter
+	for i, v in enumerate(lamb):
+		if v > fromL:
+			lo = i
+			break
+	for i, v in enumerate(lamb):
+		if v > toL:
+			hi = i
+			break
+	return (hi, low)
+	#return (
+	#	int( (fromL - lamb[0]) * len(lamb) / (lamb[-1] - lamb[0]) ),
+	#	int( (toL - lamb[0]) * len(lamb) / (lamb[-1] - lamb[0]) )
+	#	)
+
+class Spectrometer(object):
+
+	instance = None
+	pixelCount = 0
+	lamb = None
+	spectrum = None
+	open = False
+	
+
+	def __new__(self, *args, **kwargs):
+		if not self.instance: #makes it a singleton
+			self.instance = super(Spectrometer, self).__new__(self, *args, **kwargs)
+			#self.setup()
+		return self.instance
+		
+	def setup(self):
+		dllDirectory = pbec_analysis.control_root_folder + "\\spectrometer\\"
+		if self.open:
+			pass #ADDED 28/8/14 by RAN
+			#raise IOError("spectrometer is already setup")
+		try:
+			self.pixelCount = pyspectro.setupavs1(dllDirectory)
+			self.lamb = numpy.array([0.1] * self.pixelCount)
+			pyspectro.getlambda(self.lamb)
+			self.open = True
+		except Exception as e:
+			###self.close() #Commented out 28/8/14 by RAN
+			raise e
+	
+	#lamb_range = None for the whole range
+	#nMeasure = -1 for infinite measurements
+	def start_measure(self, intTime, nAverage, nMeasure=-1, lamb_range=None):
+		'''
+		NOTE: cannot call Spectrometer.start_measure more than once without a close & re-setup phase
+		'''
+		if not self.open:
+			raise IOError("spectrometer has been close()d")
+		try:
+			pRange = (0, self.pixelCount - 1)
+			if lamb_range != None:
+				pRange = getLambdaRange(self.lamb, lamb_range[0], lamb_range[1])
+			pyspectro.setupavs2(pRange, intTime, nAverage, nMeasure)
+			self.spectrum = numpy.array([0.1] * (pRange[1] - pRange[0]+1))
+		except Exception as e:
+			###self.close() #Commented out 28/8/14 by RAN
+			raise e	
+	
+	def get_data(self):
+		if not self.open:
+			raise IOError("spectrometer has been close()d")
+		try:
+			timestamp = pyspectro.readavsspectrum(self.spectrum, 10000)
+			#FIXME: background correction not inplace. Needs to be available.
+			return self.spectrum
+		except Exception as e:
+			self.close()
+			raise e
+		
+	def close(self):
+		self.open = False
+		#print("freeing avs spectro, hopefully this is always called")
+		pyspectro.closeavs()
+
+CAMERA_PROPERTY_TYPE_MAPPING = {"brightness": 0, "auto_exposure": 1, "sharpness": 2, "white_balance": 3,
+	"hue": 4, "saturation": 5, "gamma": 6, "iris": 7, "focus": 8, "zoom": 9, "pan": 10, "tilt": 11,
+	"shutter": 12, "gain": 13, "trigger_mode": 14, "trigger_delay": 15, "frame_rate": 16, "temperature": 17}
+
+class __Camera(object):
+
+	open = False
+	imageData = None
+	serialNumber = 0
+	properties = None
+	cam_info = None
+	
+	def __init__(self, serialNumber):
+		self.serialNumber = serialNumber
+		self.error = None
+		
+	def setup(self):
+		self.error = None
+		dllDirectory = pbec_analysis.control_root_folder + "\\camera\\"
+		if self.open:
+			#raise IOError("camera is already setup")
+			return self.cam_info
+		try:
+			cam_info = pyflycap.setupflycap(self.serialNumber,dllDirectory)
+			self.open = True
+			keys = ("modelName", "vendorName", "sensorInfo",
+				"sensorResolution", "firmwareVersion", "firmwareBuildTime")
+			self.cam_info = dict(zip(keys, cam_info))
+			return self.cam_info
+		except Exception as exc:
+			self.close()
+			#self.setup() #why did i put setup() here? isnt it an infinite loop
+			raise exc
+
+	def get_image(self):
+		self.__check_is_open()
+		try:
+			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage()
+			if self.imageData == None:
+				self.imageData = numpy.arange(dataLen, dtype=numpy.uint8)
+				#print("dataLen, row, col, BPP = " + str(dataTuple))
+			pyflycap.getflycapdata(self.imageData)
+			return numpy.reshape(self.imageData, (row, col, 3))
+			#from scipy.misc import imsave
+			#imsave("image.png", im)
+		except Exception as exc:
+			self.close()
+			#print "get_image(): " + repr(exc)
+			self.error = exc 
+			#raise exc #do not raise exceptions, just record the error and carry on blithely
+
+	def set_property(self, property_name, value, auto=None):
+		"""property_name has to be taken from CAMERA_PROPERTY_TYPE_MAPPING"""
+		#TODO another parameter called autoManualMode=True/False which you then
+		# set the appropriate index of prop
+		self.__check_is_open()
+		try:
+			prop = pyflycap.getproperty(CAMERA_PROPERTY_TYPE_MAPPING[property_name])
+			prop[8] = value #index for absValue
+			if auto!=None:
+				prop[5]=int(auto)
+			pyflycap.setproperty(prop)				
+		except Exception as exc:
+			self.close()
+			print exc
+			self.error = exc
+	
+	def extended_shutter_mode(self,shutter=10):
+		self.__check_is_open()
+		try:
+			prop = pyflycap.getproperty(CAMERA_PROPERTY_TYPE_MAPPING["frame_rate"])
+			prop[5]=int(False) #autoManualMode -> False
+			prop[4]=int(False) #onOff -> False
+			pyflycap.setproperty(prop)
+			#
+			prop = pyflycap.getproperty(CAMERA_PROPERTY_TYPE_MAPPING["shutter"])
+			prop[5]=int(False) #autoManualMode -> False
+			prop[2]=int(True) #absControl -> True
+			prop[8] = shutter #index for absValue
+			pyflycap.setproperty(prop)				
+		except Exception as exc:
+			self.close()
+			print exc
+			self.error = exc
+		
+	
+	def get_all_properties(self):
+		self.__check_is_open()
+		property_struct_names = ("present", "absControl", "onePush",
+			"onOff", "autoManualMode", "valueA", "valueB", "absValue")
+		self.properties = {}
+		#fill up self.properties as a dict with everything named
+		for name, index in CAMERA_PROPERTY_TYPE_MAPPING.iteritems():
+			prop = pyflycap.getproperty(index)
+			self.properties[name] = dict(zip(property_struct_names, prop[1:]))
+		return self.properties
+	
+	def get_region_of_interest(self):
+		"""Returns a list with 4 elements describing a rectangle of ROI"""
+		#format7_conf_struct_names = ("offsetX", "offsetY", "width", "height", "pixelFormat")
+		return pyflycap.getformat7config()[:4]
+		
+	def set_region_of_interest(self, x, y, width, height):
+		self.__check_is_open()
+		#format7_info_struct_names = ("maxWidth", "maxHeight", "offsetHStepSize", "offsetVStepSize",
+		#	"imageHStepSize", "imageVStepSize", "packetSize", "minPacketSize", "maxPacketSize")
+		format7info = pyflycap.getformat7info()
+		x -= x % format7info[2]
+		y -= y % format7info[3]
+		width -= width % format7info[4]
+		height -= height % format7info[5]
+		if width > format7info[0] or height > format7info[1]:
+			raise ValueError("width or height too large for the camera: " + str((width, height)))
+		format7config = pyflycap.getformat7config()
+		#format7_conf_struct_names = ("offsetX", "offsetY", "width", "height", "pixelFormat")
+		format7config[0:4] = [x, y, width, height]
+		pyflycap.setformat7config(format7config)
+		self.imageData = None #force get_image() to make a new one of the right length
+		
+	def set_max_region_of_interest(self):
+		self.__check_is_open()
+		#format7_info_struct_names = ("maxWidth", "maxHeight", "offsetHStepSize", "offsetVStepSize",
+		#	"imageHStepSize", "imageVStepSize", "packetSize", "minPacketSize", "maxPacketSize")
+		format7info = pyflycap.getformat7info()
+		format7config = pyflycap.getformat7config()
+		#format7_conf_struct_names = ("offsetX", "offsetY", "width", "height", "pixelFormat")
+		format7config[0] = 0
+		format7config[1] = 0
+		format7config[2] = format7info[0]
+		format7config[3] = format7info[1]
+		pyflycap.setformat7config(format7config)
+		self.imageData = None #force get_image() to make a new one of the right length
+	
+	def set_centered_region_of_interest(self, width, height):
+		self.__check_is_open()
+		#format7_info_struct_names = ("maxWidth", "maxHeight", "offsetHStepSize", "offsetVStepSize",
+		#	"imageHStepSize", "imageVStepSize", "packetSize", "minPacketSize", "maxPacketSize")
+		format7info = pyflycap.getformat7info()
+		format7config = pyflycap.getformat7config()
+		#format7_conf_struct_names = ("offsetX", "offsetY", "width", "height", "pixelFormat")
+		format7config[0] = format7info[0]/2 - width/2
+		format7config[1] = format7info[1]/2 - height/2
+		format7config[2] = width
+		format7config[3] = height
+		pyflycap.setformat7config(format7config)
+		self.imageData = None #force get_image() to make a new one of the right length
+		#self.set_region_of_interest(format7info[0]/2 - width/2, format7info[1]/2 - height/2, width, height)
+			
+	def close(self):
+		self.open = False
+		#print("freeing avs spectro, hopefully this is always called")
+		pyflycap.closeflycap()
+		#pyflycap.freelibrary()
+		
+	def __check_is_open(self):
+		if not self.open:
+			#raise IOError("camera has been close()d")
+			self.setup()
+
+#note: you can have many keys mapping to the same serial number
+#so in the future "flea" "interferometer" "large chip" could all map to 14080462
+camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
+			"flea": 4.8e-6, "grasshopper": 5.86e-6}
+
+serialNumber_cameraLabel_map = {"int_chameleon": 14110699, "chameleon": 12350594,
+			"flea": 14080462, "grasshopper": 14110879}
+def getCameraByLabel(label):
+	number = 0
+	if label != None:
+		number = serialNumber_cameraLabel_map[label.lower()]
+	return __Camera(number)
+		
+#---------------------------------
+#SOME USEFUL FUNCTIONS
+#----------------------------------
+def get_single_spectrum(intTime,nAverage=1):
+	"""
+	intTime: integration time in ms
+	nAverage: number of averages
+	Typical usage: plot(*get_single_spectrum(200))
+	"""
+	s = Spectrometer()
+	s.setup()
+	s.start_measure(intTime,nAverage,1)
+	spec = s.get_data()
+	s.close()
+	return s.lamb,s.spectrum
+
+def get_single_image(cameraLabel):
+	"""
+	Uses parameters set by FlyCap GUI
+	Typical usage: imshow(get_single_image())
+	"""
+	c = getCameraByLabel(cameraLabel)
+	c.setup()
+	im = c.get_image()
+	c.close()
+	return im
+
+def get_single_image_and_spectrum(cameraLabel, intTimeSpectrometer, nAverageSpectrometer=1):
+	#Sequential. Would be better to run 2 threads
+	lamb,spectrum = get_single_spectrum(intTimeSpectrometer, nAverage=nAverageSpectrometer)
+	im = get_single_image(cameraLabel)
+	ts = pbec_analysis.make_timestamp()
+	return {"lamb":lamb,"spectrum":spectrum,"im":im,"ts":ts}
+	
+def get_multiple_images(cameraLabel, nImage=1):
+	c = getCameraByLabel(cameraLabel)
+	c.setup()
+	im_list = []
+	if nImage>3: print "Strongly advised against: too many images in memory"
+	for i in range(nImage):
+		im_list.append(c.get_image())
+	c.close()
+	return im_list
