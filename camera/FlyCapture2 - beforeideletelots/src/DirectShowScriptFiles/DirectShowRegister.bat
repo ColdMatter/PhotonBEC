@@ -1,2 +1,0 @@
-regsvr32 pgrdirectshowsource.ax
-regsvr32 pgrdirectshowdecoder.ax
