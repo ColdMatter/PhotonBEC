@@ -193,14 +193,6 @@ def ipc_exec(expr, port = DEFAULT_PORT):
 	sock = socket_connect(port)
 	socket_exec(sock, expr)
 	socket_close(sock)
-	
-'''
-from numpy.random import rand
-im = rand(1000, 1000, 3)
-import pickle
-ims = pickle.dumps(im)
-#print 'ims = ' + str(ims)
-'''
 
 if __name__ == "__main__":
 	#start_server(globals())
@@ -221,38 +213,22 @@ if __name__ == "__main__":
 	
 
 #NOTES FROm 13/11/14
-"""
-Serializing numpy 2D arrays is non trivial. Can try
-from pbec_ipc import *
-import pickle
-ipc_exec("import pickle")
-#d =ipc_eval("pickle.dumps(s.im_raw)")
-##d =ipc_eval("pickle.dumps(s.im_raw).replace('\n','LINEBREAK')")
-##d2 = d.replace('LINEBREAK','\n')
-d =ipc_eval("pickle.dumps(s.im_raw).encode('string-escape')")
-d2 = d.decode('string-escape')
-im_raw = pickle.loads(d2)
-#Still may fail...
-"""
-import numpy
-def array_to_string(a):
-	#Implemented in pbec_ipc
-	#Seems to work OK, and human readably, but not so easy to machine-parse (deserialize) the result
-	nd = numpy.ndim(a)
-	if nd==1:
-		s = str(list(a)) #handle 1D arrays
-	else:
-		###s = str(list([array_to_string(x) for x in a])) #handle 2D arrays
-		s = ""
-		s = str(list([array_to_string(x) for x in a])) #handle 2D arrays
-	return s
+def ipc_get_array(arr_name):
+	import pickle
+	ipc_exec('import pickle')
+	arr_local_p = ipc_eval('pickle.dumps('+arr_name+')')
+	arr_local_p = arr_local_p.decode('string_escape')
+	arr_local_p = arr_local_p[1:-1]
+	return pickle.loads(arr_local_p)
 
-def array_from_string(s):
-	#Implemented in pbec_ipc, up to rank-3 arrays
-	#Currently not working
-	s1 = s.split("[")[2:]
-	#handle the first line only. Handles 1D arrays to, I guess
-	array(eval("["+s1[0].split("', '")[0]))
-	a = array([0.0])#NOT WORKING YET	
-	return a
-	
+'''
+import hene_utils
+im_raw = ipc_get_array("s.im_raw")
+centre = ipc_get_array("s.centre")
+x0,y0 = centre
+(dx,dy) = (int(ipc_eval("s.dx")),int(ipc_eval("s.dy")))
+subim = im_raw[x0-dx:x0+dx,y0-dy:y0+dy,0]
+rad_prof = hene_utils.radial_profile(subim,(dx,dy))
+figure(1),clf(),plot(rad_prof)
+figure(2),clf(),imshow(subim)
+'''

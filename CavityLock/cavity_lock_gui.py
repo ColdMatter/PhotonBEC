@@ -129,7 +129,7 @@ class DisplayCameraImageCanvas(FigureCanvas):
 			hardcoded_image_size[0] / hardcoded_gui_im_size[0]
 		self.stabiliser.x0_est = (m_evt.pos().y() - hardcoded_gui_im_position[1]) *\
 			hardcoded_image_size[1] / hardcoded_gui_im_size[1]
-			
+		self.stabiliser.centre = (self.stabiliser.x0_est, self.stabiliser.y0_est) #line added 17/11/14 by RAN
 		self.ring_rad = hene_utils.ring_radius(self.im_raw,\
 			(self.stabiliser.x0_est,self.stabiliser.y0_est),\
 			(self.stabiliser.dx,self.stabiliser.dy),\

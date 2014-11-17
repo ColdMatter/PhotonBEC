@@ -83,8 +83,7 @@ class Stabiliser():
 		#The centre assumes an on-CCD RoI of width w800 x h800, left 240, top 112 (centred)
 		#go to FlyCapGUI -> Settings dialog box -> Custom Video Modes
 		#Also, play with Packet size to try to eliminate image tearing problems
-		#self.dx,self.dy=180,180 #Image to be cut down to this size. Half-size in pixels
-		self.dx,self.dy=150,150 #Image to be cut down to this size. Half-size in pixels
+		self.dx,self.dy=180,180 #Image to be cut down to this size. Half-size in pixels
 		self.dx_search,self.dy_search=8,8 #range over which centre can be adjusted automatically. Half-size in pixels
 		#self.window_len = 2 #window for smoothing radial profiles for peak finding
 		self.window_len = 4 #window for smoothing radial profiles for peak finding
@@ -142,6 +141,7 @@ class Stabiliser():
 		cam_info=self.cam.setup()
 		#Default camera properties which need overriding
 		set_dict = {"auto_exposure": 0, "shutter": 0.02, "gain": 0, "frame_rate": 150}
+		#NOTE: 17/11/14: why are exposure and frame_rate not being set correctly automatically?
 		for key in set_dict:
 			self.cam.set_property(key, set_dict[key], auto=False)
 		self.cam.set_centered_region_of_interest(width, height)
