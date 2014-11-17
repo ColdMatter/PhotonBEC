@@ -226,6 +226,144 @@ def timestamps_in_range(first_ts, last_ts, extension=".json"):
 
 #-------------------------
 #CLASSES TO HELP ORGANISE DATA, BOTH FOR ANALYSIS AND FOR INITIAL DATA SAVING
+
+#holds a certain type of experiment data
+#this class knows how to save and load itself
+class ExperimentalData(object):
+	def __init__(self, parent, extension):
+		self.parent = parent
+		self.extension = extension
+	def getFileName(self, make_folder = False):
+		return timestamp_to_filename(self.parent.ts, file_end = self.extension,
+			make_folder = make_folder)
+
+	#a lot of the time you wont use this function
+	# d.lamb and d.spectrum are examples when you dont
+	#one day we'll combine lamb and spectrum into one
+	# variable using zip()
+	def setData(self, data):
+		self.data = data
+	def saveData(self):
+		raise Exception('called an abstract method')
+	def loadData(self):
+		raise Exception('called an abstract method')
+	def copy(self):
+		raise Exception('called an abstract method')
+
+def CameraData(ExperimentalData):
+	def __init__(self, parent):
+		ExperimentalData.__init__(self, parent, '_camera.png')
+	def saveData(self):
+		filename = self.getFileName(make_folder=True)
+		imsave(filename, self.data)
+		self.meta.cameraDataFileName = filename
+	def loadData(self):
+		filename = self.getFileName()
+		self.data = imread(filename)
+	def copy(self):
+		d = CameraData(self.parent)
+		d.data = self.data.copy()
+		return d
+
+def SpectrometerData(ExperimentalData):
+	def __init__(self, parent):
+		ExperimentalData.__init__(self, parent, '_spectrum.json')
+	def saveData(self):
+		d = {"ts": self.ts, "lamb": list(self.lamb), "spectrum": list(self.spectrum)}
+		filename = self.getFileName(make_folder=True)
+		js = json.dumps(d, indent=4)
+		fil = open(filename, "w")
+		fil.write(js)
+		fil.close()	
+	def loadData(self, correct_transmission=True, shift_spectrum="spherical"):
+		filename = self.getFileName()
+		fil = open(filename, "r")
+		raw_json = fil.read()
+		fil.close()
+		decoded = json.loads(raw_json)
+		self.__dict__.update(decoded)
+		self.lamb = array(self.lamb)
+		self.spectrum = array(self.spectrum)
+		if correct_transmission:
+			transmissions = UltrafastMirrorTransmission(self.lamb, shift_spectrum=shift_spectrum)
+			self.spectrum = self.spectrum / transmissions	
+	def copy(self):
+		d = SpectrometerData(self.parent)
+		d.lamb = self.lamb.copy()
+		d.spectrum = self.spectrum.copy()
+		return d
+'''
+#TODO code this when i actually come to it, so its easy to test
+# rather than coding it theoretically now with no real-world data to try it on
+#for the photodiode in the interferometer
+def InterferometerSignalData(ExperimentalData):
+	def __init__(self, parent):
+		ExperimentalData.__init__(self, parent, '_
+'''
+
+class MetaDataNew():
+	def __init__(self, parent, parameters={}, comments=""):
+		self.parent = parent
+		self.parameters=parameters
+		self.comments=""
+		self.fileExtension ="_meta.json"
+		self.errors = ""
+	def copy(self):
+		c = MetaData(self.parent, comments = self.comments)
+		c.parameters=self.parameters.copy()
+		c.fileExtension = self.fileExtension
+		c.errors = self.errors
+		return c
+	def getFileName(self,make_folder = False):
+		return timestamp_to_filename(\
+			self.ts, file_end=self.fileExtension, make_folder=make_folder)
+	def save(self):
+		d = {"ts":self.parent.ts, "parameters":self.parameters, "comments":self.comments, "errors": self.errors}
+		filename = self.getFileName(make_folder=True)
+		js = json.dumps(d,indent=4)
+		fil = open(filename,"w")
+		fil.write(js)
+		fil.close()
+	def load(self):
+		filename = self.getFileName()
+		fil = open(filename,"r")
+		raw_json = fil.read()
+		fil.close()
+		decoded = json.loads(raw_json)
+		self.__dict__.update(decoded)
+	def printMe(self,prefix="\t"):
+		print prefix + "timestamp: "+self.ts
+		print prefix + "parameters: "+str(self.parameters)
+		print prefix + "comments: "+self.comments
+		print prefix + "errors: " + self.errors
+
+class ExperimentalDataSet():
+	def __init__(self, dataset={}, ts=None):
+		if ts==None:
+			ts = make_timestamp()
+		self.ts = ts
+		self.dataset = dataset
+		self.meta = MetaDataNew(parent=self)
+	def copy(self):
+		c = Experiment(self.ts)
+		c.meta = self.meta.copy() #remember to copy sub-objects
+		for name, data in enumerate(dataset):
+			c.dataset[name] = data.copy()
+		return c
+	def saveAllData(self):
+		for data in dataset.values():
+			try:
+				data.saveData()
+			except Exception as ex:
+				self.meta.errors += str(ex)
+		self.meta.save()
+	def loadAllData(self):
+		#Should really try...except...finally
+		self.meta.load()
+		for data in dataset.values():
+			data.loadData()
+
+#these classes kept for slightly easier backward compatibility
 class MetaData():
 	def __init__(self, ts=None, parameters={}, comments="", experiment = None):
 		if ts==None:
@@ -238,7 +376,9 @@ class MetaData():
 		self.errors = ""
 		self.cameraDataFileName = None
 		self.spectrometerDataFileName = None
-		self.OtherDataFileNames = []
+		self.dataFileNames = {}
+		#camera and spectrometer data file names will be gone, just called dataFileNames which
+		# maps to the class that handles them
 	def copy(self):
 		c = MetaData(self.ts,comments = self.comments)
 		c.parameters=self.parameters.copy()
@@ -268,13 +408,12 @@ class MetaData():
 		print prefix + "comments: "+self.comments
 		print prefix + "errors: " + self.errors
 
-#could also be called ExperimentalData()
 class Experiment():
 	def __init__(self,ts=None):
 		if ts==None:
 			ts = make_timestamp()
 		self.ts = ts
-		self.meta = MetaData(ts = ts,experiment = self)
+		self.meta = MetaDataOld(ts = ts,experiment = self)
 		self.cameraExtension = "_camera.png"
 		self.spectrometerExtension ="_spectrum.json"
 		self.im = None
@@ -288,6 +427,7 @@ class Experiment():
 		if self.im!=None: c.im = self.im.copy()
 		if self.lamb!=None: c.lamb = self.lamb.copy()
 		if self.spectrum!=None: c.spectrum = self.spectrum.copy()
+		if len(self.otherData) > 0: c.otherData = self.otherData.copy()
 		return c
 	def getCameraFileName(self,make_folder=False):
 		return timestamp_to_filename(\
@@ -319,7 +459,6 @@ class Experiment():
 		fil = open(filename,"w")
 		fil.write(js)
 		fil.close()
-		
 	def loadSpectrometerData(self,correct_transmission=True,shift_spectrum="spherical"):
 		filename = self.getSpectrometerFileName();
 		fil = open(filename,"r");
@@ -327,7 +466,6 @@ class Experiment():
 		fil.close()
 		decoded = json.loads(raw_json)
 		self.__dict__.update(decoded)
-		#Hack now
 		self.lamb = array(self.lamb)
 		self.spectrum = array(self.spectrum)
 		if correct_transmission:
