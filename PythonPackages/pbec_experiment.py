@@ -10,6 +10,7 @@ from scipy.misc import imsave
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"camera")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"spectrometer")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"PythonPackages")
+sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"thorlabsapt")
 import pyflycap
 import pyspectro
 import SingleChannelAO, SingleChannelAI, LaserQuantum
