@@ -138,7 +138,7 @@ class __Camera(object):
 			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage()
 			if self.imageData == None:
 				self.imageData = numpy.arange(dataLen, dtype=numpy.uint8)
-				#print("dataLen, row, col, BPP = " + str(dataTuple))
+				#print("dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
 			pyflycap.getflycapdata(self.imageData)
 			return numpy.reshape(self.imageData, (row, col, 3))
 			#from scipy.misc import imsave

@@ -9,6 +9,8 @@ from pylab import *
 from scipy.interpolate import interp1d
 from scipy import constants
 from numbers import Number
+import zipfile
+import io
 #from numpy import ones
 
 pbec_prefix = "pbec"
@@ -224,6 +226,36 @@ def timestamps_in_range(first_ts, last_ts, extension=".json"):
     ts_list = map(timestamp_from_filename,df_list)
     return ts_list
 
+def save_image_set(im_list, ts=None, file_end=''):
+	if ts == None:
+		ts = make_timestamp()
+
+	zip_buffer = io.BytesIO()
+	zip_fd = zipfile.ZipFile(zip_buffer, 'w')
+	for i, im in enumerate(im_list):
+		im_buf = io.BytesIO()
+		imsave(im_buf, im, format='png')
+		zip_fd.writestr('image%03d.png' % (i), im_buf.getvalue())
+	zip_fd.close()
+	
+	zip_filename = timestamp_to_filename(ts, file_end, True)
+	zip_file = open(zip_filename, 'wb')
+	zip_file.write(zip_buffer.getvalue())
+	zip_file.close()
+
+def load_image_set(ts, file_end=''):
+	zip_filename = timestamp_to_filename(ts, file_end, True)
+	zip_fd = zipfile.ZipFile(zip_filename, 'r')
+	im_list = []
+	for name in zip_fd.namelist():
+		im_bytes = zip_fd.read(name)
+		im_buffer_fd = io.BytesIO(im_bytes)
+		im = imread(im_buffer_fd)
+		im_list.append(im)
+
+	zip_fd.close()
+	return im_list
+    
 #-------------------------
 #CLASSES TO HELP ORGANISE DATA, BOTH FOR ANALYSIS AND FOR INITIAL DATA SAVING
 
