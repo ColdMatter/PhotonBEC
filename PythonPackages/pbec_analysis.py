@@ -244,7 +244,7 @@ def save_image_set(im_list, ts=None, file_end=''):
 	zip_file.close()
 
 def load_image_set(ts, file_end=''):
-	zip_filename = timestamp_to_filename(ts, file_end, True)
+	zip_filename = timestamp_to_filename(ts, file_end)
 	zip_fd = zipfile.ZipFile(zip_filename, 'r')
 	im_list = []
 	for name in zip_fd.namelist():
@@ -288,7 +288,6 @@ def CameraData(ExperimentalData):
 	def saveData(self):
 		filename = self.getFileName(make_folder=True)
 		imsave(filename, self.data)
-		self.meta.cameraDataFileName = filename
 	def loadData(self):
 		filename = self.getFileName()
 		self.data = imread(filename)
@@ -324,6 +323,19 @@ def SpectrometerData(ExperimentalData):
 		d.lamb = self.lamb.copy()
 		d.spectrum = self.spectrum.copy()
 		return d
+		
+class InterferometerFringeData(ExperimentalData):
+	def __init__(self, parent):
+		ExperimentalData.__init__(self, parent, '_fringes.zip')
+	def saveData(self):
+		save_image_set(self.data, self.parent.ts, self.extension)
+	def loadData(self):
+		self.data = load_image_set(self.parent.ts, self.extension)
+	def copy(self):
+		c = InterferometerFringeData(self.parent)
+		c.data = self.data.copy()
+		return c
+
 '''
 #TODO code this when i actually come to it, so its easy to test
 # rather than coding it theoretically now with no real-world data to try it on
@@ -348,7 +360,7 @@ class MetaDataNew():
 		return c
 	def getFileName(self,make_folder = False):
 		return timestamp_to_filename(\
-			self.ts, file_end=self.fileExtension, make_folder=make_folder)
+			self.parent.ts, file_end=self.fileExtension, make_folder=make_folder)
 	def save(self):
 		d = {"ts":self.parent.ts, "parameters":self.parameters, "comments":self.comments, "errors": self.errors}
 		filename = self.getFileName(make_folder=True)
@@ -383,16 +395,13 @@ class ExperimentalDataSet():
 			c.dataset[name] = data.copy()
 		return c
 	def saveAllData(self):
-		for data in dataset.values():
-			try:
-				data.saveData()
-			except Exception as ex:
-				self.meta.errors += str(ex)
+		for data in self.dataset.values():
+			data.saveData()
 		self.meta.save()
 	def loadAllData(self):
 		#Should really try...except...finally
 		self.meta.load()
-		for data in dataset.values():
+		for data in self.dataset.values():
 			data.loadData()
 
 #these classes kept for slightly easier backward compatibility
