@@ -16,6 +16,8 @@ import io
 pbec_prefix = "pbec"
 point_grey_chameleon_pixel_size = 3.75e-6
 
+interferometer_piezo_calibration_nm_movement_per_volt = 294.1 #see lab book 24/11/2014
+
 hostname = gethostname()
 if gethostname()=="ph-rnyman-01":
 	#ph-photonbec is also carries the name "ph-rnyman-01". Bah.
