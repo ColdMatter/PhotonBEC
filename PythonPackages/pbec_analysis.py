@@ -264,11 +264,11 @@ def load_image_set(ts, file_end=''):
 #holds a certain type of experiment data
 #this class knows how to save and load itself
 class ExperimentalData(object):
-	def __init__(self, parent, extension):
-		self.parent = parent
+	def __init__(self, ts, extension):
+		self.ts = ts
 		self.extension = extension
 	def getFileName(self, make_folder = False):
-		return timestamp_to_filename(self.parent.ts, file_end = self.extension,
+		return timestamp_to_filename(self.ts, file_end = self.extension,
 			make_folder = make_folder)
 
 	#a lot of the time you wont use this function
@@ -285,8 +285,8 @@ class ExperimentalData(object):
 		raise Exception('called an abstract method')
 
 def CameraData(ExperimentalData):
-	def __init__(self, parent):
-		ExperimentalData.__init__(self, parent, '_camera.png')
+	def __init__(self, ts):
+		ExperimentalData.__init__(self, ts, '_camera.png')
 	def saveData(self):
 		filename = self.getFileName(make_folder=True)
 		imsave(filename, self.data)
@@ -294,13 +294,13 @@ def CameraData(ExperimentalData):
 		filename = self.getFileName()
 		self.data = imread(filename)
 	def copy(self):
-		d = CameraData(self.parent)
+		d = CameraData(self.ts)
 		d.data = self.data.copy()
 		return d
 
 def SpectrometerData(ExperimentalData):
-	def __init__(self, parent):
-		ExperimentalData.__init__(self, parent, '_spectrum.json')
+	def __init__(self, ts):
+		ExperimentalData.__init__(self, ts, '_spectrum.json')
 	def saveData(self):
 		d = {"ts": self.ts, "lamb": list(self.lamb), "spectrum": list(self.spectrum)}
 		filename = self.getFileName(make_folder=True)
@@ -321,21 +321,26 @@ def SpectrometerData(ExperimentalData):
 			transmissions = UltrafastMirrorTransmission(self.lamb, shift_spectrum=shift_spectrum)
 			self.spectrum = self.spectrum / transmissions	
 	def copy(self):
-		d = SpectrometerData(self.parent)
+		d = SpectrometerData(self.ts)
 		d.lamb = self.lamb.copy()
 		d.spectrum = self.spectrum.copy()
 		return d
 		
 class InterferometerFringeData(ExperimentalData):
-	def __init__(self, parent):
-		ExperimentalData.__init__(self, parent, '_fringes.zip')
+	def __init__(self, ts):
+		ExperimentalData.__init__(self, ts, '_fringes.zip')
+		self.data=None
 	def saveData(self):
-		save_image_set(self.data, self.parent.ts, self.extension)
+		if self.data!=None:
+			save_image_set(self.data, self.ts, self.extension)
+		else:
+			print "pbec_analysis.InterferometerFringeData warning: .data nonexistent, hence not saved"
 	def loadData(self):
-		self.data = load_image_set(self.parent.ts, self.extension)
+		self.data = load_image_set(self.ts, self.extension)
 	def copy(self):
-		c = InterferometerFringeData(self.parent)
-		c.data = self.data.copy()
+		c = InterferometerFringeData(self.ts)
+		if self.data != None:
+			c.data = self.data.copy()
 		return c
 
 '''
@@ -348,23 +353,23 @@ def InterferometerSignalData(ExperimentalData):
 '''
 
 class MetaDataNew():
-	def __init__(self, parent, parameters={}, comments=""):
-		self.parent = parent
+	def __init__(self, ts, parameters={}, comments=""):
+		self.ts = ts
 		self.parameters=parameters
 		self.comments=""
 		self.fileExtension ="_meta.json"
 		self.errors = ""
 	def copy(self):
-		c = MetaData(self.parent, comments = self.comments)
+		c = MetaDataNew(self.ts, comments = self.comments)
 		c.parameters=self.parameters.copy()
 		c.fileExtension = self.fileExtension
 		c.errors = self.errors
 		return c
 	def getFileName(self,make_folder = False):
 		return timestamp_to_filename(\
-			self.parent.ts, file_end=self.fileExtension, make_folder=make_folder)
+			self.ts, file_end=self.fileExtension, make_folder=make_folder)
 	def save(self):
-		d = {"ts":self.parent.ts, "parameters":self.parameters, "comments":self.comments, "errors": self.errors}
+		d = {"ts":self.ts, "parameters":self.parameters, "comments":self.comments, "errors": self.errors}
 		filename = self.getFileName(make_folder=True)
 		js = json.dumps(d,indent=4)
 		fil = open(filename,"w")
@@ -384,17 +389,23 @@ class MetaDataNew():
 		print prefix + "errors: " + self.errors
 
 class ExperimentalDataSet():
-	def __init__(self, dataset={}, ts=None):
+	def __init__(self, ts=None):
 		if ts==None:
 			ts = make_timestamp()
 		self.ts = ts
-		self.dataset = dataset
-		self.meta = MetaDataNew(parent=self)
+		self.dataset = {}
+		self.meta = MetaDataNew(ts = self.ts)
 	def copy(self):
-		c = Experiment(self.ts)
+		c = ExperimentalDataSet(ts=self.ts)
 		c.meta = self.meta.copy() #remember to copy sub-objects
-		for name, data in enumerate(dataset):
-			c.dataset[name] = data.copy()
+		import copy
+		c.dataset = copy.deepcopy(self.dataset)
+		#for name in self.dataset:
+			#print 'name = ' + str(name)
+			#c.dataset[name] = self.dataset[name].copy()
+		#for name, data in self.dataset.iteritems():
+		#	print 'name, data = ' + str(name) + ', ' + str(data)
+		#	c.dataset[name] = data.copy()
 		return c
 	def saveAllData(self):
 		for data in self.dataset.values():
@@ -407,6 +418,7 @@ class ExperimentalDataSet():
 			data.loadData()
 
 #these classes kept for slightly easier backward compatibility
+#but we'll delete them soon because thats what version control is for
 class MetaData():
 	def __init__(self, ts=None, parameters={}, comments="", experiment = None):
 		if ts==None:
