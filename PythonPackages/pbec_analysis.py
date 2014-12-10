@@ -352,7 +352,7 @@ def InterferometerSignalData(ExperimentalData):
 		ExperimentalData.__init__(self, parent, '_
 '''
 
-class MetaDataNew():
+class MetaData():
 	def __init__(self, ts, parameters={}, comments=""):
 		self.ts = ts
 		self.parameters=parameters
@@ -360,7 +360,7 @@ class MetaDataNew():
 		self.fileExtension ="_meta.json"
 		self.errors = ""
 	def copy(self):
-		c = MetaDataNew(self.ts, comments = self.comments)
+		c = MetaData(self.ts, comments = self.comments)
 		c.parameters=self.parameters.copy()
 		c.fileExtension = self.fileExtension
 		c.errors = self.errors
@@ -394,7 +394,7 @@ class ExperimentalDataSet():
 			ts = make_timestamp()
 		self.ts = ts
 		self.dataset = {}
-		self.meta = MetaDataNew(ts = self.ts)
+		self.meta = MetaData(ts = self.ts)
 	def copy(self):
 		c = ExperimentalDataSet(ts=self.ts)
 		c.meta = self.meta.copy() #remember to copy sub-objects
