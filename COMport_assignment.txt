@@ -7,7 +7,8 @@ COM5: (USB-serial converter) LaserQuantum controller
 COM6: (USB-serial converter, not connected) empty
 COM7: (USB-serial converter, not connected) empty
 COM8: TST101 stepper motor controller (Thorlabs APT device)
-COM13: BSC201 stepper motor controller (Thorlabs APT device) 
+COM13: BSC201 stepper motor controller (Thorlabs APT device)
+COM14: TDC001 stepper motor controller (Thorlabs APT device)
 
 
 #As at 19/06/14
@@ -20,3 +21,4 @@ COM6: (USB-serial converter, not connected) empty
 COM7: (USB-serial converter, not connected) empty
 COM8: BSC201 stepper motor controller (Thorlabs APT device)
 COM9: 3-channel piezo driver (Thorlabs MDT693B)
+

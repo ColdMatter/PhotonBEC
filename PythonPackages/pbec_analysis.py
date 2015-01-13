@@ -284,9 +284,9 @@ class ExperimentalData(object):
 	def copy(self):
 		raise Exception('called an abstract method')
 
-def CameraData(ExperimentalData):
-	def __init__(self, ts):
-		ExperimentalData.__init__(self, ts, '_camera.png')
+class CameraData(ExperimentalData):
+	def __init__(self, ts, extension='_camera.png'):
+		ExperimentalData.__init__(self, ts, extension)
 	def saveData(self):
 		filename = self.getFileName(make_folder=True)
 		imsave(filename, self.data)
@@ -298,7 +298,7 @@ def CameraData(ExperimentalData):
 		d.data = self.data.copy()
 		return d
 
-def SpectrometerData(ExperimentalData):
+class SpectrometerData(ExperimentalData):
 	def __init__(self, ts):
 		ExperimentalData.__init__(self, ts, '_spectrum.json')
 	def saveData(self):
@@ -327,8 +327,8 @@ def SpectrometerData(ExperimentalData):
 		return d
 		
 class InterferometerFringeData(ExperimentalData):
-	def __init__(self, ts):
-		ExperimentalData.__init__(self, ts, '_fringes.zip')
+	def __init__(self, ts, extension='_fringes.zip'):
+		ExperimentalData.__init__(self, ts, extension)
 		self.data=None
 	def saveData(self):
 		if self.data!=None:

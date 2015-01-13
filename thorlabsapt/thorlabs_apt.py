@@ -141,19 +141,30 @@ class ThorlabsAPT(object):
 	def getHomeVelocity(self):
 		return self.__sendSimpleHeaderAndRead(
 			header_args = (MGMSG_MOT_REQ_HOMEPARAMS, self.channel_ident),
-			body_length = 14, #pg 48 of manual
+			body_length = 14, #pg 49 of manual
 			struct_fmt = "HBBBBHHHII",
 			expt_reply = MGMSG_MOT_GET_HOMEPARAMS
 		)[8] #velocity
 
-	def setHomeVelocity(self, velocity):
+	def getHomeOffset(self):
+		return self.__sendSimpleHeaderAndRead(
+			header_args = (MGMSG_MOT_REQ_HOMEPARAMS, self.channel_ident),
+			body_length = 14, #pg 49 of manual
+			struct_fmt = "HBBBBHHHII",
+			expt_reply = MGMSG_MOT_GET_HOMEPARAMS
+		)[9] #offset
+
+	def setHomeParameters(self, velocity,offset):
 		#the manual says those other parameters are ignored, but that doesnt actually work so
 		# i had to use reverse engineering to find the values it accepts
 		head = HeaderWithData(MGMSG_MOT_SET_HOMEPARAMS, "HHHII",
-			(self.channel_ident, 2, 1, velocity, 40960), param1=0x0e)
+			(self.channel_ident, 2, 1, velocity, offset), param1=0x0e)
 		self.ser.write(head.packedHeader())
 		#no reply
-		
+	
+	def setHomeVelocity(self,velocity,offset=40960):
+		self.setHomeParameters(velocity,offset=offset)
+
 	def getVelocityParameters(self):
 		return self.__sendSimpleHeaderAndRead(
 			header_args = (MGMSG_MOT_REQ_VELPARAMS, self.channel_ident),
@@ -230,6 +241,11 @@ drv014_encoder_unit_acceleration= 4506*1e3 #converts steps to metres/s/s NOT mm/
 #see the manual we have in the drawer
 zst213_encoder_unit_position = int(24*2048 * (29791./729))*1e3
 		
+prm1_mz8e_encoder_unit_position = 1919.64
+
+#---Modifications made 12/1/15 by RAN
+#New method of ThorlabsAPT superclass: setHomeParameters
+#Intention: update BSC201 and TST101 classes to make use of the "HomeOffset" calibration correctly.
 
 class BSC201(ThorlabsAPT):
 	def __init__(self, comport=13, channel_ident=1):
@@ -280,5 +296,30 @@ class TST101(ThorlabsAPT):
 		return self.stepMotorRelative(int(rel_distance * zst213_encoder_unit_position))
 	def moveAbsolute(self, distance):
 		return self.stepMotorAbsolute(int(distance * zst213_encoder_unit_position))
+
+class TDC001(ThorlabsAPT):
+	def __init__(self, comport=14, channel_ident=1):
+		super(TDC001, self).__init__(comport, channel_ident)
+		self.setHomeParameters()
+		self.setVelocityParameters()
+		self.setBacklashCorrection()
+
+	#default taken from the Thorlabs APT software
+	#relates to motor PRM1/MZ8E
+	#ran thorlabs APT software then ran getXXX() methods
+	def setHomeParameters(self, velocity=42941.66,offset = 7679):
+		super(TDC001, self).setHomeParameters(velocity,offset)
+	def setVelocityParameters(self, maxVel=5*42941.66, acc=14.66, minVel=0):
+		super(TDC001, self).setVelocityParameters(maxVel, acc, minVel)
+	def setBacklashCorrection(self, backlash=1919.64):
+		super(TDC001, self).setBacklashCorrection(backlash)
+	
+	#units in meters
+	def moveRelative(self, rel_distance):
+		#NOTE:angles are in degrees
+		return self.stepMotorRelative(int(rel_distance * prm1_mz8e_encoder_unit_position))
+	def moveAbsolute(self, distance):
+		#NOTE:angles are in degrees
+		return self.stepMotorAbsolute(int(distance * prm1_mz8e_encoder_unit_position))
 		
 #EoF
