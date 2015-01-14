@@ -79,7 +79,7 @@ class Stabiliser():
 		self.bandwidth_throttle=0.001 #slows down acquisition so other devices can use USB
 		self.print_frequency =0#for diagnostic purposes
 		#
-		self.x0_est,self.y0_est=408,418	#approximate centre of rings, in pixels
+		self.x0_est,self.y0_est=389,474	#approximate centre of rings, in pixels
 		#The centre assumes an on-CCD RoI of width w800 x h800, left 240, top 112 (centred)
 		#go to FlyCapGUI -> Settings dialog box -> Custom Video Modes
 		#Also, play with Packet size to try to eliminate image tearing problems
