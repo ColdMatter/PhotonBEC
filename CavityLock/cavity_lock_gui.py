@@ -10,7 +10,7 @@ from matplotlib.figure import Figure
 import hene_utils
 
 #Default values for stabiliser
-default_set_ring_rad=130
+default_set_ring_rad=170
 
 #Parameters for graph
 plot_buffer_length = 2000
@@ -57,7 +57,8 @@ class EmbeddedUpdatingGraph(FigureCanvas):
 		self.axes211.set_ylim(1000*array(self.stabiliser.control_range)) #should reflect the stabilister control range!!!
 		self.axes211.grid(True)
 		#subplot(2,1,2)
-		self.axes212.plot([hene_utils.time_number_from_timestamp(r["ts"]) for r in results],[int(r["ring_rad"]) for r in results],"o",markersize=3)
+		####self.axes212.plot([hene_utils.time_number_from_timestamp(r["ts"]) for r in results],[int(r["ring_rad"]) for r in results],"o",markersize=3)
+		self.axes212.plot([hene_utils.time_number_from_timestamp(r["ts"]) for r in results],[float(r["ring_rad"]) for r in results],"o",markersize=3)
 		self.axes212.set_xlabel("time (s since midnight)")
 		self.axes212.set_ylabel("ring radius (px)")
 		self.axes212.grid(True)

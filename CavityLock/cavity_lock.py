@@ -28,7 +28,7 @@ aw = cavity_lock_gui.ApplicationWindow(s) #The main application GUI window. Know
 
 def _setValueChangedByText():
     try:
-		newValue = int(aw.setText.text())
+		newValue = float((aw.setText.text()))
     except:
 		pass
     else:
@@ -167,6 +167,7 @@ def setSetPointGradual(newValue, sleepTime = 0.05):
 	if first==last:
 		return None
 	for p in range(first, last, numpy.sign(last-first)):
+		#NOTE: will fail when non-integer start and end points are set.
 		setSetPoint(p)
 		time.sleep(sleepTime)
 	setSetPoint(last)

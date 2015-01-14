@@ -22,13 +22,22 @@ def radial_profile(data, (x0,y0),window_len=1):
 	return rp_smoothed
 
 #Ring radius is at maximum of smoothed radial profile
-def ring_radius(im,(x0,y0),(dx,dy),channel=0,window_len=1,min_acceptable_radius=4):
+def ring_radius(im,(x0,y0),(dx,dy),channel=0,window_len=1,min_acceptable_radius=11, mean_window=40):
+	#Large "mean_window" helps overcome discreteness.
 	subim = im[x0-dx:x0+dx,y0-dy:y0+dy,channel]
 	rp = radial_profile(subim,(dx,dy),window_len=window_len)
-	#Ignores the very first point, to avoid not-so-rare cases where zero-radius causes divergence
-	#Change has not fully been tested
-	ring_rad, peak_value = max(enumerate(list(rp[min_acceptable_radius:])), key=operator.itemgetter(1))
-	return ring_rad+min_acceptable_radius,peak_value,rp
+	ring_rad_uncorrected, peak_value = max(enumerate(list(rp[min_acceptable_radius:])), key=operator.itemgetter(1))
+	ring_rad = ring_rad_uncorrected + min_acceptable_radius
+	#Change 13/01/2015: use floating point values. Find weighted mean NOT max position within a window
+	posns=arange(-mean_window,mean_window+1,1) + ring_rad
+	windowed_values = rp[posns] #KNOWN BUG: fails when ring size near size of image, but doesn't seem to fail catastrophically.
+	#Value 0.98 or whatever is empirically determined
+	windowed_values = windowed_values - 0.98*mean(windowed_values[-5:-1]) #bkg to offset [helps remove discreteness]
+	mean_posn = float( sum(posns*windowed_values) ) / float( sum(windowed_values) ) #causes 
+	mean_posn = max(0,min(mean_posn,len(rp)))
+	#Can move in <<1 steps, but is strongly influenced by integer-estimated ring rad: window moves one at a time.
+	#return ring_rad,peak_value,rp
+	return mean_posn,peak_value,rp
 
 def ring_width(im,(x0,y0),(dx,dy),channel=0,window_len=1,peak_window=20):
 	ring_rad,peak_value,rp = ring_radius(im,(x0,y0),(dx,dy),channel=0,window_len=window_len)
@@ -36,7 +45,7 @@ def ring_width(im,(x0,y0),(dx,dy),channel=0,window_len=1,peak_window=20):
 	min_rad = peak_window+1
 	window_max = min(ring_rad+peak_window ,max_rad)
 	window_min = max(ring_rad-peak_window ,min_rad)
-	window_indices = range(window_min , window_max)
+	window_indices = range(int(floor(window_min)) , int(ceil(window_max)))
 	#FIXME: fails when ring is really near the outside of the image
 	rp_windowed = rp[window_indices]
 	width = sum((array(window_indices)-ring_rad)**2 * rp_windowed ) / (len(window_indices)*sum(rp_windowed))

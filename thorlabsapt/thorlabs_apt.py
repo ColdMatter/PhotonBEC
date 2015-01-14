@@ -245,12 +245,13 @@ prm1_mz8e_encoder_unit_position = 1919.64
 
 #---Modifications made 12/1/15 by RAN
 #New method of ThorlabsAPT superclass: setHomeParameters
-#Intention: update BSC201 and TST101 classes to make use of the "HomeOffset" calibration correctly.
+#Intention: update TST101 classes to make use of the "HomeOffset" calibration correctly.
 
+#NOTE: The code "super(type(self), self)" is dealing with Python's Object-Oriented Programming limitations.
 class BSC201(ThorlabsAPT):
 	def __init__(self, comport=13, channel_ident=1):
-		super(BSC201, self).__init__(comport, channel_ident)
-		self.setHomeVelocity()
+		super(type(self), self).__init__(comport, channel_ident)
+		self.setHomeParameters()
 		self.setVelocityParameters()
 		self.setBacklashCorrection()
 		self.setPowerParameters()
@@ -258,14 +259,14 @@ class BSC201(ThorlabsAPT):
 	#default taken from the Thorlabs APT software
 	#relates to motor drv014
 	#ran thorlabs APT software then ran getXXX() methods
-	def setHomeVelocity(self, velocity=21986044):
-		super(BSC201, self).setHomeVelocity(velocity)
+	def setHomeParameters(self, velocity=21986044,offset = 40960):
+		super(type(self), self).setHomeParameters(velocity,offset)
 	def setVelocityParameters(self, maxVel=43972088, acc=4503, minVel=0):
-		super(BSC201, self).setVelocityParameters(maxVel, acc, minVel)
+		super(type(self), self).setVelocityParameters(maxVel, acc, minVel)
 	def setBacklashCorrection(self, backlash=4096):
-		super(BSC201, self).setBacklashCorrection(backlash)
+		super(type(self), self).setBacklashCorrection(backlash)
 	def setPowerParameters(self, restFactor=131, moveFactor=6):
-		super(BSC201, self).setPowerParameters(restFactor, moveFactor)
+		super(type(self), self).setPowerParameters(restFactor, moveFactor)
 
 	#units in meters
 	def moveRelative(self, rel_distance):
@@ -276,7 +277,7 @@ class BSC201(ThorlabsAPT):
 #getMotorPosition() and 
 class TST101(ThorlabsAPT):
 	def __init__(self, comport=8, channel_ident=1):
-		super(TST101, self).__init__(comport, channel_ident)
+		super(type(self), self).__init__(comport, channel_ident)
 		self.setHomeVelocity()
 		self.setVelocityParameters()
 		self.setBacklashCorrection()
@@ -285,11 +286,11 @@ class TST101(ThorlabsAPT):
 	#relates to motor zst213
 	#ran thorlabs APT software then ran getXXX() methods
 	def setHomeVelocity(self, velocity=26954160):
-		super(TST101, self).setHomeVelocity(velocity)
+		super(type(self), self).setHomeVelocity(velocity)
 	def setVelocityParameters(self, maxVel=107816640, acc=22085, minVel=0):
-		super(TST101, self).setVelocityParameters(maxVel, acc, minVel)
+		super(type(self), self).setVelocityParameters(maxVel, acc, minVel)
 	def setBacklashCorrection(self, backlash=40172):
-		super(TST101, self).setBacklashCorrection(backlash)
+		super(type(self), self).setBacklashCorrection(backlash)
 		
 	#units in meters
 	def moveRelative(self, rel_distance):
@@ -299,7 +300,7 @@ class TST101(ThorlabsAPT):
 
 class TDC001(ThorlabsAPT):
 	def __init__(self, comport=14, channel_ident=1):
-		super(TDC001, self).__init__(comport, channel_ident)
+		super(type(self), self).__init__(comport, channel_ident)
 		self.setHomeParameters()
 		self.setVelocityParameters()
 		self.setBacklashCorrection()
@@ -308,11 +309,11 @@ class TDC001(ThorlabsAPT):
 	#relates to motor PRM1/MZ8E
 	#ran thorlabs APT software then ran getXXX() methods
 	def setHomeParameters(self, velocity=42941.66,offset = 7679):
-		super(TDC001, self).setHomeParameters(velocity,offset)
+		super(type(self), self).setHomeParameters(velocity,offset)
 	def setVelocityParameters(self, maxVel=5*42941.66, acc=14.66, minVel=0):
-		super(TDC001, self).setVelocityParameters(maxVel, acc, minVel)
+		super(type(self), self).setVelocityParameters(maxVel, acc, minVel)
 	def setBacklashCorrection(self, backlash=1919.64):
-		super(TDC001, self).setBacklashCorrection(backlash)
+		super(type(self), self).setBacklashCorrection(backlash)
 	
 	#units in meters
 	def moveRelative(self, rel_distance):

@@ -22,7 +22,7 @@ class ThorlabsMDT69xA():
         self.comport = comports[chan_name]#for COM<x> set comport = <x>-1
         self.model_number = model_numbers[chan_name]
         baud_rate= baud_rates[chan_name]
-        self.ser = serial.Serial(port=self.comport-1,timeout=1,baudrate=baud_rate)
+        self.ser = serial.Serial(port=self.comport-1,timeout=5,baudrate=baud_rate)
         self.ser.close()
     def writeCommand(self,s,dont_close=False):
         if not(self.ser.isOpen()):self.ser.open()

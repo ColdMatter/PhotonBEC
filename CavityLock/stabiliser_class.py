@@ -101,8 +101,8 @@ class Stabiliser():
 		self.cam = pbec_experiment.getCameraByLabel(self.cam_label) #the camera object
 		direct_gain_factor=1 #if the gain is too high, reduce this.
 		buffer_length=10 #was 200 a while ago...now mostly irrelevant
-		default_P_gain = -2e-4#-5e-4
-		default_I_gain = -5e-4#-1e-3 #seems not very stable. Better to start low, then ramp up.
+		default_P_gain = -1.5e-3#-2e-4
+		default_I_gain = -1e-3#-5e-4
 		default_I_const = 20
 		default_II_gain = +30 #note sign is always positive: square of sign of I gain
 		default_II_const=200
