@@ -359,6 +359,7 @@ class MetaData():
 		self.comments=""
 		self.fileExtension ="_meta.json"
 		self.errors = ""
+		self.dataset={} #intended to be a dictionary: keys are data names, values are tuples (Class (as string), filename)
 	def copy(self):
 		c = MetaData(self.ts, comments = self.comments)
 		c.parameters=self.parameters.copy()
@@ -414,6 +415,7 @@ class ExperimentalDataSet():
 	def loadAllData(self):
 		#Should really try...except...finally
 		self.meta.load()
+		#This line absolutely does not work. Yet.
 		for data in self.dataset.values():
 			data.loadData()
 

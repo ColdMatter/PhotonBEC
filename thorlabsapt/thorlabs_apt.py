@@ -310,7 +310,7 @@ class TDC001(ThorlabsAPT):
 	#ran thorlabs APT software then ran getXXX() methods
 	def setHomeParameters(self, velocity=42941.66,offset = 7679):
 		super(type(self), self).setHomeParameters(velocity,offset)
-	def setVelocityParameters(self, maxVel=5*42941.66, acc=14.66, minVel=0):
+	def setVelocityParameters(self, maxVel=10*42941.66, acc=14.66, minVel=0):
 		super(type(self), self).setVelocityParameters(maxVel, acc, minVel)
 	def setBacklashCorrection(self, backlash=1919.64):
 		super(type(self), self).setBacklashCorrection(backlash)
