@@ -50,15 +50,24 @@ class EmbeddedUpdatingGraph(FigureCanvas):
 			results = res[-plot_buffer_length:]
 		else:
 			results = res
+			
+		time_numbers = [hene_utils.time_number_from_timestamp(r["ts"]) for r in results]
+		float_vouts =  [1e3*float(r["Vout"]) for r in results]
+		float_ring_rads = [float(r["ring_rad"]) for r in results]
+		
+		if not len(time_numbers) == len(float_vouts) == len(float_ring_rads):
+			#race condition with reading the data from stabiliser
+			return
+		
 		#subplot(2,1,1)
-		self.axes211.plot([hene_utils.time_number_from_timestamp(r["ts"]) for r in results],[1e3*float(r["Vout"]) for r in results],"*",markersize=3)
+		self.axes211.plot(time_numbers, float_vouts, "*", markersize=3)
 		self.axes211.set_xlabel("time (s since midnight)")
 		self.axes211.set_ylabel("Control voltage (mV)")
 		self.axes211.set_ylim(1000*array(self.stabiliser.control_range)) #should reflect the stabilister control range!!!
 		self.axes211.grid(True)
+		
 		#subplot(2,1,2)
-		####self.axes212.plot([hene_utils.time_number_from_timestamp(r["ts"]) for r in results],[int(r["ring_rad"]) for r in results],"o",markersize=3)
-		self.axes212.plot([hene_utils.time_number_from_timestamp(r["ts"]) for r in results],[float(r["ring_rad"]) for r in results],"o",markersize=3)
+		self.axes212.plot(time_numbers, float_ring_rads, "o", markersize=3)
 		self.axes212.set_xlabel("time (s since midnight)")
 		self.axes212.set_ylabel("ring radius (px)")
 		self.axes212.grid(True)
