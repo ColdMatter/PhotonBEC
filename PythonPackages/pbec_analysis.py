@@ -264,9 +264,11 @@ def load_image_set(ts, file_end=''):
 #holds a certain type of experiment data
 #this class knows how to save and load itself
 class ExperimentalData(object):
-	def __init__(self, ts, extension):
+	def __init__(self, ts, extension,data=None):
 		self.ts = ts
 		self.extension = extension
+		if data!=None:
+			self.setData(data)
 	def getFileName(self, make_folder = False):
 		return timestamp_to_filename(self.ts, file_end = self.extension,
 			make_folder = make_folder)
@@ -285,8 +287,8 @@ class ExperimentalData(object):
 		raise Exception('called an abstract method')
 
 class CameraData(ExperimentalData):
-	def __init__(self, ts, extension='_camera.png'):
-		ExperimentalData.__init__(self, ts, extension)
+	def __init__(self, ts, extension='_camera.png',data=None):
+		ExperimentalData.__init__(self, ts, extension,data=data)
 	def saveData(self):
 		filename = self.getFileName(make_folder=True)
 		imsave(filename, self.data)
@@ -299,8 +301,8 @@ class CameraData(ExperimentalData):
 		return d
 
 class SpectrometerData(ExperimentalData):
-	def __init__(self, ts):
-		ExperimentalData.__init__(self, ts, '_spectrum.json')
+	def __init__(self, ts, extension='_spectrum.json'):
+		ExperimentalData.__init__(self, ts, extension=extension)
 	def saveData(self):
 		d = {"ts": self.ts, "lamb": list(self.lamb), "spectrum": list(self.spectrum)}
 		filename = self.getFileName(make_folder=True)
@@ -343,14 +345,6 @@ class InterferometerFringeData(ExperimentalData):
 			c.data = self.data.copy()
 		return c
 
-'''
-#TODO code this when i actually come to it, so its easy to test
-# rather than coding it theoretically now with no real-world data to try it on
-#for the photodiode in the interferometer
-def InterferometerSignalData(ExperimentalData):
-	def __init__(self, parent):
-		ExperimentalData.__init__(self, parent, '_
-'''
 
 class MetaData():
 	def __init__(self, ts, parameters={}, comments=""):
@@ -370,7 +364,7 @@ class MetaData():
 		return timestamp_to_filename(\
 			self.ts, file_end=self.fileExtension, make_folder=make_folder)
 	def save(self):
-		d = {"ts":self.ts, "parameters":self.parameters, "comments":self.comments, "errors": self.errors}
+		d = {"ts":self.ts, "parameters":self.parameters, "comments":self.comments, "errors": self.errors,"dataset":self.dataset}
 		filename = self.getFileName(make_folder=True)
 		js = json.dumps(d,indent=4)
 		fil = open(filename,"w")
@@ -411,11 +405,17 @@ class ExperimentalDataSet():
 	def saveAllData(self):
 		for data in self.dataset.values():
 			data.saveData()
+		#
+		self.meta.dataset=dict([(k,(v.__class__.__name__,v.extension)) for k,v in self.dataset.iteritems()])
 		self.meta.save()
+	def constructDataSet(self):
+		#does not load actual data, only contructs ExperimentalData objects, ready for loading
+		self.meta.load()
+		for (data_name,(data_class, extension)) in self.meta.dataset.iteritems():
+			self.dataset[data_name]=eval(data_class+"('"+self.ts+"', extension ='"+extension+"')")
 	def loadAllData(self):
 		#Should really try...except...finally
-		self.meta.load()
-		#This line absolutely does not work. Yet.
+		self.constructDataSet()
 		for data in self.dataset.values():
 			data.loadData()
 

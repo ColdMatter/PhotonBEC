@@ -140,7 +140,8 @@ class Stabiliser():
 		#Hard-coded image size "because reasons" [J. Marelic, 27/10/14]
 		cam_info=self.cam.setup()
 		#Default camera properties which need overriding
-		set_dict = {"auto_exposure": 0, "shutter": 0.02, "gain": 0, "frame_rate": 150}
+		shutter_time=0.1 #was 0.02
+		set_dict = {"auto_exposure": 0, "shutter": shutter_time, "gain": 0, "frame_rate": 150}
 		#NOTE: 17/11/14: why are exposure and frame_rate not being set correctly automatically?
 		for key in set_dict:
 			self.cam.set_property(key, set_dict[key], auto=False)
