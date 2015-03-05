@@ -74,6 +74,9 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         MainWindow.setStatusBar(self.statusbar)
 		
+	screen = QtGui.QDesktopWidget().screenGeometry()
+	mysize = MainWindow.geometry()
+	MainWindow.move(screen.width() - mysize.width() - 15, 0)
 		
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
