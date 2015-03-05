@@ -79,9 +79,8 @@ class Tektronix():
 		xincr=float(self.tek.ask("WFMPRE:XINCR?"))
 		t_data = xincr*array(range(len(channel_data[chan-1])))
 		return t_data,channel_data #empty arrays for inactive channels
-	
 
-if 1:
+if 0:
 	tek = Tektronix()
 
 #EOF

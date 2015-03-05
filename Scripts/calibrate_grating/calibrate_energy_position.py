@@ -62,7 +62,7 @@ def find_max_pixel(im):
 	maxRow = 0
 	maxCol = 0
 	for r in range(len(im)):
-		col = argmax(im[r])
+		col = np.argmax(im[r])
 		if im[r, col] > im[maxRow, maxCol]:
 			maxCol = col
 			maxRow = r
