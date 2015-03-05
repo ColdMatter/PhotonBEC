@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(240, 320)
+        MainWindow.resize(240, 200)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.groupBox = QtGui.QGroupBox(self.centralwidget)
@@ -29,11 +29,11 @@ class Ui_MainWindow(object):
         self.powerSlider.setOrientation(QtCore.Qt.Horizontal)
         self.powerSlider.setObjectName(_fromUtf8("powerSlider"))
         self.enable_checkBox = QtGui.QCheckBox(self.groupBox)
-        self.enable_checkBox.setGeometry(QtCore.QRect(80, 0, 101, 22))
+        self.enable_checkBox.setGeometry(QtCore.QRect(50, 0, 101, 22))
         self.enable_checkBox.setObjectName(_fromUtf8("enable_checkBox"))
 		
         self.power_timer_checkBox = QtGui.QCheckBox(self.groupBox)
-        self.power_timer_checkBox.setGeometry(QtCore.QRect(80, 190, 101, 22))
+        self.power_timer_checkBox.setGeometry(QtCore.QRect(155, 0, 101, 22))
         self.power_timer_checkBox.setObjectName(_fromUtf8("timer_checkBox"))
 		
         self.label_2 = QtGui.QLabel(self.groupBox)
