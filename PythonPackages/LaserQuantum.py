@@ -2,6 +2,8 @@
 #Created earlier than 20/09/2013 by Rob Nyman
 from serial import *
 
+from time import sleep
+
 class LaserQuantum():
 	def __init__(self,port=4,timeout=1):
 		self.ser = Serial(port=port,timeout=timeout) #port=0 means COM1, I think
@@ -50,3 +52,20 @@ class LaserQuantum():
 	def LaserOff(self):
 		self.writeCommand("OFF")
 		
+	def setPowerAndWait(self, pmw, tolerance=0.005):
+		pl = [] 
+		self.setPower(pmw)
+		window_len = 3
+		#tolerance = 0.5%
+		p_tol = pmw * tolerance
+
+		while True:
+			sleep(0.5)
+			po = self.getPower()
+			pl.append(po)
+			if len(pl) >= window_len:
+				mae = 1.0 * sum([abs(pmw - p) for p in pl]) / window_len
+				if mae <= p_tol:
+					break
+				del pl[0]
+				

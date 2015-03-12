@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 #exit()
 
+import sys
+sys.path.append("D:\\Control\\PythonPackages\\")
+
 #ipython --gui=qt
 #exec(open("main.py").read())
-import sys,__main__
+import __main__
 from serial import *
 import time
 from InterfaceGUI import *

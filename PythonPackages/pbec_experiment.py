@@ -3,7 +3,7 @@
 from pylab import *
 import pbec_analysis
 #import pbec_data_format
-import sys
+import sys, time
 import numpy
 from scipy.misc import imsave
 
@@ -159,7 +159,8 @@ class __Camera(object):
 			prop[8] = value #index for absValue
 			if auto!=None:
 				prop[5]=int(auto)
-			pyflycap.setproperty(prop)				
+			pyflycap.setproperty(prop)
+			time.sleep(0.5)
 		except Exception as exc:
 			self.close()
 			print exc

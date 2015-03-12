@@ -1,4 +1,4 @@
-
+from __future__ import division
 import numpy as np
 import pbec_analysis as pbeca
 from scipy.signal import argrelmax, argrelmin
@@ -13,12 +13,9 @@ def find_freq_from_autocorrelation(t_axis, data):
 	ac = np.correlate(data, data, 'same')
 	maxima = argrelmax(ac)[0]
 	maxima_midplus = [m for m in maxima if m>len(data)/2 - 1]
-	if len(maxima_midplus) < 2:
-		#figure('autocor'), clf()
-		#plot(t_axis, ac, 'x-')
-		#ylabel("autocorrelation")
-		print 'failed finding freq'
-		
+	print maxima_midplus
+	if len(maxima_midplus) < 2: print 'failed finding freq'
+	#
 	if plot_graphs:
 		plt.figure('autocorrelation'), plt.clf()
 		plt.plot(t_axis - t_axis[0], ac, 'x-')
@@ -26,8 +23,9 @@ def find_freq_from_autocorrelation(t_axis, data):
 		plt.legend()
 		plt.ylabel("autocorrelation")
 		plt.xlabel('piezo volts difference')
-		
-	ratio_freq = 1/(t_axis[maxima_midplus[1]] - t_axis[maxima_midplus[0]])
+	#
+	ratio_freq = 1./(t_axis[maxima_midplus[1]] - t_axis[maxima_midplus[0]])
+	print ratio_freq
 	#print 'freq from autocorrelation = ' + str(ratio_freq)
 	return ratio_freq, ac
 
