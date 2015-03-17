@@ -56,7 +56,7 @@ try:
 	# nAverages - number of averages
 	# nMeasure - number of measurements after which no more data will be taken and
 	#          readavsspectrum() will block if called, use -1 for infinite data taking
-	pyspectro.setupavs2((0, pixelNum - 1), 200.0, 1, -1)
+	pyspectro.setupavs2((0, pixelNum - 1), 30.0, 1, -1)
 	spectrum = numpy.array([0.1] * pixelNum)
 	for j in range(10):
 		#readavsspectrum(spectrumArray, timeout)

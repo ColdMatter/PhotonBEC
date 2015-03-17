@@ -15,14 +15,15 @@ import matplotlib.pyplot as plt
 colour_weights = (1, 1, 0, 0)
 plot_graphs = False
 
-def find_freq_from_autocorrelation(t_axis, data):
+def find_freq_from_autocorrelation(t_axis, data,verbose=False):
 	#s: signal to be processed; t_axis: times for each data point; assumed ordered
 	data = data - np.mean(data)
 	data = pbeca.smooth(data, window_len=4)
 	ac = np.correlate(data, data, 'same')
 	maxima = argrelmax(ac)[0]
 	maxima_midplus = [m for m in maxima if m>len(data)/2 - 1]
-	if len(maxima_midplus) < 2: print 'failed finding freq'
+	if verbose:
+		if len(maxima_midplus) < 2: print 'failed finding freq'
 	#
 	if plot_graphs:
 		plt.figure('autocorrelation'), plt.clf()
@@ -232,6 +233,11 @@ def lorentzian(x, amp, x0, gam, off):
 def lorentzian_residuals(pars, xdata, ydata):
 	return ( lorentzian(xdata, *pars) - ydata )**2
 
+def coherence_length_func(xaxis, visibilities, residuals_func = lorentzian_residuals):
+	guess = (1, -50, 50, 0) #amp, mu, sigma, off. sigma is width parameter, either for gaussian or lorentzian
+	((amp, mu, sigma, off),dump) = leastsq(residuals_func, guess, (xaxis, visibilities))
+	return abs(sigma)
+
 def load_data_func(origin_ts, ts_list, binning):
 	print 'finding origin'
 	shiftx, shifty, ampshift = find_image_shift(origin_ts)
@@ -274,5 +280,7 @@ def load_data_func(origin_ts, ts_list, binning):
 	arctan_data = arctan2(q_image_data[:,:,:,:], p_image_data[:,:,:,:])
 
 	return p_image_data, q_image_data, coarse_positions, fine_positions, arctan_data
+
+	
 
 #EoF

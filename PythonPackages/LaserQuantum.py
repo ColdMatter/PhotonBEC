@@ -3,6 +3,7 @@
 from serial import *
 
 from time import sleep
+import sys
 
 class LaserQuantum():
 	def __init__(self,port=4,timeout=1):
@@ -67,5 +68,7 @@ class LaserQuantum():
 				mae = 1.0 * sum([abs(pmw - p) for p in pl]) / window_len
 				if mae <= p_tol:
 					break
+				sys.stdout.write('\rcurrent power = ' + str(po) + 'mW')
 				del pl[0]
+		sys.stdout.write('\n')
 				

@@ -3,7 +3,7 @@ import sys
 sys.path.append("D:\\Control\\PythonPackages\\")
 from pbec_analysis import *
 import pbec_analysis
-import pbec_experiment 
+#import pbec_experiment 
 from scipy import optimize
 import operator
 
