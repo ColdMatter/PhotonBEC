@@ -105,6 +105,7 @@ CAMERA_PROPERTY_TYPE_MAPPING = {"brightness": 0, "auto_exposure": 1, "sharpness"
 class __Camera(object):
 
 	open = False
+	handle = -1
 	imageData = None
 	serialNumber = 0
 	properties = None
@@ -121,10 +122,11 @@ class __Camera(object):
 			#raise IOError("camera is already setup")
 			return self.cam_info
 		try:
-			cam_info = pyflycap.setupflycap(self.serialNumber,dllDirectory)
+			cam_info = pyflycap.setupflycap(self.serialNumber, dllDirectory)
 			self.open = True
-			keys = ("modelName", "vendorName", "sensorInfo",
+			keys = ("handle", "modelName", "vendorName", "sensorInfo",
 				"sensorResolution", "firmwareVersion", "firmwareBuildTime")
+			self.handle = cam_info[0]
 			self.cam_info = dict(zip(keys, cam_info))
 			return self.cam_info
 		except Exception as exc:
@@ -135,12 +137,13 @@ class __Camera(object):
 	def get_image(self):
 		self.__check_is_open()
 		try:
-			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage()
+			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage(self.handle)
 			print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
 			if (self.imageData == None) or len(self.imageData) != dataLen:
 				self.imageData = numpy.arange(dataLen, dtype=numpy.uint8)
-				#print("dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
-			pyflycap.getflycapdata(self.imageData)
+				print("rebuilding imageData handle=" + str(self.handle) +
+					", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
+			pyflycap.getflycapdata(self.handle, self.imageData)
 			return numpy.reshape(self.imageData, (row, col, 3))
 			#from scipy.misc import imsave
 			#imsave("image.png", im)
@@ -156,11 +159,11 @@ class __Camera(object):
 		# set the appropriate index of prop
 		self.__check_is_open()
 		try:
-			prop = pyflycap.getproperty(CAMERA_PROPERTY_TYPE_MAPPING[property_name])
+			prop = pyflycap.getproperty(self.handle, CAMERA_PROPERTY_TYPE_MAPPING[property_name])
 			prop[8] = value #index for absValue
 			if auto!=None:
 				prop[5]=int(auto)
-			pyflycap.setproperty(prop)
+			pyflycap.setproperty(self.handle, prop)
 			time.sleep(0.5)
 		except Exception as exc:
 			self.close()
@@ -170,16 +173,16 @@ class __Camera(object):
 	def extended_shutter_mode(self,shutter=10):
 		self.__check_is_open()
 		try:
-			prop = pyflycap.getproperty(CAMERA_PROPERTY_TYPE_MAPPING["frame_rate"])
+			prop = pyflycap.getproperty(self.handle, CAMERA_PROPERTY_TYPE_MAPPING["frame_rate"])
 			prop[5]=int(False) #autoManualMode -> False
 			prop[4]=int(False) #onOff -> False
-			pyflycap.setproperty(prop)
+			pyflycap.setproperty(self.handle, prop)
 			#
-			prop = pyflycap.getproperty(CAMERA_PROPERTY_TYPE_MAPPING["shutter"])
+			prop = pyflycap.getproperty(self.handle, CAMERA_PROPERTY_TYPE_MAPPING["shutter"])
 			prop[5]=int(False) #autoManualMode -> False
 			prop[2]=int(True) #absControl -> True
 			prop[8] = shutter #index for absValue
-			pyflycap.setproperty(prop)				
+			pyflycap.setproperty(self.handle, prop)				
 		except Exception as exc:
 			self.close()
 			print exc
@@ -193,65 +196,66 @@ class __Camera(object):
 		self.properties = {}
 		#fill up self.properties as a dict with everything named
 		for name, index in CAMERA_PROPERTY_TYPE_MAPPING.iteritems():
-			prop = pyflycap.getproperty(index)
+			prop = pyflycap.getproperty(self.handle, index)
 			self.properties[name] = dict(zip(property_struct_names, prop[1:]))
 		return self.properties
 	
 	def get_region_of_interest(self):
 		"""Returns a list with 4 elements describing a rectangle of ROI"""
 		#format7_conf_struct_names = ("offsetX", "offsetY", "width", "height", "pixelFormat")
-		return pyflycap.getformat7config()[:4]
+		return pyflycap.getformat7config(self.handle)[:4]
 		
 	def set_region_of_interest(self, x, y, width, height):
 		self.__check_is_open()
 		#format7_info_struct_names = ("maxWidth", "maxHeight", "offsetHStepSize", "offsetVStepSize",
 		#	"imageHStepSize", "imageVStepSize", "packetSize", "minPacketSize", "maxPacketSize")
-		format7info = pyflycap.getformat7info()
+		format7info = pyflycap.getformat7info(self.handle)
 		x -= x % format7info[2]
 		y -= y % format7info[3]
 		width -= width % format7info[4]
 		height -= height % format7info[5]
 		if width > format7info[0] or height > format7info[1]:
 			raise ValueError("width or height too large for the camera: " + str((width, height)))
-		format7config = pyflycap.getformat7config()
+		format7config = pyflycap.getformat7config(self.handle)
 		#format7_conf_struct_names = ("offsetX", "offsetY", "width", "height", "pixelFormat")
 		format7config[0:4] = [x, y, width, height]
-		pyflycap.setformat7config(format7config)
+		pyflycap.setformat7config(self.handle, format7config)
 		self.imageData = None #force get_image() to make a new one of the right length
 		
 	def set_max_region_of_interest(self):
 		self.__check_is_open()
 		#format7_info_struct_names = ("maxWidth", "maxHeight", "offsetHStepSize", "offsetVStepSize",
 		#	"imageHStepSize", "imageVStepSize", "packetSize", "minPacketSize", "maxPacketSize")
-		format7info = pyflycap.getformat7info()
-		format7config = pyflycap.getformat7config()
+		format7info = pyflycap.getformat7info(self.handle)
+		format7config = pyflycap.getformat7config(self.handle)
 		#format7_conf_struct_names = ("offsetX", "offsetY", "width", "height", "pixelFormat")
 		format7config[0] = 0
 		format7config[1] = 0
 		format7config[2] = format7info[0]
 		format7config[3] = format7info[1]
-		pyflycap.setformat7config(format7config)
+		pyflycap.setformat7config(self.handle, format7config)
 		self.imageData = None #force get_image() to make a new one of the right length
 	
 	def set_centered_region_of_interest(self, width, height):
 		self.__check_is_open()
 		#format7_info_struct_names = ("maxWidth", "maxHeight", "offsetHStepSize", "offsetVStepSize",
 		#	"imageHStepSize", "imageVStepSize", "packetSize", "minPacketSize", "maxPacketSize")
-		format7info = pyflycap.getformat7info()
-		format7config = pyflycap.getformat7config()
+		format7info = pyflycap.getformat7info(self.handle)
+		format7config = pyflycap.getformat7config(self.handle)
 		#format7_conf_struct_names = ("offsetX", "offsetY", "width", "height", "pixelFormat")
 		format7config[0] = format7info[0]/2 - width/2
 		format7config[1] = format7info[1]/2 - height/2
 		format7config[2] = width
 		format7config[3] = height
-		pyflycap.setformat7config(format7config)
+		pyflycap.setformat7config(self.handle, format7config)
 		self.imageData = None #force get_image() to make a new one of the right length
 		#self.set_region_of_interest(format7info[0]/2 - width/2, format7info[1]/2 - height/2, width, height)
 			
 	def close(self):
 		self.open = False
 		#print("freeing avs spectro, hopefully this is always called")
-		pyflycap.closeflycap()
+		pyflycap.closeflycap(self.handle)
+		self.handle = -1
 		#pyflycap.freelibrary()
 		
 	def __check_is_open(self):

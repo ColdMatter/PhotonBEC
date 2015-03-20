@@ -101,15 +101,20 @@ void PrintError( Error error )
 	return (unsigned char*)h;
 	*/
 	
-static Camera cam;
-static Image convertedImage;
+#define MAX_CAM_COUNT 256
+static Camera cams[MAX_CAM_COUNT];
+static Image convertedImages[MAX_CAM_COUNT];
+static int nextHandle = 0;
+
+bool check_cam_handle(unsigned int handle) {
+	return handle >= 0 && handle < MAX_CAM_COUNT;
+}
 
 //serialNumber = 0 if you just want the first/any one
 //all strings you pass to must have length sk_maxStringLength = 512
 DLLFUN int SetupFlyCap(unsigned int serialNumber, char* modelName, char* vendorName, char* sensorInfo,
 						char* sensorResolution, char* firmwareVersion, char* firmwareBuildTime) {
 
-	
     Error error;
 
     BusManager busMgr;
@@ -118,12 +123,12 @@ DLLFUN int SetupFlyCap(unsigned int serialNumber, char* modelName, char* vendorN
     if (error != PGRERROR_OK)
     {
         PrintError( error );
-        return 1;
+        return -1;
     }
 
     if(numCameras == 0) {
 		printf("No cameras detected\n");
-		return 2;
+		return -2;
 	}
 
 	bool connected = false;
@@ -133,25 +138,25 @@ DLLFUN int SetupFlyCap(unsigned int serialNumber, char* modelName, char* vendorN
 		if (error != PGRERROR_OK)
 		{
 			PrintError( error );
-			return 3;
+			return -3;
 		}
 
 		// Connect to a camera
-		error = cam.Connect(&guid);
+		error = cams[nextHandle].Connect(&guid);
 		if (error != PGRERROR_OK)
 		{
 			PrintError( error );
-			return 4;
+			return -4;
 		}
 		connected = true;
 
 		// Get the camera information
 		CameraInfo camInfo;
-		error = cam.GetCameraInfo(&camInfo);
+		error = cams[nextHandle].GetCameraInfo(&camInfo);
 		if (error != PGRERROR_OK)
 		{
 			PrintError( error );
-			return 5;
+			return -5;
 		}
 
 		if(serialNumber == 0 || serialNumber == camInfo.serialNumber) {
@@ -164,45 +169,54 @@ DLLFUN int SetupFlyCap(unsigned int serialNumber, char* modelName, char* vendorN
 			strncpy(firmwareBuildTime, camInfo.firmwareBuildTime, sk_maxStringLength);
 			break;
 		} else {
-			error = cam.Disconnect();
+			error = cams[nextHandle].Disconnect();
 			if (error != PGRERROR_OK)
 			{
 				PrintError( error );
-				return 6;
+				return -6;
 			}
 			connected = false;
 		}
 	}
 	if(!connected) {
 		printf("serial number not found\n");
-		return 7;
+		return -7;
 	}
 
 	// Start capturing images
-    error = cam.StartCapture();
+    error = cams[nextHandle].StartCapture();
     if (error != PGRERROR_OK)
     {
         PrintError( error );
-        return 8;
+        return -8;
     }
 
-	return 0;
+	int ret = nextHandle;
+	nextHandle++;
+	if(nextHandle == MAX_CAM_COUNT) {
+		printf("REACHED THE LIMIT OF CAMERA ALLOCATION\n");
+	}
+	return ret;
 }
 
 static PropertyType PROPERTY_TYPE_INTEGER_MAPPING[] = {BRIGHTNESS, AUTO_EXPOSURE, SHARPNESS, WHITE_BALANCE, HUE,
 	SATURATION, GAMMA, IRIS, FOCUS, ZOOM, PAN, TILT, SHUTTER, GAIN, TRIGGER_MODE, TRIGGER_DELAY, FRAME_RATE, TEMPERATURE};
 
-DLLFUN int GetFlyCapProperty(int type, bool* present, bool* absControl, bool* onePush, bool* onOff,
+DLLFUN int GetFlyCapProperty(unsigned int handle, int type, bool* present, bool* absControl, bool* onePush, bool* onOff,
 							 bool* autoManualMode, int* valueA, int* valueB, float* absValue) {
+
+	if(!check_cam_handle(handle)) {
+		return -1; //bad handle
+	}
 
 	Property prop;
 	memset(&prop, 0, sizeof(prop));
 	prop.type = PROPERTY_TYPE_INTEGER_MAPPING[type];
-	Error error = cam.GetProperty(&prop);
+	Error error = cams[handle].GetProperty(&prop);
 	if (error != PGRERROR_OK)
 	{
 		PrintError( error );
-		return 1;
+		return -2;
 	}
 	*present = prop.present;
 	*absControl = prop.absControl;
@@ -216,9 +230,11 @@ DLLFUN int GetFlyCapProperty(int type, bool* present, bool* absControl, bool* on
 	return 0;
 }
 
-DLLFUN int SetFlyCapProperty(int type, bool present, bool absControl, bool onePush, bool onOff,
+DLLFUN int SetFlyCapProperty(unsigned int handle, int type, bool present, bool absControl, bool onePush, bool onOff,
 							 bool autoManualMode, int valueA, int valueB, float absValue) {
-
+	if(!check_cam_handle(handle)) {
+		return -1; //bad handle
+	}
 	Property prop;
 	memset(&prop, 0, sizeof(prop));
 	prop.type = PROPERTY_TYPE_INTEGER_MAPPING[type];
@@ -231,28 +247,30 @@ DLLFUN int SetFlyCapProperty(int type, bool present, bool absControl, bool onePu
 	prop.valueB = valueB;
 	prop.absValue = absValue;
 
-	Error error = cam.SetProperty(&prop);
+	Error error = cams[handle].SetProperty(&prop);
 	if (error != PGRERROR_OK)
 	{
 		PrintError( error );
-		return 1;
+		return -2;
 	}
 	return 0;
 }
 
 //the char arrays should have length sk_maxStringLength = 512
-DLLFUN int GetFlyCapPropertyInfo(int type, bool* present, bool* autoSupported, bool* manualSupported,
+DLLFUN int GetFlyCapPropertyInfo(unsigned int handle, int type, bool* present, bool* autoSupported, bool* manualSupported,
 							bool* onOffSupported, bool* onePushSupported, bool* absValSupported,
 							bool* readOutSupported, unsigned int* min, unsigned int* max, float* absMin,
 							float* absMax, char* pUnits, char* pUnitAbbr) {
-
+	if(!check_cam_handle(handle)) {
+		return -1; //bad handle
+	}
 	PropertyInfo info;
 	info.type = PROPERTY_TYPE_INTEGER_MAPPING[type];
-	Error error = cam.GetPropertyInfo(&info);
+	Error error = cams[handle].GetPropertyInfo(&info);
 	if (error != PGRERROR_OK)
 	{
 		PrintError( error );
-		return 1;
+		return -1;
 	}
 	*present = info.present;
 	*autoSupported = info.autoSupported;
@@ -270,15 +288,18 @@ DLLFUN int GetFlyCapPropertyInfo(int type, bool* present, bool* autoSupported, b
 	return 0;
 }
 
-DLLFUN int GetFlyCapImage(unsigned int* dataLen, int* row, int* col, int* bitsPerPixel) {
+DLLFUN int GetFlyCapImage(unsigned int handle, unsigned int* dataLen, int* row, int* col, int* bitsPerPixel) {
 
+	if(!check_cam_handle(handle)) {
+		return -1; //bad handle
+	}
     Image rawImage; 
     // Retrieve an image
-    Error error = cam.RetrieveBuffer( &rawImage );
+    Error error = cams[handle].RetrieveBuffer( &rawImage );
     if (error != PGRERROR_OK)
     {
         PrintError( error );
-        return 1;
+        return -2;
     }
 
 	// Create a converted image
@@ -286,24 +307,24 @@ DLLFUN int GetFlyCapImage(unsigned int* dataLen, int* row, int* col, int* bitsPe
 
     // Convert the raw image
     //put another pixel format here to probably get 16bit images
-    error = rawImage.Convert( PIXEL_FORMAT_RGB8, &convertedImage );
+    error = rawImage.Convert( PIXEL_FORMAT_RGB8, &convertedImages[handle] );
     if (error != PGRERROR_OK) //PIXEL_FORMAT_MONO8
     {
         PrintError( error );
-        return 2;
+        return -3;
     }
 
-	*row = convertedImage.GetRows();
-	*col = convertedImage.GetCols();
+	*row = convertedImages[handle].GetRows();
+	*col = convertedImages[handle].GetCols();
 	//printf("row, col = %d, %d\n", row, col);
-	*dataLen = convertedImage.GetDataSize();
-	*bitsPerPixel = convertedImage.GetBitsPerPixel();
+	*dataLen = convertedImages[handle].GetDataSize();
+	*bitsPerPixel = convertedImages[handle].GetBitsPerPixel();
 	return 0;
 }
 
-DLLFUN int GetFlyCapData(unsigned char* data, unsigned int dataLen) {
+DLLFUN int GetFlyCapData(unsigned int handle, unsigned char* data, unsigned int dataLen) {
 	
-	unsigned char* imageData = convertedImage.GetData();
+	unsigned char* imageData = convertedImages[handle].GetData();
 	memcpy(data, imageData, dataLen);
 	
 	return 0;
@@ -323,18 +344,20 @@ DLLFUN int GetFlyCapData(unsigned char* data, unsigned int dataLen) {
 	*/
 }
 
-DLLFUN int GetFlyCapFormat7Info(int* maxWidth, int* maxHeight, int* offsetHStepSize, int* offsetVStepSize,
+DLLFUN int GetFlyCapFormat7Info(unsigned int handle, int* maxWidth, int* maxHeight, int* offsetHStepSize, int* offsetVStepSize,
 								int* imageHStepSize, int* imageVStepSize, int* packetSize, int* minPacketSize,
 								int* maxPacketSize) {
-
+	if(!check_cam_handle(handle)) {
+		return -1; //bad handle
+	}
 	Format7Info f7info;
 	bool sup;
 	f7info.mode = MODE_0; //temporary guess! if this function doesnt work this might be why
-	Error error = cam.GetFormat7Info(&f7info, &sup);
+	Error error = cams[handle].GetFormat7Info(&f7info, &sup);
     if (error != PGRERROR_OK || !sup)
     {
         PrintError( error );
-        return 1;
+        return -2;
     }
 	*maxWidth = f7info.maxWidth;
 	*maxHeight = f7info.maxHeight;
@@ -356,15 +379,19 @@ DLLFUN int GetFlyCapFormat7Info(int* maxWidth, int* maxHeight, int* offsetHStepS
 	return 0;
 }
 
-DLLFUN int GetFlyCapFormat7Configuration(int* offsetX, int* offsetY, int* width, int* height, int* pixelFormat, int* packetSize) {
+DLLFUN int GetFlyCapFormat7Configuration(unsigned int handle, int* offsetX, int* offsetY,
+										int* width, int* height, int* pixelFormat, int* packetSize) {
 
+	if(!check_cam_handle(handle)) {
+		return -1; //bad handle
+	}
 	Format7ImageSettings f7imageSettings; 
 	float pSizePercent;
-	Error error = cam.GetFormat7Configuration(&f7imageSettings, (unsigned int*)packetSize, &pSizePercent);
+	Error error = cams[handle].GetFormat7Configuration(&f7imageSettings, (unsigned int*)packetSize, &pSizePercent);
 	if (error != PGRERROR_OK)
     {
         PrintError( error );
-        return 1;
+        return -2;
     }
 	//printf("offsetX=%d offsetY=%d width=%d height=%d\n", f7imageSettings.offsetX,
 	//	f7imageSettings.offsetY, f7imageSettings.width, f7imageSettings.height);
@@ -378,8 +405,11 @@ DLLFUN int GetFlyCapFormat7Configuration(int* offsetX, int* offsetY, int* width,
 }
 
 	
-DLLFUN int SetFlyCapFormat7Configuration(int offsetX, int offsetY, int width, int height, int pixelFormat) {
+DLLFUN int SetFlyCapFormat7Configuration(unsigned int handle, int offsetX, int offsetY, int width, int height, int pixelFormat) {
 
+	if(!check_cam_handle(handle)) {
+		return -1; //bad handle
+	}
 	Format7ImageSettings f7imageSettings;
 	f7imageSettings.offsetX = offsetX;
 	f7imageSettings.offsetY = offsetY;
@@ -389,51 +419,54 @@ DLLFUN int SetFlyCapFormat7Configuration(int offsetX, int offsetY, int width, in
 
 	bool settingsValid;
 	Format7PacketInfo f7packetInfo;
-	Error error = cam.ValidateFormat7Settings(&f7imageSettings, &settingsValid, &f7packetInfo);
+	Error error = cams[handle].ValidateFormat7Settings(&f7imageSettings, &settingsValid, &f7packetInfo);
     if (error != PGRERROR_OK || !settingsValid)
     {
         PrintError( error );
-        return 1;
+        return -2;
     }
 	//printf("validated=%d recommendedBytesPerPacket=%u maxBytesPerPacket=%u unitBytesPerPacket=%u\n",
 	//	settingsValid, f7packetInfo.recommendedBytesPerPacket, f7packetInfo.maxBytesPerPacket,
 	//	f7packetInfo.unitBytesPerPacket);
 
 
-	error = cam.StopCapture();
+	error = cams[handle].StopCapture();
     if (error != PGRERROR_OK)
     {
         PrintError( error );
-        return 2;
+        return -3;
     }
 
-	cam.SetFormat7Configuration(&f7imageSettings, f7packetInfo.recommendedBytesPerPacket);
+	cams[handle].SetFormat7Configuration(&f7imageSettings, f7packetInfo.recommendedBytesPerPacket);
 
-	error = cam.StartCapture();
+	error = cams[handle].StartCapture();
     if (error != PGRERROR_OK)
     {
         PrintError( error );
-        return 3;
+        return -4;
     }
 	return 0;
 }
 
 
-DLLFUN int CloseFlyCap() {
+DLLFUN int CloseFlyCap(unsigned int handle) {
+	if(!check_cam_handle(handle)) {
+		return -1; //bad handle
+	}
     // Stop capturing images
-    Error error = cam.StopCapture();
+    Error error = cams[handle].StopCapture();
     if (error != PGRERROR_OK)
     {
         PrintError( error );
-        return 1;
+        return -2;
     }      
 	
     // Disconnect the camera
-    error = cam.Disconnect();
+    error = cams[handle].Disconnect();
     if (error != PGRERROR_OK)
     {
         PrintError( error );
-        return 2;
+        return -3;
     }
     return 0;
 }

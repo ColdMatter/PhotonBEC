@@ -26,37 +26,39 @@ format7_conf_struct_names = ("offsetX", "offsetY", "width", "height", "pixelForm
 
 #always use these in try: finally: because the python extention function
 # check for errors and raise exceptions, and its good to close stuff still
+handle = -1
 try:
 	meta = pyflycap.setupflycap(serialNumber, dllLocation)
 	print("setup flycap\nmeta=" + str(meta))
+	handle = meta[0]
 	data = None
 	
-	prop = pyflycap.getproperty(PROPERTY_TYPE_MAPPING["shutter"])
+	prop = pyflycap.getproperty(handle, PROPERTY_TYPE_MAPPING["shutter"])
 	print("shutter property = " + str(prop))
 	for name, type in PROPERTY_TYPE_MAPPING.iteritems():
-		info = pyflycap.getpropertyinfo(type)
+		info = pyflycap.getpropertyinfo(handle, type)
 		print("\t" + name + " " + str(info))
 	
-	print("format7 info = " + str(zip(format7_info_struct_names, pyflycap.getformat7info())))
-	format7config = pyflycap.getformat7config()
+	print("format7 info = " + str(zip(format7_info_struct_names, pyflycap.getformat7info(handle))))
+	format7config = pyflycap.getformat7config(handle)
 	print("format7 conf = " + str(zip(format7_conf_struct_names, format7config)))
 	format7config[2] = 320
 	format7config[3] = 400
 
 	for i in range(3):
-		pyflycap.setproperty(prop)
+		pyflycap.setproperty(handle, prop)
 		
 		format7config[0] = (i + 1)*50
 		format7config[1] = (i + 1)*80
-		pyflycap.setformat7config(format7config)
+		pyflycap.setformat7config(handle, format7config)
 	
-		dataTuple = pyflycap.getflycapimage()
+		dataTuple = pyflycap.getflycapimage(handle)
 		(dataLen, row, col, bitsPerPixel) = dataTuple
 		
 		if data == None:
 			data = numpy.arange(dataLen, dtype=numpy.uint8)
 			print("dataLen, row, col, BPP = " + str(dataTuple))
-		pyflycap.getflycapdata(data)
+		pyflycap.getflycapdata(handle, data)
 		'''
 		print("printing out the first 10 pixels i=" + str(i))
 		bytesPerPixel = bitsPerPixel / 8
@@ -72,5 +74,6 @@ try:
 
 finally:
 	print("closing everything")
-	pyflycap.closeflycap()
+	if handle != -1:
+		pyflycap.closeflycap(handle)
 	pyflycap.freelibrary()

@@ -9,18 +9,18 @@ static HMODULE flycap = NULL;
 typedef unsigned char* (*GCI)(unsigned int*, int*, int*, int*);
 
 typedef int (*SFC)(unsigned int, char*, char*, char*, char*, char*, char*);
-typedef int (*GFCI)(unsigned int*, int*, int*, int*);
-typedef int (*GFCD)(unsigned char*, unsigned int);
-typedef int (*CFC)();
+typedef int (*GFCI)(unsigned int, unsigned int*, int*, int*, int*);
+typedef int (*GFCD)(unsigned int, unsigned char*, unsigned int);
+typedef int (*CFC)(unsigned int);
 
-typedef int (*GFCP)(int, bool*, bool*, bool*, bool*, bool*, int*, int*, float*);
-typedef int (*SFCP)(int, bool, bool, bool, bool, bool, int, int, float);
-typedef int (*GFCPI)(int, bool*, bool*, bool*, bool*, bool*, bool*, bool*,
+typedef int (*GFCP)(unsigned int, int, bool*, bool*, bool*, bool*, bool*, int*, int*, float*);
+typedef int (*SFCP)(unsigned int, int, bool, bool, bool, bool, bool, int, int, float);
+typedef int (*GFCPI)(unsigned int, int, bool*, bool*, bool*, bool*, bool*, bool*, bool*,
 	unsigned int*, unsigned int*, float*, float*, char*, char*);
 
-typedef int (*GFCF7I)(int*, int*, int*, int*, int*, int*, int*, int*, int*);
-typedef int (*GFCF7C)(int*, int*, int*, int*, int*, int*);
-typedef int (*SFCF7C)(int, int, int, int, int);
+typedef int (*GFCF7I)(unsigned int, int*, int*, int*, int*, int*, int*, int*, int*, int*);
+typedef int (*GFCF7C)(unsigned int, int*, int*, int*, int*, int*, int*);
+typedef int (*SFCF7C)(unsigned int, int, int, int, int, int);
 	
 static SFC fSetupFlyCap = NULL;
 static GFCI fGetFlyCapImage = NULL;
@@ -45,11 +45,11 @@ static PyObject* pyflycap_helloworld(PyObject* self, PyObject* args) {
 
 //if you change the error codes in FlyCapture2Test.cpp you'll have to change stuff here too
 //array which maps from error code to string explaination
-const char* ERRORS_SETUPFLYCAP[] = {"Success", "GetNumOfCameras() failed",
+const char* ERRORS_SETUPFLYCAP[] = {"Success", "bad handle", "GetNumOfCameras() failed",
 	"No cameras detected", "GetCameraFromIndex() failed", "cam.Connect() failed",
 	"cam.GetCameraInfo() failed", "cam.Disconnect() failed", "Serial number not found",
 	"cam.StartCapture() failed"};
-const char* ERRORS_GETFLYCAPIMAGE[] = {"Success", "cam.RetrieveBuffer() failed",
+const char* ERRORS_GETFLYCAPIMAGE[] = {"Success", "bad handle", "cam.RetrieveBuffer() failed",
 	"image.Convert() failed"};
 
 static PyObject* pyflycap_setupflycap(PyObject* self, PyObject* args) {
@@ -92,15 +92,15 @@ static PyObject* pyflycap_setupflycap(PyObject* self, PyObject* args) {
 	char sensorResolution[512];
 	char firmwareVersion[512];
 	char firmwareBuildTime[512];
-	int err;
-	if((err = fSetupFlyCap(serialNumber, modelName, vendorName, sensorInfo,
-			sensorResolution, firmwareVersion, firmwareBuildTime)) != 0) {
+	int handleErr;
+	if((handleErr = fSetupFlyCap(serialNumber, modelName, vendorName, sensorInfo,
+			sensorResolution, firmwareVersion, firmwareBuildTime)) < 0) {
 		char line[512];
-		snprintf(line, sizeof(line), "SetupFlyCap(): %s\n", ERRORS_SETUPFLYCAP[err]);
+		snprintf(line, sizeof(line), "SetupFlyCap(): %s\n", ERRORS_SETUPFLYCAP[-handleErr]);
 		PyErr_SetString(PyExc_IOError, line);
 		return NULL;
 	}
-	return Py_BuildValue("(ssssss)", modelName, vendorName, sensorInfo,
+	return Py_BuildValue("(issssss)", handleErr, modelName, vendorName, sensorInfo,
 			sensorResolution, firmwareVersion, firmwareBuildTime);
 }
 
@@ -114,14 +114,19 @@ static PyObject* pyflycap_freelibrary(PyObject* self) {
 
 //returns tuple with lots of information
 //(datalength, row, col, bitsPerPixel)
-static PyObject* pyflycap_getflycapimage(PyObject* self) {
+static PyObject* pyflycap_getflycapimage(PyObject* self, PyObject* args) {
+
+	int handle;
+	if(PyArg_ParseTuple(args, "i", &handle) == 0) {
+		return NULL;
+	}
 
 	unsigned int dataLen=0;
 	int row=0, col=0, bitsPerPixel=0;
 	int err;
-	if((err = fGetFlyCapImage(&dataLen, &row, &col, &bitsPerPixel)) != 0) {
+	if((err = fGetFlyCapImage(handle, &dataLen, &row, &col, &bitsPerPixel)) != 0) {
 		char line[512];
-		snprintf(line, sizeof(line), "GetFlyCapImage(): %s\n", ERRORS_GETFLYCAPIMAGE[err]);
+		snprintf(line, sizeof(line), "GetFlyCapImage(): %s\n", ERRORS_GETFLYCAPIMAGE[-err]);
 		PyErr_SetString(PyExc_IOError, line);
 		return NULL;
 	}
@@ -130,8 +135,9 @@ static PyObject* pyflycap_getflycapimage(PyObject* self) {
 
 static PyObject* pyflycap_getflycapdata(PyObject* self, PyObject* args) {
 
+	int handle;
 	PyObject *data_obj;
-	if(PyArg_ParseTuple(args, "O", &data_obj) == 0) {
+	if(PyArg_ParseTuple(args, "iO", &handle, &data_obj) == 0) {
 		//printf("error!\n");
 		return NULL;
 	}
@@ -148,7 +154,7 @@ static PyObject* pyflycap_getflycapdata(PyObject* self, PyObject* args) {
 	//also be mindful of the option to select from multiple cameras
 	
 	int err; //there are no possible error codes in GetFlyCapData() so i wont bother with an error string list
-	if((err = fGetFlyCapData(c_data, dN)) != 0) {
+	if((err = fGetFlyCapData(handle, c_data, dN)) != 0) {
 		Py_DECREF(data);
 		char line[512];
 		snprintf(line, sizeof(line), "GetFlyCapData(): %d\n", err);
@@ -160,8 +166,12 @@ static PyObject* pyflycap_getflycapdata(PyObject* self, PyObject* args) {
 	Py_RETURN_NONE;
 }
 
-static PyObject* pyflycap_closeflycap(PyObject* self) {
-	fCloseFlyCap();
+static PyObject* pyflycap_closeflycap(PyObject* self, PyObject* args) {
+	int handle;
+	if(PyArg_ParseTuple(args, "i", &handle) == 0) {
+		return NULL;
+	}
+	fCloseFlyCap(handle);
 	Py_RETURN_NONE;
 }
 /*
@@ -171,8 +181,9 @@ static GFCPI fGetFlyCapPropertyInfo = NULL;
 */
 static PyObject* pyflycap_getproperty(PyObject* self, PyObject* args) {
 
+	int handle;
 	int type;
-	if(PyArg_ParseTuple(args, "i", &type) == 0) {
+	if(PyArg_ParseTuple(args, "ii", &handle, &type) == 0) {
 		return NULL;
 	}
 	
@@ -180,7 +191,7 @@ static PyObject* pyflycap_getproperty(PyObject* self, PyObject* args) {
 	bool present, absControl, onePush, onOff, autoManualMode;
 	int valueA, valueB;
 	float absValue;
-	if((err = fGetFlyCapProperty(type, &present, &absControl, &onePush,
+	if((err = fGetFlyCapProperty(handle, type, &present, &absControl, &onePush,
 		&onOff, &autoManualMode, &valueA, &valueB, &absValue)) != 0) {
 		
 		char line[512]; //TODO have a human-readable error string here
@@ -196,16 +207,17 @@ static PyObject* pyflycap_getproperty(PyObject* self, PyObject* args) {
 static PyObject* pyflycap_setproperty(PyObject* self, PyObject* args) {
 
 	int err;
+	int handle;
 	int type;
 	int present, absControl, onePush, onOff, autoManualMode;
 	int valueA, valueB;
 	float absValue;
-	if(PyArg_ParseTuple(args, "(iiiiiiiif)", &type, &present, &absControl,
+	if(PyArg_ParseTuple(args, "(iiiiiiiiif)", &handle, &type, &present, &absControl,
 		&onePush, &onOff, &autoManualMode, &valueA, &valueB, &absValue) == 0) {
 		return NULL;
 	}
 
-	if((err = fSetFlyCapProperty(type, present, absControl, onePush,
+	if((err = fSetFlyCapProperty(handle, type, present, absControl, onePush,
 		onOff, autoManualMode, valueA, valueB, absValue)) != 0) {
 		
 		char line[512]; //TODO have a human-readable error string here
@@ -221,8 +233,9 @@ static PyObject* pyflycap_setproperty(PyObject* self, PyObject* args) {
 static PyObject* pyflycap_getpropertyinfo(PyObject* self, PyObject* args) {
 
 	int err;
+	int handle;
 	int type;
-	if(PyArg_ParseTuple(args, "i", &type) == 0) {
+	if(PyArg_ParseTuple(args, "ii", &handle, &type) == 0) {
 		return NULL;
 	}
 
@@ -232,7 +245,7 @@ static PyObject* pyflycap_getpropertyinfo(PyObject* self, PyObject* args) {
 	const int sk_maxStringLength = 512;
 	char pUnits[sk_maxStringLength];
 	char pUnitAbbr[sk_maxStringLength];
-	if((err = fGetFlyCapPropertyInfo(type, &present, &autoSupported, &manualSupported,
+	if((err = fGetFlyCapPropertyInfo(handle, type, &present, &autoSupported, &manualSupported,
 					&onOffSupported, &onePushSupported, &absValSupported,
 					&readOutSupported, &min, &max, &absMin,
 					&absMax, (char*)&pUnits, (char*)&pUnitAbbr)) != 0) {
@@ -248,13 +261,16 @@ static PyObject* pyflycap_getpropertyinfo(PyObject* self, PyObject* args) {
 					absMax, pUnits, pUnitAbbr);
 }
 
-static PyObject* pyflycap_getformat7info(PyObject* self) {
-	
+static PyObject* pyflycap_getformat7info(PyObject* self, PyObject* args) {
+	int handle;
+	if(PyArg_ParseTuple(args, "i", &handle) == 0) {
+		return NULL;
+	}
 	int maxWidth, maxHeight, offsetHStepSize, offsetVStepSize, imageHStepSize;
 	int imageVStepSize, packetSize, minPacketSize, maxPacketSize;
 
 	int err;
-	if((err = fGetFlyCapFormat7Info(&maxWidth, &maxHeight, &offsetHStepSize, &offsetVStepSize,
+	if((err = fGetFlyCapFormat7Info(handle, &maxWidth, &maxHeight, &offsetHStepSize, &offsetVStepSize,
 		&imageHStepSize, &imageVStepSize, &packetSize, &minPacketSize, &maxPacketSize)) != 0) {
 		char line[512]; //TODO have a human-readable error string here
 		snprintf(line, sizeof(line), "GetFlyCapFormat7Info(): %d\n", err);
@@ -266,11 +282,14 @@ static PyObject* pyflycap_getformat7info(PyObject* self) {
 		offsetVStepSize, imageHStepSize, imageVStepSize, packetSize, minPacketSize, maxPacketSize);
 }
 
-static PyObject* pyflycap_getformat7config(PyObject* self) {
-
+static PyObject* pyflycap_getformat7config(PyObject* self, PyObject* args) {
+	int handle;
+	if(PyArg_ParseTuple(args, "i", &handle) == 0) {
+		return NULL;
+	}
 	int offsetX, offsetY, width, height, pixelFormat, packetSize;
 	int err;
-	if((err = fGetFlyCapFormat7Configuration(&offsetX, &offsetY, &width, &height,
+	if((err = fGetFlyCapFormat7Configuration(handle, &offsetX, &offsetY, &width, &height,
 		&pixelFormat, &packetSize)) != 0) {
 		char line[512]; //TODO have a human-readable error string here
 		snprintf(line, sizeof(line), "GetFlyCapFormat7Configuration(): %d\n", err);
@@ -283,14 +302,15 @@ static PyObject* pyflycap_getformat7config(PyObject* self) {
 
 static PyObject* pyflycap_setformat7config(PyObject* self, PyObject* args) {
 
+	int handle;
 	int offsetX, offsetY, width, height, pixelFormat;
-	if(PyArg_ParseTuple(args, "(iiiii)", &offsetX, &offsetY, &width,
+	if(PyArg_ParseTuple(args, "(iiiiii)", &handle, &offsetX, &offsetY, &width,
 		&height, &pixelFormat) == 0) {
 		return NULL;
 	}
 
 	int err;
-	if((err = fSetFlyCapFormat7Configuration(offsetX, offsetY, width, height, pixelFormat)) != 0) {
+	if((err = fSetFlyCapFormat7Configuration(handle, offsetX, offsetY, width, height, pixelFormat)) != 0) {
 		char line[512]; //TODO have a human-readable error string here
 		snprintf(line, sizeof(line), "SetFlyCapFormat7Configuration(): %d\n", err);
 		PyErr_SetString(PyExc_IOError, line);
@@ -303,14 +323,14 @@ static PyMethodDef pyflycap_funcs[] = {
 	{"helloworld", (PyCFunction)pyflycap_helloworld, METH_VARARGS, "doc string here"},
 	{"setupflycap", (PyCFunction)pyflycap_setupflycap, METH_VARARGS, "doc string here"},
 	{"freelibrary", (PyCFunction)pyflycap_freelibrary, METH_NOARGS, "doc string here"},
-	{"getflycapimage", (PyCFunction)pyflycap_getflycapimage, METH_NOARGS, "doc string here"},
+	{"getflycapimage", (PyCFunction)pyflycap_getflycapimage, METH_VARARGS, "doc string here"},
 	{"getflycapdata", (PyCFunction)pyflycap_getflycapdata, METH_VARARGS, "doc string here"},
-	{"closeflycap", (PyCFunction)pyflycap_closeflycap, METH_NOARGS, "doc string here"},
+	{"closeflycap", (PyCFunction)pyflycap_closeflycap, METH_VARARGS, "doc string here"},
 	{"getproperty", (PyCFunction)pyflycap_getproperty, METH_VARARGS, "doc string here"},
 	{"setproperty", (PyCFunction)pyflycap_setproperty, METH_VARARGS, "doc string here"},
 	{"getpropertyinfo", (PyCFunction)pyflycap_getpropertyinfo, METH_VARARGS, "doc string here"},
-	{"getformat7info", (PyCFunction)pyflycap_getformat7info, METH_NOARGS, "doc string here"},
-	{"getformat7config", (PyCFunction)pyflycap_getformat7config, METH_NOARGS, "doc string here"},
+	{"getformat7info", (PyCFunction)pyflycap_getformat7info, METH_VARARGS, "doc string here"},
+	{"getformat7config", (PyCFunction)pyflycap_getformat7config, METH_VARARGS, "doc string here"},
 	{"setformat7config", (PyCFunction)pyflycap_setformat7config, METH_VARARGS, "doc string here"},
     {NULL}
 };
