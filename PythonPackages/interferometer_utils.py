@@ -93,7 +93,7 @@ def calc_visibility_rms(signal, axis=0):
 	return sqrt(2) * r / m
 
 def calc_visibility_fourier(signal,axis=0, f_search_range = 0.04, f_search_resolution = 0.04/40):
-	#TODO FIXME
+	#TODO FIXME. whats wrong? this comment doesn't tell us whats wrong!
 	if axis==1:
 		visibilities=[]
 		posns = arange(0,signal.shape[1])
@@ -119,6 +119,9 @@ def make_visibility_rms_image(im_arr):
 	return sqrt(2) * rms(im_arr - im_mean, 0) / im_mean
 
 def rebin1d(a, binsize):
+	cutoff = a.shape[1] % binsize
+	if cutoff != 0:
+		a = a[:, :-cutoff]
 	sh = a.shape[0], a.shape[1]/binsize, binsize
 	return mean(a.reshape(sh), -1)
 	
@@ -245,7 +248,7 @@ def load_data_func(origin_ts, ts_list, binning):
 	#analyzing all the coarse positions
 	###
 	
-	#sorting by time
+	#sorting by coarse position
 	oexperiment_list = [pbeca.ExperimentalDataSet(ts=ts) for ts in ts_list]
 	[oexperiment.meta.load() for oexperiment in oexperiment_list]
 	oexperiment_list.sort(key = lambda d: d.meta.parameters["coarse_position_meters"])
@@ -274,13 +277,12 @@ def load_data_func(origin_ts, ts_list, binning):
 	q_image_data = array([oexperiment.dataset['q_fringes'].data for oexperiment in oexperiment_list])
 	coarse_positions = array([oexperiment.meta.parameters["coarse_position_meters"] for oexperiment in oexperiment_list])
 	fine_positions = array(oexperiment_list[0].meta.parameters['fine_position_volts'])
-	sys.stdout.write('\x07')
 	print 'done, image_data.shape = ' + str(p_image_data.shape)
 	#4d array: arctan_data[z_c][z_f][row][col]
 	arctan_data = arctan2(q_image_data[:,:,:,:], p_image_data[:,:,:,:])
 
 	return p_image_data, q_image_data, coarse_positions, fine_positions, arctan_data
 
-	
+
 
 #EoF

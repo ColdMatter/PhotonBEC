@@ -272,6 +272,8 @@ class BSC201(ThorlabsAPT):
 	def moveRelative(self, rel_distance):
 		return self.stepMotorRelative(int(rel_distance * drv014_encoder_unit_position))
 	def moveAbsolute(self, distance):
+		if distance > 5e-2 or distance < 0:
+			raise ValueError('out of range of movement of translation stage')
 		return self.stepMotorAbsolute(int(distance * drv014_encoder_unit_position))
 		
 #getMotorPosition() and 

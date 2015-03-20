@@ -15,7 +15,7 @@ from PyQt4 import QtGui
 import time
 import cavity_lock_gui
 from stabiliser_class import Stabiliser
-import numpy
+import numpy as np
 
 sys.path.append("D:\\Control\\PythonPackages\\")
 import pbec_ipc
@@ -69,7 +69,7 @@ def _start_stop_lock_button_pushed():
 aw.start_stop_lock_button.pressed.connect(_start_stop_lock_button_pushed)
 
 def _reset_button_pushed():
-	s.set_voltage(numpy.mean(s.control_range))
+	s.set_voltage(np.mean(s.control_range))
 	s.pic.reset()
 
 aw.reset_button.pressed.connect(_reset_button_pushed)
@@ -166,7 +166,7 @@ def setSetPointGradual(newValue, sleepTime = 0.05):
 	last = newValue
 	if first==last:
 		return None
-	for p in range(first, last, numpy.sign(last-first)):
+	for p in np.arange(first, last, np.sign(last-first)):
 		#NOTE: will fail when non-integer start and end points are set.
 		setSetPoint(p)
 		time.sleep(sleepTime)

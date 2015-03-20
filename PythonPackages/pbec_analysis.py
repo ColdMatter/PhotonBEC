@@ -15,6 +15,8 @@ import io
 
 pbec_prefix = "pbec"
 point_grey_chameleon_pixel_size = 3.75e-6
+point_grey_grasshopper_pixel_size = 5.86e-6
+point_grey_flea_pixel_size = 4.8e-6
 
 interferometer_piezo_calibration_nm_movement_per_volt = 294.1 #see lab book 24/11/2014
 
@@ -92,6 +94,14 @@ def number_distn(lam, lam0, T, amplitude, mu, offset):
 	num = amplitude*DoS*distn*de_dlam
 	return num/constants.h + offset
 
+def number_dist_log_residuals(pars, ydata, xdata):
+	#Takes 5 parameters. Calculated residuals in log space
+	#"number_distn" is to be found in pbec_analysis
+	#Setting mu=0 returns the Boltzmann distribution
+	(lam0, T, amplitude, offset) = pars
+	mu=0
+	pars = (lam0, T, amplitude, mu, offset)
+	return (log(number_distn(xdata, *pars)) - log(ydata))**2
 
 #
 # Timestamp manipulation functions
@@ -269,6 +279,8 @@ class ExperimentalData(object):
 		self.extension = extension
 		if data!=None:
 			self.setData(data)
+		else:
+			self.setData(None)
 	def getFileName(self, make_folder = False):
 		return timestamp_to_filename(self.ts, file_end = self.extension,
 			make_folder = make_folder)

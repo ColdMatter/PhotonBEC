@@ -136,7 +136,8 @@ class __Camera(object):
 		self.__check_is_open()
 		try:
 			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage()
-			if self.imageData == None:
+			print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
+			if (self.imageData == None) or len(self.imageData) != dataLen:
 				self.imageData = numpy.arange(dataLen, dtype=numpy.uint8)
 				#print("dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
 			pyflycap.getflycapdata(self.imageData)
@@ -264,7 +265,7 @@ camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
 			"flea": 4.8e-6, "grasshopper": 5.86e-6}
 
 serialNumber_cameraLabel_map = {"int_chameleon": 14110699, "chameleon": 12350594,
-			"flea": 14080462, "grasshopper": 14110879}
+			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619}
 def getCameraByLabel(label):
 	number = 0
 	if label != None:

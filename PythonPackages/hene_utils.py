@@ -30,7 +30,12 @@ def ring_radius(im,(x0,y0),(dx,dy),channel=0,window_len=1,min_acceptable_radius=
 	ring_rad = ring_rad_uncorrected + min_acceptable_radius
 	#Change 13/01/2015: use floating point values. Find weighted mean NOT max position within a window
 	posns=arange(-mean_window,mean_window+1,1) + ring_rad
-	windowed_values = rp[posns] #KNOWN BUG: fails when ring size near size of image, but doesn't seem to fail catastrophically.
+	try:
+		windowed_values = rp[posns] #KNOWN BUG: fails when ring size near size of image, but doesn't seem to fail catastrophically.
+	except IndexError:
+		#print 'rp = ' + str(rp)
+		#print 'posns = ' + str(posns)
+		raise
 	#Value 0.98 or whatever is empirically determined
 	windowed_values = windowed_values - 0.98*mean(windowed_values[-5:-1]) #bkg to offset [helps remove discreteness]
 	mean_posn = float( sum(posns*windowed_values) ) / float( sum(windowed_values) ) #causes 
