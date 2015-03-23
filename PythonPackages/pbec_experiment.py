@@ -2,8 +2,7 @@
 
 from pylab import *
 import pbec_analysis
-#import pbec_data_format
-import sys, time
+import sys, time, traceback
 import numpy
 from scipy.misc import imsave
 
@@ -138,11 +137,11 @@ class __Camera(object):
 		self.__check_is_open()
 		try:
 			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage(self.handle)
-			print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
+			####print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
 			if (self.imageData == None) or len(self.imageData) != dataLen:
 				self.imageData = numpy.arange(dataLen, dtype=numpy.uint8)
-				print("rebuilding imageData handle=" + str(self.handle) +
-					", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
+				#print("rebuilding imageData handle=" + str(self.handle) +
+				#	", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
 			pyflycap.getflycapdata(self.handle, self.imageData)
 			return numpy.reshape(self.imageData, (row, col, 3))
 			#from scipy.misc import imsave
@@ -167,7 +166,7 @@ class __Camera(object):
 			time.sleep(0.5)
 		except Exception as exc:
 			self.close()
-			print exc
+			traceback.print_exc()
 			self.error = exc
 	
 	def extended_shutter_mode(self,shutter=10):
@@ -185,7 +184,7 @@ class __Camera(object):
 			pyflycap.setproperty(self.handle, prop)				
 		except Exception as exc:
 			self.close()
-			print exc
+			traceback.print_exc()
 			self.error = exc
 		
 	

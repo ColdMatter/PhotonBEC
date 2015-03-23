@@ -212,7 +212,7 @@ static PyObject* pyflycap_setproperty(PyObject* self, PyObject* args) {
 	int present, absControl, onePush, onOff, autoManualMode;
 	int valueA, valueB;
 	float absValue;
-	if(PyArg_ParseTuple(args, "(iiiiiiiiif)", &handle, &type, &present, &absControl,
+	if(PyArg_ParseTuple(args, "i(iiiiiiiif)", &handle, &type, &present, &absControl,
 		&onePush, &onOff, &autoManualMode, &valueA, &valueB, &absValue) == 0) {
 		return NULL;
 	}
@@ -304,7 +304,7 @@ static PyObject* pyflycap_setformat7config(PyObject* self, PyObject* args) {
 
 	int handle;
 	int offsetX, offsetY, width, height, pixelFormat;
-	if(PyArg_ParseTuple(args, "(iiiiii)", &handle, &offsetX, &offsetY, &width,
+	if(PyArg_ParseTuple(args, "i(iiiii)", &handle, &offsetX, &offsetY, &width,
 		&height, &pixelFormat) == 0) {
 		return NULL;
 	}
