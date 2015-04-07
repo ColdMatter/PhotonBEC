@@ -138,8 +138,9 @@ class __Camera(object):
 		try:
 			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage(self.handle)
 			####print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
-			if (self.imageData == None) or len(self.imageData) != dataLen:
-				self.imageData = numpy.arange(dataLen, dtype=numpy.uint8)
+			calcedDataLen = row*col*bitsPerPixel/8 #for some reason, this does not always equal dataLen
+			if (self.imageData == None) or len(self.imageData) != calcedDataLen:
+				self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
 				#print("rebuilding imageData handle=" + str(self.handle) +
 				#	", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
 			pyflycap.getflycapdata(self.handle, self.imageData)
@@ -151,6 +152,9 @@ class __Camera(object):
 			#print "get_image(): " + repr(exc)
 			self.error = exc 
 			#raise exc #do not raise exceptions, just record the error and carry on blithely
+			import traceback
+			traceback.print_exc()
+			return None
 
 	def set_property(self, property_name, value, auto=None):
 		"""property_name has to be taken from CAMERA_PROPERTY_TYPE_MAPPING"""

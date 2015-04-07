@@ -3,7 +3,7 @@
 import pyflycap
 import numpy
 from scipy.misc import imsave
-import sys
+import sys, pprint
 
 
 CHAMELEON = 12350594
@@ -34,14 +34,15 @@ try:
 	data = None
 	
 	prop = pyflycap.getproperty(handle, PROPERTY_TYPE_MAPPING["shutter"])
-	print("shutter property = " + str(prop))
+	print("shutter property = " + str(prop) + '\n')
 	for name, type in PROPERTY_TYPE_MAPPING.iteritems():
 		info = pyflycap.getpropertyinfo(handle, type)
 		print("\t" + name + " " + str(info))
-	
-	print("format7 info = " + str(zip(format7_info_struct_names, pyflycap.getformat7info(handle))))
+		
+	format7info = pyflycap.getformat7info(handle)
+	print("format7 info = " + pprint.pformat(zip(format7_info_struct_names, format7info)))
 	format7config = pyflycap.getformat7config(handle)
-	print("format7 conf = " + str(zip(format7_conf_struct_names, format7config)))
+	print("format7 conf = " + pprint.pformat(zip(format7_conf_struct_names, format7config)))
 	format7config[2] = 320
 	format7config[3] = 400
 
