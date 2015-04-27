@@ -259,7 +259,7 @@ class BSC201(ThorlabsAPT):
 	#default taken from the Thorlabs APT software
 	#relates to motor drv014
 	#ran thorlabs APT software then ran getXXX() methods
-	def setHomeParameters(self, velocity=21986044,offset = 40960):
+	def setHomeParameters(self, velocity=21986044, offset = 40960):
 		super(type(self), self).setHomeParameters(velocity,offset)
 	def setVelocityParameters(self, maxVel=43972088, acc=4503, minVel=0):
 		super(type(self), self).setVelocityParameters(maxVel, acc, minVel)
@@ -280,15 +280,15 @@ class BSC201(ThorlabsAPT):
 class TST101(ThorlabsAPT):
 	def __init__(self, comport=8, channel_ident=1):
 		super(type(self), self).__init__(comport, channel_ident)
-		self.setHomeVelocity()
+		self.setHomeParameters()
 		self.setVelocityParameters()
 		self.setBacklashCorrection()
 
 	#default taken from the Thorlabs APT software
 	#relates to motor zst213
 	#ran thorlabs APT software then ran getXXX() methods
-	def setHomeVelocity(self, velocity=26954160):
-		super(type(self), self).setHomeVelocity(velocity)
+	def setHomeParameters(self, velocity=26954160, offset=200862):
+		super(type(self), self).setHomeParameters(velocity, offset)
 	def setVelocityParameters(self, maxVel=107816640, acc=22085, minVel=0):
 		super(type(self), self).setVelocityParameters(maxVel, acc, minVel)
 	def setBacklashCorrection(self, backlash=40172):

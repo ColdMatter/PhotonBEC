@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 colour_weights = (1, 1, 0, 0)
 plot_graphs = False
 
-def find_freq_from_autocorrelation(t_axis, data,verbose=False):
+def find_freq_from_autocorrelation(t_axis, data, verbose=False):
 	#s: signal to be processed; t_axis: times for each data point; assumed ordered
 	data = data - np.mean(data)
 	data = pbeca.smooth(data, window_len=4)
@@ -36,13 +36,14 @@ def find_freq_from_autocorrelation(t_axis, data,verbose=False):
 	ratio_freq = 1./(t_axis[maxima_midplus[1]] - t_axis[maxima_midplus[0]])
 	return ratio_freq, ac
 
-def find_visibility_using_continuous_ft(t_axis, data, f_search_range=0.2, f_search_resolution=0.005):
+def find_visibility_using_continuous_ft(t_axis, data, ratio_freq=0, f_search_range=0.2, f_search_resolution=0.005):
 	#code optional argument to pass frequency without calculating
 	#print 'true freq = ' + str(true_freq)
 	datasum = np.sum(data)
 	realdata = data
 	data = data - np.mean(data)
-	ratio_freq, ratio_autocor = find_freq_from_autocorrelation(t_axis, data)
+	if ratio_freq == 0:
+		ratio_freq, ratio_autocor = find_freq_from_autocorrelation(t_axis, data)
 	freqs = []
 	fts = []
 	search_range = ratio_freq * f_search_range
@@ -75,6 +76,22 @@ def find_visibility_using_continuous_ft(t_axis, data, f_search_range=0.2, f_sear
 	#print 'visibility from continuous FT = ' + str(vis_cont_ft)
 	return vis_cont_ft
 
+def calc_visibility_fourier(signal, axis=0, ratio_freq=0, f_search_range = 0.04, f_search_resolution = 0.04/40):
+	#TODO FIXME. whats wrong? this comment doesn't tell us whats wrong!
+	if axis==1:
+		visibilities=[]
+		posns = arange(0,signal.shape[1])
+		for k in range(signal.shape[0]):
+			try:
+				sig = signal[k, :]
+				vis = find_visibility_using_continuous_ft(posns, sig, ratio_freq, f_search_range=f_search_range, f_search_resolution=f_search_resolution)
+			except IndexError:
+				vis=0
+			visibilities.append(vis)
+	else:
+		print "calc_vfisibility_fourier was not built this way round: change the axes!"
+		visibilities = [None]
+	return visibilities
 
 def colour_to_monochrome(im):
 	return sum(im*colour_weights, 2) / sum(colour_weights)
@@ -91,23 +108,6 @@ def calc_visibility_rms(signal, axis=0):
 	sm = signal - m.reshape(len(signal), 1)
 	r = rms(sm, axis)
 	return sqrt(2) * r / m
-
-def calc_visibility_fourier(signal,axis=0, f_search_range = 0.04, f_search_resolution = 0.04/40):
-	#TODO FIXME. whats wrong? this comment doesn't tell us whats wrong!
-	if axis==1:
-		visibilities=[]
-		posns = arange(0,signal.shape[1])
-		for k in range(signal.shape[0]):
-			try:
-				sig = signal[k, :]
-				vis = find_visibility_using_continuous_ft(posns, sig, f_search_range=f_search_range, f_search_resolution=f_search_resolution)
-			except IndexError:
-				vis=0
-			visibilities.append(vis)
-	else:
-		print "calc_vfisibility_fourier was not built this way round: change the axes!"
-		visibilities = [None]
-	return visibilities
 	
 def make_visibility_mm_image(im_arr):
 	im_max = np.max(im_arr, 0)
@@ -155,7 +155,8 @@ def image_q_shift(q_im, x, y, a):
 	q_im_t = cv2.warpAffine(q_im, M, dsize)
 	return q_im_t
 
-def find_image_shift(origin_ts):
+def find_image_shift(origin_ts, show_debug_graphs = False):
+	print 'finding origin'
 	oexp = pbeca.ExperimentalDataSet(origin_ts)
 	oexp.dataset['block_p_image'] = pbeca.CameraData(oexp.ts, '_block_p_image.png')
 	oexp.dataset['block_q_image'] = pbeca.CameraData(oexp.ts, '_block_q_image.png')
@@ -212,7 +213,6 @@ def find_image_shift(origin_ts):
 		colorbar()
 		title('shift subtracted')
 
-	show_debug_graphs = False
 	if show_debug_graphs:
 		figure('origin image quadratures'), clf()
 		subplot(1, 2, 1)
@@ -240,23 +240,19 @@ def coherence_length_func(xaxis, visibilities, residuals_func = lorentzian_resid
 	guess = (1, -50, 50, 0) #amp, mu, sigma, off. sigma is width parameter, either for gaussian or lorentzian
 	((amp, mu, sigma, off),dump) = leastsq(residuals_func, guess, (xaxis, visibilities))
 	return abs(sigma)
+	
+def load_zc_fringes(origin_image_shift, ts_list, binning):
+	shiftx, shifty, ampshift = origin_image_shift
 
-def load_data_func(origin_ts, ts_list, binning):
-	print 'finding origin'
-	shiftx, shifty, ampshift = find_image_shift(origin_ts)
-	
-	#analyzing all the coarse positions
-	###
-	
 	#sorting by coarse position
 	oexperiment_list = [pbeca.ExperimentalDataSet(ts=ts) for ts in ts_list]
 	[oexperiment.meta.load() for oexperiment in oexperiment_list]
 	oexperiment_list.sort(key = lambda d: d.meta.parameters["coarse_position_meters"])
 
-	print 'loading all data'
+	#print 'loading all data'
 	new_oexperiment_list = []
 	for i, oexperiment in enumerate(oexperiment_list):
-		sys.stdout.write('\rloading ' + str(i+1) + ' out of ' + str(len(oexperiment_list)))
+		sys.stdout.write('\rloading coarse ' + str(i+1) + ' out of ' + str(len(oexperiment_list)))
 		#must instantiate new dictionary because pointers
 		oexperiment.dataset["p_fringes"] = pbeca.InterferometerFringeData(oexperiment.ts, '_p_fringes.zip')
 		oexperiment.dataset["q_fringes"] = pbeca.InterferometerFringeData(oexperiment.ts, '_q_fringes.zip')
@@ -264,25 +260,24 @@ def load_data_func(origin_ts, ts_list, binning):
 		
 		fromY, toY, fromX, toX = get_overlap_crop(oexperiment.dataset["p_fringes"].data[0],
 			oexperiment.dataset["q_fringes"].data[0], shiftx, shifty)
-		
 		oexperiment.dataset['p_fringes'].data = array([
 			bin_image(colour_to_monochrome(crop(im, fromY, toY, fromX, toX)),binning=binning)
 			for im in oexperiment.dataset['p_fringes'].data])
 		oexperiment.dataset['q_fringes'].data = array([
 			bin_image(crop(image_q_shift(colour_to_monochrome(im), shiftx, shifty, ampshift), fromY, toY, fromX, toX),binning=binning)
 			for im in oexperiment.dataset['q_fringes'].data])
-	print '\nconverting to array'
+	print ' done'
 
 	p_image_data = array([oexperiment.dataset['p_fringes'].data for oexperiment in oexperiment_list])
 	q_image_data = array([oexperiment.dataset['q_fringes'].data for oexperiment in oexperiment_list])
 	coarse_positions = array([oexperiment.meta.parameters["coarse_position_meters"] for oexperiment in oexperiment_list])
 	fine_positions = array(oexperiment_list[0].meta.parameters['fine_position_volts'])
-	print 'done, image_data.shape = ' + str(p_image_data.shape)
+	#print 'done, image_data.shape = ' + str(p_image_data.shape)
 	#4d array: arctan_data[z_c][z_f][row][col]
 	arctan_data = arctan2(q_image_data[:,:,:,:], p_image_data[:,:,:,:])
-
 	return p_image_data, q_image_data, coarse_positions, fine_positions, arctan_data
 
-
+def load_data_func(origin_ts, ts_list, binning):
+	return load_zc_fringes(find_image_shift(origin_ts), ts_list, binning)
 
 #EoF

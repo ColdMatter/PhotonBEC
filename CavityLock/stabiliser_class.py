@@ -104,7 +104,7 @@ class Stabiliser():
 		default_P_gain = -1.5e-3#-2e-4
 		default_I_gain = -1e-3#-5e-4
 		default_I_const = 20
-		default_II_gain = +30 #note sign is always positive: square of sign of I gain
+		default_II_gain = +100 #note sign is always positive: square of sign of I gain
 		default_II_const=200
 		self.pic = PI_control(P_gain = direct_gain_factor*default_P_gain,\
 			I_gain = direct_gain_factor*default_I_gain,I_const=default_I_const,\

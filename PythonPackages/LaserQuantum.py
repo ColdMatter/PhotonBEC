@@ -53,8 +53,8 @@ class LaserQuantum():
 	def LaserOff(self):
 		self.writeCommand("OFF")
 		
-	def setPowerAndWait(self, pmw, tolerance=0.005):
-		pl = [] 
+	def setPowerAndWait(self, pmw, tolerance=0.01):
+		pl = []
 		self.setPower(pmw)
 		window_len = 3
 		#tolerance = 0.5%
@@ -65,6 +65,7 @@ class LaserQuantum():
 			po = self.getPower()
 			pl.append(po)
 			if len(pl) >= window_len:
+				#mae is moving average error
 				mae = 1.0 * sum([abs(pmw - p) for p in pl]) / window_len
 				if mae <= p_tol:
 					break
