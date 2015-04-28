@@ -23,6 +23,7 @@ def verbose(l):
 #avoid anything already well known http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
 DEFAULT_PORT = 47902
 #TODO write a dictionary mapping names to ports, then start_server() with a name instead of unmaintainable port numbers
+PORT_NUMBERS = {'cavity_lock': DEFAULT_PORT, 'laser_controller': DEFAULT_PORT+1}
 
 IPC_BIN_CLIENT_GREETING = 'pbecipcbin\r\n'
 IPC_TEXT_CLIENT_GREETING = 'pbecipctxt\r\n'
@@ -94,7 +95,7 @@ class IPCServer(threading.Thread):
 		server_sock.listen(1)
 
 		while not self.closed:
-			verbose('accepting')
+			verbose('accepting on ' + str(server_sock.getsockname()))
 			(client_sock, addr) = server_sock.accept()
 			client_fd = None
 			verbose('accepted')
@@ -177,10 +178,12 @@ def socket_close(sock):
 	sock_ipc_send(True, sock, None, 'close')
 	sock.close()
 
-def ipc_eval(expr, port = DEFAULT_PORT):
+def ipc_eval(expr, port = 'cavity_lock'):
 	'''
 	Must pass a python expression as a string
 	'''
+	if isinstance(port, str):
+		port = PORT_NUMBERS[port]
 	sock = socket_connect(port)
 	ret = socket_eval(sock, expr)
 	socket_close(sock)
