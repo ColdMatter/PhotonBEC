@@ -448,6 +448,81 @@ DLLFUN int SetFlyCapFormat7Configuration(unsigned int handle, int offsetX, int o
 	return 0;
 }
 
+//set the trigger mode, enabled=true/false software=true for software, false for hardware/ttl
+DLLFUN int SetTriggerMode(unsigned int handle, bool enabled, bool software) {
+	if(!check_cam_handle(handle)) {
+		return -1; //bad handle
+	}
+
+	Error error;
+
+    // Get current trigger settings
+    TriggerMode triggerMode;
+    error = cams[handle].GetTriggerMode( &triggerMode );
+    if (error != PGRERROR_OK)
+    {
+        PrintError( error );
+        return -2;
+    }
+
+    // Set camera to trigger mode 0
+    triggerMode.onOff = enabled;
+    triggerMode.mode = 0;
+    triggerMode.parameter = 0;
+
+	if(software) {
+		// A source of 7 means software trigger
+		triggerMode.source = 7;
+	} else {
+		// Triggering the camera externally using source 0.
+		triggerMode.source = 0;
+	}
+
+    error = cams[handle].SetTriggerMode( &triggerMode );
+    if (error != PGRERROR_OK)
+    {
+        PrintError( error );
+        return -3;
+    }
+	return 0;
+}
+
+DLLFUN int WaitForTriggerReady(unsigned int handle) {
+    const unsigned int k_softwareTrigger = 0x62C;
+    Error error;
+    unsigned int regVal = 0;
+
+	//dont actually know what this means, the bit flags i havent found in the manual
+	//took code from AsynchTriggerEx.cpp
+    do 
+    {
+        error = cams[handle].ReadRegister( k_softwareTrigger, &regVal );
+        if (error != PGRERROR_OK)
+        {
+            PrintError( error );
+			return -1;
+        }
+
+    } while ( (regVal >> 31) != 0 ); 
+
+	return 0;
+}
+
+DLLFUN int FireSoftwareTrigger(unsigned int handle) {
+    const unsigned int k_softwareTrigger = 0x62C;
+    const unsigned int k_fireVal = 0x80000000;
+    Error error;    
+
+	//as above, dont actually know how this works
+    error = cams[handle].WriteRegister( k_softwareTrigger, k_fireVal );
+    if (error != PGRERROR_OK)
+    {
+        PrintError( error );
+        return -1;
+    }
+
+    return 0;
+}
 
 DLLFUN int CloseFlyCap(unsigned int handle) {
 	if(!check_cam_handle(handle)) {

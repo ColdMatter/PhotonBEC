@@ -21,7 +21,11 @@ typedef int (*GFCPI)(unsigned int, int, bool*, bool*, bool*, bool*, bool*, bool*
 typedef int (*GFCF7I)(unsigned int, int*, int*, int*, int*, int*, int*, int*, int*, int*);
 typedef int (*GFCF7C)(unsigned int, int*, int*, int*, int*, int*, int*);
 typedef int (*SFCF7C)(unsigned int, int, int, int, int, int);
-	
+
+typedef int (*STM)(unsigned int, bool, bool);
+typedef int (*WFTR)(unsigned int);
+typedef int (*FST)(unsigned int);
+
 static SFC fSetupFlyCap = NULL;
 static GFCI fGetFlyCapImage = NULL;
 static GFCD fGetFlyCapData = NULL;
@@ -34,6 +38,10 @@ static GFCPI fGetFlyCapPropertyInfo = NULL;
 static GFCF7I fGetFlyCapFormat7Info = NULL;
 static GFCF7C fGetFlyCapFormat7Configuration = NULL;
 static SFCF7C fSetFlyCapFormat7Configuration = NULL;
+
+static STM fSetTriggerMode = NULL;
+static WFTR fWaitForTriggerReady = NULL;
+static FST fFireSoftwareTrigger = NULL;
 
 //http://www.tutorialspoint.com/python/python_further_extensions.htm
 //https://docs.python.org/2/extending/extending.html
@@ -80,9 +88,14 @@ static PyObject* pyflycap_setupflycap(PyObject* self, PyObject* args) {
 		fGetFlyCapFormat7Info = (GFCF7I)GetProcAddress(flycap, "GetFlyCapFormat7Info");
 		fGetFlyCapFormat7Configuration = (GFCF7C)GetProcAddress(flycap, "GetFlyCapFormat7Configuration");
 		fSetFlyCapFormat7Configuration = (SFCF7C)GetProcAddress(flycap, "SetFlyCapFormat7Configuration");
+		fSetTriggerMode = (STM)GetProcAddress(flycap, "SetTriggerMode");
+		fWaitForTriggerReady = (WFTR)GetProcAddress(flycap, "WaitForTriggerReady");
+		fFireSoftwareTrigger = (FST)GetProcAddress(flycap, "FireSoftwareTrigger");
 		
 		if(!fSetupFlyCap || !fGetFlyCapImage || !fGetFlyCapData || !fCloseFlyCap
-		|| !fGetFlyCapProperty || !fSetFlyCapProperty || !fGetFlyCapPropertyInfo)
+		|| !fGetFlyCapProperty || !fSetFlyCapProperty || !fGetFlyCapPropertyInfo
+		|| !fGetFlyCapFormat7Info || !fGetFlyCapFormat7Configuration || !fSetFlyCapFormat7Configuration
+		|| !fSetTriggerMode || !fWaitForTriggerReady || !fFireSoftwareTrigger)
 			printf("fail to get procedure: %d\n", (int)GetLastError());
 	}
 
@@ -319,6 +332,52 @@ static PyObject* pyflycap_setformat7config(PyObject* self, PyObject* args) {
 	Py_RETURN_NONE;
 }
 
+static PyObject* pyflycap_settriggermode(PyObject* self, PyObject* args) {
+	int handle;
+	bool enabled, software;
+	if(PyArg_ParseTuple(args, "iii", &handle, &enabled, &software) == 0) {
+		return NULL;
+	}
+	int err;
+	if((err = fSetTriggerMode(handle, enabled, software)) != 0) {
+		char line[512]; //TODO have a human-readable error string here
+		snprintf(line, sizeof(line), "SetTriggerMode(): %d\n", err);
+		PyErr_SetString(PyExc_IOError, line);
+		return NULL;
+	}
+	Py_RETURN_NONE;
+}
+
+static PyObject* pyflycap_waitfortriggerready(PyObject* self, PyObject* args) {
+	int handle;
+	if(PyArg_ParseTuple(args, "i", &handle) == 0) {
+		return NULL;
+	}
+	int err;
+	if((err = fWaitForTriggerReady(handle)) != 0) {
+		char line[512]; //TODO have a human-readable error string here
+		snprintf(line, sizeof(line), "WaitForTriggerReady(): %d\n", err);
+		PyErr_SetString(PyExc_IOError, line);
+		return NULL;
+	}
+	Py_RETURN_NONE;
+}
+
+static PyObject* pyflycap_firesoftwaretrigger(PyObject* self, PyObject* args) {
+	int handle;
+	if(PyArg_ParseTuple(args, "i", &handle) == 0) {
+		return NULL;
+	}
+	int err;
+	if((err = fFireSoftwareTrigger(handle)) != 0) {
+		char line[512]; //TODO have a human-readable error string here
+		snprintf(line, sizeof(line), "FireSoftwareTrigger(): %d\n", err);
+		PyErr_SetString(PyExc_IOError, line);
+		return NULL;
+	}
+	Py_RETURN_NONE;
+}
+
 static PyMethodDef pyflycap_funcs[] = {
 	{"helloworld", (PyCFunction)pyflycap_helloworld, METH_VARARGS, "doc string here"},
 	{"setupflycap", (PyCFunction)pyflycap_setupflycap, METH_VARARGS, "doc string here"},
@@ -332,6 +391,10 @@ static PyMethodDef pyflycap_funcs[] = {
 	{"getformat7info", (PyCFunction)pyflycap_getformat7info, METH_VARARGS, "doc string here"},
 	{"getformat7config", (PyCFunction)pyflycap_getformat7config, METH_VARARGS, "doc string here"},
 	{"setformat7config", (PyCFunction)pyflycap_setformat7config, METH_VARARGS, "doc string here"},
+	{"settriggermode", (PyCFunction)pyflycap_settriggermode, METH_VARARGS, "doc string here"},
+	{"waitfortriggerready", (PyCFunction)pyflycap_waitfortriggerready, METH_VARARGS, "doc string here"},
+	{"firesoftwaretrigger", (PyCFunction)pyflycap_firesoftwaretrigger, METH_VARARGS, "doc string here"},
+	
     {NULL}
 };
 

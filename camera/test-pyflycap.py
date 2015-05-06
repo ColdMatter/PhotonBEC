@@ -3,7 +3,7 @@
 import pyflycap
 import numpy
 from scipy.misc import imsave
-import sys, pprint
+import sys, pprint, threading, time
 
 
 CHAMELEON = 12350594
@@ -33,45 +33,71 @@ try:
 	handle = meta[0]
 	data = None
 	
-	prop = pyflycap.getproperty(handle, PROPERTY_TYPE_MAPPING["shutter"])
-	print("shutter property = " + str(prop) + '\n')
-	for name, type in PROPERTY_TYPE_MAPPING.iteritems():
-		info = pyflycap.getpropertyinfo(handle, type)
-		print("\t" + name + " " + str(info))
-		
-	format7info = pyflycap.getformat7info(handle)
-	print("format7 info = " + pprint.pformat(zip(format7_info_struct_names, format7info)))
-	format7config = pyflycap.getformat7config(handle)
-	print("format7 conf = " + pprint.pformat(zip(format7_conf_struct_names, format7config)))
-	format7config[2] = 320
-	format7config[3] = 400
+	test = 1
+	if test == 0:
+		prop = pyflycap.getproperty(handle, PROPERTY_TYPE_MAPPING["shutter"])
+		print("shutter property = " + str(prop) + '\n')
+		for name, type in PROPERTY_TYPE_MAPPING.iteritems():
+			info = pyflycap.getpropertyinfo(handle, type)
+			print("\t" + name + " " + str(info))
+			
+		format7info = pyflycap.getformat7info(handle)
+		print("format7 info = " + pprint.pformat(zip(format7_info_struct_names, format7info)))
+		format7config = pyflycap.getformat7config(handle)
+		print("format7 conf = " + pprint.pformat(zip(format7_conf_struct_names, format7config)))
+		format7config[2] = 320
+		format7config[3] = 400
 
-	for i in range(3):
-		pyflycap.setproperty(handle, prop)
+		for i in range(3):
+			pyflycap.setproperty(handle, prop)
+			
+			format7config[0] = (i + 1)*50
+			format7config[1] = (i + 1)*80
+			pyflycap.setformat7config(handle, format7config)
 		
-		format7config[0] = (i + 1)*50
-		format7config[1] = (i + 1)*80
-		pyflycap.setformat7config(handle, format7config)
-	
+			dataTuple = pyflycap.getflycapimage(handle)
+			(dataLen, row, col, bitsPerPixel) = dataTuple
+			
+			if data == None:
+				data = numpy.arange(dataLen, dtype=numpy.uint8)
+				print("dataLen, row, col, BPP = " + str(dataTuple))
+			pyflycap.getflycapdata(handle, data)
+			'''
+			print("printing out the first 10 pixels i=" + str(i))
+			bytesPerPixel = bitsPerPixel / 8
+			for p in range(10):
+				line = "pixel[%d] " % p
+				for b in range(bytesPerPixel):
+					line += "% 2d" % data[p*bytesPerPixel + b]
+				print(line)
+			'''	
+			print("saving")
+			im = numpy.reshape(data,(row,col,3)) 
+			imsave("image-" + str(i) + ".png", im)
+	elif test == 1:
+		software = True
+		print 'setting trigger mode true'
+		pyflycap.settriggermode(handle, True, software)
+		print 'waiting for availability'
+		pyflycap.waitfortriggerready(handle)
+		print 'woken'
+		if software:
+			print 'firing software trigger'
+			pyflycap.firesoftwaretrigger(handle)
+		print 'attempting to get image'
 		dataTuple = pyflycap.getflycapimage(handle)
+		print 'got image'
 		(dataLen, row, col, bitsPerPixel) = dataTuple
-		
 		if data == None:
 			data = numpy.arange(dataLen, dtype=numpy.uint8)
 			print("dataLen, row, col, BPP = " + str(dataTuple))
 		pyflycap.getflycapdata(handle, data)
-		'''
-		print("printing out the first 10 pixels i=" + str(i))
-		bytesPerPixel = bitsPerPixel / 8
-		for p in range(10):
-			line = "pixel[%d] " % p
-			for b in range(bytesPerPixel):
-				line += "% 2d" % data[p*bytesPerPixel + b]
-			print(line)
-		'''	
 		print("saving")
 		im = numpy.reshape(data,(row,col,3)) 
-		imsave("image-" + str(i) + ".png", im)
+		imsave("trigger-im.png", im)
+		
+		print 'setting trigger back to normal'
+		pyflycap.settriggermode(handle, False, software)
 
 finally:
 	print("closing everything")

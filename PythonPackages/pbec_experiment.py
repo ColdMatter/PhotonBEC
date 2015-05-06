@@ -155,6 +155,33 @@ class __Camera(object):
 			import traceback
 			traceback.print_exc()
 			return None
+			
+	
+	def set_trigger_mode(self, enabled, software):
+		self.__check_is_open()
+		pyflycap.settriggermode(self.handle, enabled, software)
+	def wait_for_trigger_ready(self):
+		pyflycap.waitfortriggerready(self.handle)
+	def fire_software_trigger(self):
+		pyflycap.firesoftwaretrigger(self.handle)
+	
+	def get_image_now(self):
+		'''
+		use the software trigger to get an image right now
+		for repeated calls its best to use settriggermode() at the start, call get_image() many times
+		and then use settriggermode() again to get it back to the same state
+		'''
+		print 'here'
+		self.set_trigger_mode(True, True)
+		print 'here2'
+		self.wait_for_trigger_ready()
+		print 'here3'
+		self.fire_software_trigger()
+		print 'here4'
+		im = self.get_image()
+		print 'here5'
+		self.set_trigger_mode(False, True)#reset trigger back to normal
+		return im
 
 	def set_property(self, property_name, value, auto=None):
 		"""property_name has to be taken from CAMERA_PROPERTY_TYPE_MAPPING"""
