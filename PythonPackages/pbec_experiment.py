@@ -171,15 +171,10 @@ class __Camera(object):
 		for repeated calls its best to use settriggermode() at the start, call get_image() many times
 		and then use settriggermode() again to get it back to the same state
 		'''
-		print 'here'
 		self.set_trigger_mode(True, True)
-		print 'here2'
 		self.wait_for_trigger_ready()
-		print 'here3'
 		self.fire_software_trigger()
-		print 'here4'
 		im = self.get_image()
-		print 'here5'
 		self.set_trigger_mode(False, True)#reset trigger back to normal
 		return im
 

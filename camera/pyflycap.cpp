@@ -334,10 +334,11 @@ static PyObject* pyflycap_setformat7config(PyObject* self, PyObject* args) {
 
 static PyObject* pyflycap_settriggermode(PyObject* self, PyObject* args) {
 	int handle;
-	bool enabled, software;
+	int enabled, software;
 	if(PyArg_ParseTuple(args, "iii", &handle, &enabled, &software) == 0) {
 		return NULL;
 	}
+	
 	int err;
 	if((err = fSetTriggerMode(handle, enabled, software)) != 0) {
 		char line[512]; //TODO have a human-readable error string here

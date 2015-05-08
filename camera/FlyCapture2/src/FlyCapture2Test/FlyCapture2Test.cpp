@@ -293,6 +293,7 @@ DLLFUN int GetFlyCapImage(unsigned int handle, unsigned int* dataLen, int* row, 
 	if(!check_cam_handle(handle)) {
 		return -1; //bad handle
 	}
+
     Image rawImage; 
     // Retrieve an image
     Error error = cams[handle].RetrieveBuffer( &rawImage );

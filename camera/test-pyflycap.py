@@ -76,7 +76,7 @@ try:
 			imsave("image-" + str(i) + ".png", im)
 	elif test == 1:
 		software = True
-		print 'setting trigger mode true'
+		print 'setting trigger mode true, handle' + str(handle)
 		pyflycap.settriggermode(handle, True, software)
 		print 'waiting for availability'
 		pyflycap.waitfortriggerready(handle)
