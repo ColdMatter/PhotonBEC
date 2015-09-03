@@ -96,6 +96,6 @@ while 1:
 	x,y,ts = SetAndGet()
 	time.sleep(3)
 """
-#SetAndGet(comment="AOM calibration",x_label="Control / V",y_label = "PD into 10 k$\Omega$ / V",saving=1,savefignum=217)
+SetAndGet(comment="AOM calibration",x_label="Control / V",y_label = "PD into 10 k$\Omega$ / V",saving=1,savefignum=217)
 #SetAndGet(comment="AOM calibration",x_label="Control / V",y_label = "PD into 10 k$\Omega$ / V",saving=0,savefignum=217)
 #EOF

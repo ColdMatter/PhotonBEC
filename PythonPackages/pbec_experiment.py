@@ -133,23 +133,26 @@ class __Camera(object):
 			#self.setup() #why did i put setup() here? isnt it an infinite loop
 			raise exc
 
-	def get_image(self):
+	def get_image(self, verbose = False):
 		self.__check_is_open()
 		try:
+			if verbose: print "_Camera.get_image: calling getflycapimage"
 			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage(self.handle)
-			####print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
+			if verbose: print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
 			calcedDataLen = row*col*bitsPerPixel/8 #for some reason, this does not always equal dataLen
 			if (self.imageData == None) or len(self.imageData) != calcedDataLen:
 				self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
 				#print("rebuilding imageData handle=" + str(self.handle) +
 				#	", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
+			if verbose: print "_Camera.get_image: calling getflycapdata"
 			pyflycap.getflycapdata(self.handle, self.imageData)
+			if verbose: print "_Camera.get_image: getflycapimage returned"
 			return numpy.reshape(self.imageData, (row, col, 3))
 			#from scipy.misc import imsave
 			#imsave("image.png", im)
 		except Exception as exc:
 			self.close()
-			#print "get_image(): " + repr(exc)
+			if verbose: print "get_image(): " + repr(exc)
 			self.error = exc 
 			#raise exc #do not raise exceptions, just record the error and carry on blithely
 			import traceback
@@ -165,16 +168,22 @@ class __Camera(object):
 	def fire_software_trigger(self):
 		pyflycap.firesoftwaretrigger(self.handle)
 	
-	def get_image_now(self):
+	def get_image_now(self, verbose=False):
 		'''
 		use the software trigger to get an image right now
 		for repeated calls its best to use settriggermode() at the start, call get_image() many times
 		and then use settriggermode() again to get it back to the same state
 		'''
+		if verbose: print "setting trigger mode...",
 		self.set_trigger_mode(True, True)
+		if verbose: print "waiting for trigger ready...",
 		self.wait_for_trigger_ready()
+		if verbose: print "setting trigger mode...",
 		self.fire_software_trigger()
-		im = self.get_image()
+		if verbose: print "getting image...",
+		#self.wait_for_trigger_ready() #11/5/2015: returns when camera is ready for a new trigger, i.e. has data in buffer.
+		im = self.get_image(verbose = verbose)
+		if verbose: print "re-setting trigger mode"
 		self.set_trigger_mode(False, True)#reset trigger back to normal
 		return im
 

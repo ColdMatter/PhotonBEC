@@ -43,6 +43,7 @@ for i in range(number_of_cycles):
 
 	if post_binning==1:
 		im_bin = im_raw
+		px_binned = px
 	else:
 		im_bin = imresize(im_raw,array(im_raw.shape)/post_binning,interp="bilinear")
 		px_binned = px*post_binning

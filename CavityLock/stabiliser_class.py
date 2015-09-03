@@ -83,7 +83,8 @@ class Stabiliser():
 		#The centre assumes an on-CCD RoI of width w800 x h800, left 240, top 112 (centred)
 		#go to FlyCapGUI -> Settings dialog box -> Custom Video Modes
 		#Also, play with Packet size to try to eliminate image tearing problems
-		self.dx,self.dy=200,200#180,180 #Image to be cut down to this size. Half-size in pixels
+		#self.dx,self.dy=200,200#180,180 #Image to be cut down to this size. Half-size in pixels
+		self.dx,self.dy=180,180#180,180 #Image to be cut down to this size. Half-size in pixels
 		self.dx_search,self.dy_search=8,8 #range over which centre can be adjusted automatically. Half-size in pixels
 		#self.window_len = 2 #window for smoothing radial profiles for peak finding
 		self.window_len = 4 #window for smoothing radial profiles for peak finding

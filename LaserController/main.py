@@ -90,6 +90,7 @@ def getCurrentPower():
 	return p
 	
 def guiSetPowerAndWait(p, tolerance=0.01):
+	updateSetPowerGUI(p)
 	def power_gui_update(p):
 		ui.currentLCD.display(p)
 	with lq_lock:

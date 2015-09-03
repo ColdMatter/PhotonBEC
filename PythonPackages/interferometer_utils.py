@@ -155,7 +155,7 @@ def image_q_shift(q_im, x, y, a):
 	q_im_t = cv2.warpAffine(q_im, M, dsize)
 	return q_im_t
 
-def find_image_shift(origin_ts, show_debug_graphs = False):
+def find_origin_image_shift(origin_ts, show_debug_graphs = False):
 	print 'finding origin'
 	oexp = pbeca.ExperimentalDataSet(origin_ts)
 	oexp.dataset['block_p_image'] = pbeca.CameraData(oexp.ts, '_block_p_image.png')
@@ -225,7 +225,12 @@ def find_image_shift(origin_ts, show_debug_graphs = False):
 		colorbar()
 		shiftims(*lsfit[0])
 		
-	return lsfit[0]
+	return lsfit[0], p_im, q_im
+	
+#function for backwards compatibility
+def find_image_shift(origin_ts, show_debug_graphs = False):
+	origin_image_shift, p_im, q_im = find_origin_image_shift(origin_ts, show_debug_graphs)
+	return origin_image_shift
 	
 def gaussian(x, amp, mu, sigma, off):
 	return amp*exp(-1.0 * ((x - mu)**2) / (2 * sigma**2)) + off
@@ -279,5 +284,63 @@ def load_zc_fringes(origin_image_shift, ts_list, binning):
 
 def load_data_func(origin_ts, ts_list, binning):
 	return load_zc_fringes(find_image_shift(origin_ts), ts_list, binning)
+	
+def create_visibility_images(signal, image_dims, ratio_freq=0):
+	'''
+	signal - array of parameter and z_fine images. signal[parameter][z_f][row][col]
+	image_dims - a 4-tuple of the top,left,width,height of the region to calculate visibility image
+	'''
+	width = image_dims[2]
+	height = image_dims[3]
+	visibility_images_through_parameter = zeros((signal.shape[0], width, height))
+	for i in range(width):
+		print str(i)+"...",
+		for j in range(height):
+			visibility_images_through_parameter[:,i,j] = array(calc_visibility_fourier(signal[:, :, i+image_dims[0], j+image_dims[1]], axis=1, ratio_freq=ratio_freq))
+	print "...done"
+	return visibility_images_through_parameter
+#
+# 2D GAUSSIAN FITTING
+#
+def gaussian_2d_asymmetric(x,y, amp, mu_x, mu_y, sigma_x, sigma_y, off):
+    #assumes the gaussian is aligned with the principal axes of the system.
+    expo = (((x - mu_x)**2) / (2. * sigma_x**2)) + (((y - mu_y)**2) / (2. * sigma_y**2))
+    exp_fac = exp(-expo)
+    return amp*exp_fac + off
+
+def gaussian_2d_asymmetric_residuals(pars, (xvals, yvals), data):
+    #fits in a linear scale. Could consider log scale
+    resid = ( gaussian_2d_asymmetric(xvals,yvals, *pars) - data)**2
+    return resid.reshape(-1) #leastsq needs a 1D array
+
+default_guess = (0.5, 0, 0, 1, 1, 0.1) #amp, mu_x, mu_y, sigma_x, sigma_y, off
+def fit_gaussian_2d_asymmetric(xaxis, yaxis, visibilities, residuals_func = gaussian_2d_asymmetric_residuals, guess = default_guess):
+    XX, YY = meshgrid(xaxis, yaxis) #assumes data is on a separable grid
+    (fit,dump) = leastsq(residuals_func, guess, ((XX, YY), visibilities))
+    (amp, mu_x, mu_y, sigma_x, sigma_y, off) = fit
+    return fit
+
+#-----------
+#More 2D Gaussian fitting
+#Added 2/9/15. UNTESTED. TODO TEST.
+def gaussian_2d_rotated(x,y, amp, mu_x, mu_y, sigma_x, sigma_y, off, theta):
+    #assumes the gaussian is rotated by angle "theta" from principal axes of the system
+    xp= x*cos(theta) - y*sin(theta)
+    yp =y*cos(theta) + x*sin(theta)
+    expo = (((xp - mu_x)**2) / (2. * sigma_x**2)) + (((yp - mu_y)**2) / (2. * sigma_y**2))
+    exp_fac = exp(-expo)
+    return amp*exp_fac + off
+
+def gaussian_2d_rotated_residuals(pars, (xvals, yvals), data):
+    #fits in a linear scale. Could consider log scale
+    resid = ( gaussian_2d_rotated(xvals,yvals, *pars) - data)**2
+    return resid.reshape(-1) #leastsq needs a 1D array
+
+default_guess = (0.5, 0, 0, 1, 1, 0.1, 0) #amp, mu_x, mu_y, sigma_x, sigma_y, off
+def fit_gaussian_2d_rotated(xaxis, yaxis, visibilities, residuals_func = gaussian_2d_rotated_residuals, guess = default_guess):
+    XX, YY = meshgrid(xaxis, yaxis) #assumes data is on a separable grid
+    (fit,dump) = leastsq(residuals_func, guess, ((XX, YY), visibilities))
+    (amp, mu_x, mu_y, sigma_x, sigma_y, off, theta) = fit
+    return fit
 
 #EoF

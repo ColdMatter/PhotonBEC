@@ -1,1 +1,1 @@
-pythonw D:/Control/LaserController/main.py
+python D:/Control/LaserController/main.py
