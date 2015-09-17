@@ -1,7 +1,7 @@
 #Utilities for data analysis on Photon BEC experiment
 #heavily added to and some names changed by JM 1/4/2014
 from socket import gethostname
-import time
+import time, datetime
 import os
 import csv
 import json
@@ -27,10 +27,10 @@ if gethostname()=="ph-rnyman-01":
 	control_root_folder = "D:\\Control"
 	folder_separator="\\"
 elif gethostname()=="ph-photonbec2":
-	#data_root_folder = "C:\\photonbec\\Data"
-	#control_root_folder = "C:\\photonbec\\Control"
-	data_root_folder = "Y:\\Data"
-	control_root_folder = "Y:\\Control"
+	data_root_folder = "C:\\photonbec\\Data"
+	control_root_folder = "C:\\photonbec\\Control"
+	#data_root_folder = "Y:\\Data"
+	#control_root_folder = "Y:\\Control"
 	folder_separator="\\"
 elif gethostname()=="ph-rnyman":
 	#only works for data that has been backed up to the local d_drive
@@ -38,10 +38,10 @@ elif gethostname()=="ph-rnyman":
 	#data_root_folder = "./Data"
 	control_root_folder = "/home/d_drive/Experiment/photonbec/Control"
 	folder_separator="/"
-elif gethostname()=="potato":
+elif gethostname()=="Potato3":
 	#only works for data that copied to correct part of Temp folder
-	data_root_folder = "D:\\Temp\\Imperial\\photon_bec\\Data"
-	control_root_folder = "D:\\Temp\\Imperial\\photon_bec\\Control"
+        data_root_folder =  "C:\\stuff\\temp\\Imperial_PhotonBEC\\Data\\"
+        control_root_folder = "C:\\stuff\\temp\\Imperial_PhotonBEC\\Control_partial\\"
 	folder_separator="\\"
 else:
 	folder_separator = os.sep
@@ -237,6 +237,23 @@ def timestamps_in_range(first_ts, last_ts, extension=".json"):
     df_list = data_files_in_range(first_ts,last_ts,extension=extension)
     ts_list = map(timestamp_from_filename,df_list)
     return ts_list
+    
+def timestamp_to_datetime(ts):
+    return datetime.datetime.strptime(ts, "%Y%m%d_%H%M%S")
+    
+def exclude_timestamps(ts_list, excluded_range):
+    '''
+    Exclude timestamps in ts_list. Extended_range is a tuple with the first
+    and last timestamp to be excluded, or a list of such tuples.
+    '''
+    if not isinstance(excluded_range, list):
+        excluded_range = [excluded_range]
+    result = ts_list
+    for e in excluded_range:
+        first = timestamp_to_datetime(e[0])
+	last = timestamp_to_datetime(e[1])
+	result = [ts for ts in result if first > timestamp_to_datetime(ts) or timestamp_to_datetime(ts) > last]
+    return result
 
 def save_image_set(im_list, ts=None, file_end=''):
 	if ts == None:
@@ -396,6 +413,10 @@ class MetaData():
 		print prefix + "errors: " + self.errors
 
 class ExperimentalDataSet():
+	'''
+	to analyse, construct this class with the right timestamp and call loadAllData()
+	then use ExperimentalDataSet.dataset['your data'].data
+	'''
 	def __init__(self, ts=None):
 		if ts==None:
 			ts = make_timestamp()
@@ -570,5 +591,8 @@ def UltrafastMirrorTransmission(interpolated_wavelengths,refractive_index = "144
 	
 	return interpolated_transmissions
 
+def getLambdaRange(lamb, fromL, toL):
+	lam = [(i,l) for (i,l) in enumerate(lamb) if (l>fromL) and (l<=toL)]
+	return lam[0][0], lam[-1][0]
 
 #EOF

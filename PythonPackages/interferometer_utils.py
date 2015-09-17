@@ -70,6 +70,9 @@ def find_visibility_using_continuous_ft(t_axis, data, ratio_freq=0, f_search_ran
 		plt.ylabel('ft')
 
 	cont_ft_freq = freqs[np.argmax(fts)]
+	#fd = open('Y:\\Control\\Experiments\\2015\\201509\\20150903\\ft.csv', 'a')
+	#fd.write(str(cont_ft_freq) + ',5\n')
+	#fd.close()
 	#print 'frequency from continuous FT = ' + str(cont_ft_freq)
 	#print 'max(fts)=' + str(max(fts)) + ' datasum=' + str(datasum)
 	vis_cont_ft = 2*max(fts) / datasum
