@@ -249,7 +249,7 @@ def coherence_length_func(xaxis, visibilities, residuals_func = lorentzian_resid
 	((amp, mu, sigma, off),dump) = leastsq(residuals_func, guess, (xaxis, visibilities))
 	return abs(sigma)
 	
-def load_zc_fringes(origin_image_shift, ts_list, binning):
+def load_zc_fringes(origin_image_shift, ts_list, binning, subtract_background=False):
 	shiftx, shifty, ampshift = origin_image_shift
 
 	#sorting by coarse position
@@ -257,6 +257,10 @@ def load_zc_fringes(origin_image_shift, ts_list, binning):
 	[oexperiment.meta.load() for oexperiment in oexperiment_list]
 	oexperiment_list.sort(key = lambda d: d.meta.parameters["coarse_position_meters"])
 
+	if subtract_background:
+		remove_background = lambda im, b: im - b
+	else:
+		remove_background = lambda im, b : im #do nothing
 	#print 'loading all data'
 	new_oexperiment_list = []
 	for i, oexperiment in enumerate(oexperiment_list):
@@ -266,13 +270,17 @@ def load_zc_fringes(origin_image_shift, ts_list, binning):
 		oexperiment.dataset["q_fringes"] = pbeca.InterferometerFringeData(oexperiment.ts, '_q_fringes.zip')
 		oexperiment.loadAllData()
 		
+		if subtract_background:
+			background_im = oexperiment.dataset["intensity_image_b"].data
+		else:
+			background_im = None
 		fromY, toY, fromX, toX = get_overlap_crop(oexperiment.dataset["p_fringes"].data[0],
 			oexperiment.dataset["q_fringes"].data[0], shiftx, shifty)
 		oexperiment.dataset['p_fringes'].data = array([
-			bin_image(colour_to_monochrome(crop(im, fromY, toY, fromX, toX)),binning=binning)
+			bin_image(colour_to_monochrome(crop(remove_background(im, background_im), fromY, toY, fromX, toX)),binning=binning)
 			for im in oexperiment.dataset['p_fringes'].data])
 		oexperiment.dataset['q_fringes'].data = array([
-			bin_image(crop(image_q_shift(colour_to_monochrome(im), shiftx, shifty, ampshift), fromY, toY, fromX, toX),binning=binning)
+			bin_image(crop(image_q_shift(colour_to_monochrome(remove_background(im, background_im)), shiftx, shifty, ampshift), fromY, toY, fromX, toX),binning=binning)
 			for im in oexperiment.dataset['q_fringes'].data])
 	print ' done'
 
