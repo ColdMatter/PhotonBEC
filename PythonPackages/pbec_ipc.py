@@ -23,7 +23,7 @@ def verbose(l):
 #avoid anything already well known http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
 DEFAULT_PORT = 47902
 #TODO write a dictionary mapping names to ports, then start_server() with a name instead of unmaintainable port numbers
-PORT_NUMBERS = {'cavity_lock': DEFAULT_PORT, 'laser_controller': DEFAULT_PORT+1}
+PORT_NUMBERS = {'cavity_lock': DEFAULT_PORT, 'laser_controller': DEFAULT_PORT+1, 'piezo_controller': DEFAULT_PORT+2}
 
 IPC_BIN_CLIENT_GREETING = 'pbecipcbin\r\n'
 IPC_TEXT_CLIENT_GREETING = 'pbecipctxt\r\n'
@@ -40,7 +40,7 @@ SOCK_RECV_BUFFER_SIZE = 4096
 # this integer is the length of the rest of the data
 #e.g. '\x00\x00\x00\x0bhello world'
 
-#the text protocol, where commands are seperated by line breaks is still around
+#the text protocol, where commands are separated by line breaks is still around
 # and can be used by putty or something
 	
 def sock_ipc_send(using_bin, sock, sock_fd, msg):
