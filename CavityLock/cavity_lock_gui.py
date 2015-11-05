@@ -35,7 +35,7 @@ class EmbeddedUpdatingGraph(FigureCanvas):
 		FigureCanvas.updateGeometry(self)
 		timer = QtCore.QTimer(self)
 		QtCore.QObject.connect(timer, QtCore.SIGNAL("timeout()"), self.update_figure)
-		timer.start(50) #in ms
+		timer.start(20) #in ms
 
 	def compute_initial_figure(self):
 		#self.axes211.set_xlabel("time (s since midnight)",fontsize=label_fontsize)

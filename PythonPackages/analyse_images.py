@@ -80,7 +80,7 @@ def fit_gaussian_to_image(im,maxfev=1000):
 
 def fit_and_plot_image(im_raw, ts, x0, y0, dx, dy, px, fignum=24):
 	subim=im_raw[x0-dx:x0+dx,y0-dy:y0+dy,:]
-	im = 1-(subim[:,:,0]+subim[:,:,1]) #crude conversion to black and white
+	im = (subim[:,:,0]+subim[:,:,1]) #crude conversion to black and white
 		#Also, sometimes 1-image is -1, which doesn't make sense
 	####im = im*(im>0) #HACK to ensure positive images
 

@@ -34,6 +34,9 @@ def getLambdaRange(lamb, fromL, toL):
 	#	)
 
 dllDirectory = "D:\\Control\\spectrometer"
+import socket
+if socket.gethostname().lower()=="ph-photonbec2":
+	dllDirectory="C:\\photonbec\\Control\\spectrometer"
 
 #always put these in try: finally: because if closeavs() doesnt get called you
 # will have to pull out and replace the spectrometer usb cable

@@ -13,11 +13,11 @@
 import sys,__main__
 from PyQt4 import QtGui
 import time
+import numpy as np
+sys.path.append("Y:\\Control\\PythonPackages\\")
+
 import cavity_lock_gui
 from stabiliser_class import Stabiliser
-import numpy as np
-
-sys.path.append("D:\\Control\\PythonPackages\\")
 import pbec_ipc
 
 if __name__=="__main__":

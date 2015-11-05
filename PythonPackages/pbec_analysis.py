@@ -26,7 +26,7 @@ if gethostname()=="ph-rnyman-01":
 	data_root_folder = "D:\\Data"
 	control_root_folder = "D:\\Control"
 	folder_separator="\\"
-elif gethostname()=="ph-photonbec2":
+elif gethostname()=="ph-photonbec2": #laptop
 	data_root_folder = "C:\\photonbec\\Data"
 	control_root_folder = "C:\\photonbec\\Control"
 	#data_root_folder = "Y:\\Data"

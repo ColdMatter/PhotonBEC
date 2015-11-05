@@ -4,10 +4,36 @@ sys.path.append("D:\\Control\\PythonPackages\\")
 from hene_utils import *
 import pbec_experiment
 import pbec_analysis
-import SingleChannelAO
 from pi_controller import PI_control
 import threading
 import traceback
+
+def set_cavity_length_voltage(v):
+	pass
+
+from socket import gethostname
+if gethostname()=="ph-rnyman-01":
+	camera_label = "flea"
+	import SingleChannelAO
+	def set_cavity_length_voltage(v):
+		SingleChannelAO.SetAO1(v)
+	dxdy = (180, 180)
+	min_acceptable_radius = 30
+elif gethostname()=="ph-photonbec2": #laptop
+	camera_label = "chameleon"
+	import ThorlabsMDT69xA as piezo
+	pzt = piezo.ThorlabsMDT69xA(Nchannels=1, keep_open=True)
+	def set_cavity_length_voltage(v):
+		pzt.setXvolts(v)
+	dxdy = (250, 250)
+	min_acceptable_radius = 50
+
+#flea is for the main experiment
+#chameleon for the mini-setup
+camera_config = {
+	'flea': {"auto_exposure": 0, "shutter": 0.3, "gain": 0, "frame_rate": 150},
+	'chameleon': {"auto_exposure": 0, "shutter": 0.03, "gain": 0, "frame_rate": 18}
+}
 
 class _StabiliserThread(threading.Thread):
 	def __init__(self,parent):
@@ -48,7 +74,8 @@ class _StabiliserThread(threading.Thread):
 					if parent.control_gain != 0:
 						parent.Vout = parent.control_gain * parent.pic.control_value() + parent.control_offset
 					#
-					SingleChannelAO.SetAO1(parent.Vout)
+					#SingleChannelAO.SetAO1(parent.Vout)
+					set_cavity_length_voltage(parent.Vout)
 					#Gather the outputs
 					r = {"ts":parent.ts, "ring_rad":parent.ring_rad, \
 						"Vout":round(parent.Vout,3), "pic value":parent.pic.control_value()}
@@ -71,7 +98,7 @@ class Stabiliser():
 		#------------------
 		self.error_message = None
 		self.channel=0 #red data only
-		self.cam_label="flea"
+		self.cam_label = camera_label
 		self.control_range = (0,1.0)
 		self.control_offset=mean(self.control_range)
 		self.control_gain = 0 #0-> no output voltage; 1-> full; -1-> negative
@@ -84,16 +111,17 @@ class Stabiliser():
 		#go to FlyCapGUI -> Settings dialog box -> Custom Video Modes
 		#Also, play with Packet size to try to eliminate image tearing problems
 		#self.dx,self.dy=200,200#180,180 #Image to be cut down to this size. Half-size in pixels
-		self.dx,self.dy=180,180#180,180 #Image to be cut down to this size. Half-size in pixels
+		self.dx,self.dy = dxdy #Image to be cut down to this size. Half-size in pixels
 		self.dx_search,self.dy_search=8,8 #range over which centre can be adjusted automatically. Half-size in pixels
 		#self.window_len = 2 #window for smoothing radial profiles for peak finding
 		self.window_len = 4 #window for smoothing radial profiles for peak finding
 		self.peak_window=25 #annular width around peak to measure width
-		self.min_acceptable_radius=30 #reject ring sizes less than this as being anomalies
+		self.min_acceptable_radius = min_acceptable_radius #reject ring sizes less than this as being anomalies
 		#Maybe it will be necessary to implement a maximum acceptable radius too.
 		
 		#--------------------
 		self.im_raw = []
+		#NOTE: TODO Add pre-definition of "r" for hene_utils.radial_profile. Only needs x0,y0, dx and dy to calculate. These are hard-coded, so never change
 		self.ts = None
 		self.centre=self.x0_est,self.y0_est
 		self.ring_rad=0#unknown!!!!
@@ -117,11 +145,13 @@ class Stabiliser():
 		self.initialise_thread()
 		#
 		self.Vout=mean(self.control_range)
-		SingleChannelAO.SetAO1(self.Vout) #Set up feedback with an offset voltage
+		#SingleChannelAO.SetAO1(self.Vout) #Set up feedback with an offset voltage
+		set_cavity_length_voltage(self.Vout)
 	
 	def set_voltage(self,voltage):
 		self.Vout = voltage
-		SingleChannelAO.SetAO1(self.Vout)
+		#SingleChannelAO.SetAO1(self.Vout)
+		set_cavity_length_voltage(self.Vout)
 		
 	def initialise_thread(self):
 		self.thread = _StabiliserThread(self) #don't start the thread until you want to acquire
@@ -141,8 +171,7 @@ class Stabiliser():
 		#Hard-coded image size "because reasons" [J. Marelic, 27/10/14]
 		cam_info=self.cam.setup()
 		#Default camera properties which need overriding
-		shutter_time=0.3 #was 0.02
-		set_dict = {"auto_exposure": 0, "shutter": shutter_time, "gain": 0, "frame_rate": 150}
+		set_dict = camera_config[camera_label]
 		#NOTE: 17/11/14: why are exposure and frame_rate not being set correctly automatically?
 		for key in set_dict:
 			self.cam.set_property(key, set_dict[key], auto=False)
