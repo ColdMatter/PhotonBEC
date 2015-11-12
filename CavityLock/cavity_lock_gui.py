@@ -7,7 +7,7 @@ from pylab import *
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-sys.path.append("D:\\Control\\PythonPackages\\")
+#sys.path.append("D:\\Control\\PythonPackages\\")
 import hene_utils
 
 #Default values for stabiliser

@@ -19,6 +19,11 @@ if gethostname()=="ph-rnyman-01":
 		SingleChannelAO.SetAO1(v)
 	dxdy = (180, 180)
 	min_acceptable_radius = 30
+	default_P_gain = -1.5e-3#-2e-4
+	default_I_gain = -1e-3#-5e-4
+	default_I_const = 20
+	default_II_gain = +100 #note sign is always positive: square of sign of I gain
+	default_II_const=200
 elif gethostname()=="ph-photonbec2": #laptop
 	camera_label = "chameleon"
 	import ThorlabsMDT69xA as piezo
@@ -27,7 +32,13 @@ elif gethostname()=="ph-photonbec2": #laptop
 		pzt.setXvolts(v)
 	dxdy = (250, 250)
 	min_acceptable_radius = 50
+	default_P_gain = 1.5e-3
+	default_I_gain = 5e-3#-5e-4
+	default_I_const = 20
+	default_II_gain = 8e-4 #note sign is always positive: square of sign of I gain
+	default_II_const = 250
 
+	
 #flea is for the main experiment
 #chameleon for the mini-setup
 camera_config = {
@@ -130,11 +141,6 @@ class Stabiliser():
 		self.cam = pbec_experiment.getCameraByLabel(self.cam_label) #the camera object
 		direct_gain_factor=1 #if the gain is too high, reduce this.
 		buffer_length=10 #was 200 a while ago...now mostly irrelevant
-		default_P_gain = -1.5e-3#-2e-4
-		default_I_gain = -1e-3#-5e-4
-		default_I_const = 20
-		default_II_gain = +100 #note sign is always positive: square of sign of I gain
-		default_II_const=200
 		self.pic = PI_control(P_gain = direct_gain_factor*default_P_gain,\
 			I_gain = direct_gain_factor*default_I_gain,I_const=default_I_const,\
 			II_gain = direct_gain_factor*default_II_gain,II_const=default_II_const,\
