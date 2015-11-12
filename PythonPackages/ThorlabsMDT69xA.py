@@ -6,7 +6,7 @@ hostname = gethostname()
 if gethostname()=="ph-rnyman-01":
 	comports={"3chan":3,"1chan":4}
 elif gethostname()=="ph-photonbec2":
-	comports={"3chan":4,"1chan":2}
+	comports={"3chan":4,"1chan":1}
 else:
 	print "This is not a control computer! Why do you want to control piezos?\n"
 

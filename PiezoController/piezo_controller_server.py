@@ -2,14 +2,21 @@
 import sys
 sys.path.append("D:\\Control\\PythonPackages\\")
 
+from serial import SerialException
+
 import pbec_ipc
 from ThorlabsMDT69xA import ThorlabsMDT69xA
 
 class PiezoControllerServer(object):
-	def __init__(self):
-		self.piezo_driver = ThorlabsMDT69xA()
-		self.piezo_driver.keep_open = True
-		ipc = pbec_ipc.IPCServer('localhost', pbec_ipc.PORT_NUMBERS['piezo_controller'], globals())
+	def __init__(self, glob=None):
+		self.piezo_driver = None
+		try:
+			self.setEnabled(True)
+		except Exception as e:
+			print 'setEnabled ' + repr(e)
+		if not glob:
+			glob = globals()
+		ipc = pbec_ipc.IPCServer('localhost', pbec_ipc.PORT_NUMBERS['piezo_controller'], glob)
 		ipc.start()
 
 	def setXvolts(self, V):
@@ -29,6 +36,23 @@ class PiezoControllerServer(object):
 	def getZvolts(self):
 		return self.piezo_driver.getZvolts()
 
+	def setEnabled(self, enabled):
+		if enabled:
+			try:
+				self.piezo_driver = None
+				self.piezo_driver = ThorlabsMDT69xA()
+				self.piezo_driver.keep_open = True
+			except (ValueError, SerialException) as e:
+				print 'piezo driver not switched on'
+				raise Exception(repr(e))
+		else:
+			if self.piezo_driver:
+				self.piezo_driver.ser.close()
+			self.piezo_driver = None
+			
+	def isEnabled(self):
+		return self.piezo_driver != None
+		
 if __name__ == "__main__":
 	running = True
 	pzt_server = None
