@@ -27,10 +27,10 @@ if gethostname()=="ph-rnyman-01":
 	control_root_folder = "D:\\Control"
 	folder_separator="\\"
 elif gethostname()=="ph-photonbec2": #laptop
-	data_root_folder = "C:\\photonbec\\Data"
-	control_root_folder = "C:\\photonbec\\Control"
-	#data_root_folder = "Y:\\Data"
-	#control_root_folder = "Y:\\Control"
+	#data_root_folder = "C:\\photonbec\\Data"
+	#control_root_folder = "C:\\photonbec\\Control"
+	data_root_folder = "Y:\\Data"
+	control_root_folder = "Y:\\Control"
 	folder_separator="\\"
 elif gethostname()=="ph-rnyman":
 	#only works for data that has been backed up to the local d_drive

@@ -17,7 +17,7 @@ if gethostname()=="ph-rnyman-01":
 	import SingleChannelAO
 	def set_cavity_length_voltage(v):
 		SingleChannelAO.SetAO1(v)
-	dxdy = (180, 180)
+	dxdy = (200, 200)
 	min_acceptable_radius = 30
 elif gethostname()=="ph-photonbec2": #laptop
 	camera_label = "chameleon"

@@ -175,8 +175,14 @@ def socket_exec(sock, expr):
 	return sock_ipc_recv(True, sock, None)
 
 def socket_close(sock):
-	sock_ipc_send(True, sock, None, 'close')
-	sock.close()
+	try:
+		sock_ipc_send(True, sock, None, 'close')
+	finally:
+		pass
+	try:
+		sock.close()
+	finally:
+		pass
 
 def ipc_eval(expr, port = 'cavity_lock'):
 	'''
