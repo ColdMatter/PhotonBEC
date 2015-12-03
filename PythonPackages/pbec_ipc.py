@@ -79,19 +79,32 @@ def sock_ipc_recv(using_bin, sock, sock_fd):
 		return input.rstrip()
 	
 class IPCServer(threading.Thread):
-	def __init__(self, host, port, evalGlobals):
+	def __init__(self, host, port, evalGlobals, threading_cond=None, threading_return=None):
 		threading.Thread.__init__(self)
 		self.daemon = True #die if other threads have ended too
 		self.address = (host, port)
 		self.closed = False
 		self.evalGlobals = evalGlobals
 		self.using_bin = True
+		self.threading_cond = threading_cond
+		self.threading_var = threading_return
 		
 	def run(self):
 		server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		#binding to localhost makes it faster, but then you can only use the same machine
 		# bind to '' to accept anywhere, but only when its actually needed
-		server_sock.bind(self.address)
+		if not self.threading_cond:
+			server_sock.bind(self.address)
+		else:
+			with self.threading_cond:
+				self.threading_var[0] = True
+				try:
+					server_sock.bind(self.address)
+				except:
+					self.threading_var[0] = False
+				self.threading_cond.notify()
+			if not self.threading_var[0]:
+				return
 		server_sock.listen(1)
 
 		while not self.closed:
@@ -153,7 +166,12 @@ class IPCServer(threading.Thread):
 		server_sock.close()
 
 def start_server(evalGlobals, port = DEFAULT_PORT, host = 'localhost'):
-	IPCServer(host, port, evalGlobals).start()
+	signal_cond = threading.Condition()
+	bind_successful = [True]
+	with signal_cond:
+		IPCServer(host, port, evalGlobals, signal_cond, bind_successful).start()
+		signal_cond.wait()
+	return bind_successful[0]
 
 def socket_connect(port = DEFAULT_PORT):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -38,7 +38,7 @@ class LaserQuantum():
 		ssplit = s.split("\r\n")
 		if len(ssplit)==1:
 			val=False
-			print "Laser controller probably switched off"
+			print "ERROR: Laser controller probably switched off"
 		else:
 			s2=s.split("\r\n")[-2]
 			if s2=="ENABLED":

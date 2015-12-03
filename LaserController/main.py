@@ -109,13 +109,6 @@ class PollPowerThread(threading.Thread):
 			if ui.power_timer_checkBox.isChecked():
 				getCurrentPower()
 
-
-ppt = PollPowerThread()
-ppt.daemon = True
-ppt.start()
-ui.power_timer_checkBox.setCheckState(QtCore.Qt.Checked)
-#ui.power_timer_checkBox.clicked.connect(power_timer_checked)
-
 if LaserQuantum().isEnabled():
 	ui.enable_checkBox.setCheckState(QtCore.Qt.Checked)
 else:
@@ -131,7 +124,13 @@ def isInteractive():
     return not(hasattr(__main__, '__file__'))
 
 if ~isInteractive():
-	pbec_ipc.start_server(globals(), port = 47903)
+	bind_success = pbec_ipc.start_server(globals(), port = 47903)
+	if not bind_success:
+		print 'Laser Controller already running, quitting...'
+	ppt = PollPowerThread()
+	ppt.daemon = True
+	ppt.start()
+	ui.power_timer_checkBox.setCheckState(QtCore.Qt.Checked)
 	sys.exit(app.exec_())
 
 

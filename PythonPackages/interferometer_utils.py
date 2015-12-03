@@ -12,7 +12,7 @@ import pbec_analysis as pbeca
 from scipy.signal import argrelmax, argrelmin
 import matplotlib.pyplot as plt
 
-colour_weights = (1, 1, 0, 0)
+colour_weights = (1, 1, 0, 0) 
 plot_graphs = False
 
 def find_freq_from_autocorrelation(t_axis, data, verbose=False):

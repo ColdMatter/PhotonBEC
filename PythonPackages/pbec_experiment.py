@@ -299,6 +299,7 @@ class __Camera(object):
 
 #note: you can have many keys mapping to the same serial number
 #so in the future "flea" "interferometer" "large chip" could all map to 14080462
+#TODO this is copied to pbec_analysis, stop using this version in pbec_experiment
 camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
 			"flea": 4.8e-6, "grasshopper": 5.86e-6, "grasshopper_2d":5.86e-6}
 

@@ -20,6 +20,11 @@ point_grey_flea_pixel_size = 4.8e-6
 
 interferometer_piezo_calibration_nm_movement_per_volt = 294.1 #see lab book 24/11/2014
 
+#note: you can have many keys mapping to the same serial number
+#so in the future "flea" "interferometer" "large chip" could all map to 14080462
+camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
+			"flea": 4.8e-6, "grasshopper": 5.86e-6, "grasshopper_2d":5.86e-6}
+
 hostname = gethostname()
 if gethostname()=="ph-rnyman-01":
 	#ph-photonbec is also carries the name "ph-rnyman-01". Bah.
