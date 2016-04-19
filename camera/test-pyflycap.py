@@ -6,10 +6,11 @@ from scipy.misc import imsave
 import sys, pprint, threading, time
 
 
-CHAMELEON = 12350594
+CHAMELEON = 15299245
 FLEA = 14080462
 GRASSHOPPER = 14110879
-serialNumbers = {"chameleon": CHAMELEON, "flea": FLEA, "grasshopper": GRASSHOPPER}
+GRASSHOPPER_2 = 14435619
+serialNumbers = {"chameleon": CHAMELEON, "flea": FLEA, "grasshopper": GRASSHOPPER, "grasshopper2": GRASSHOPPER_2}
 
 dllLocation = "D:\\Control\\camera"
 serialNumber = 0 #any camera
@@ -33,10 +34,10 @@ try:
 	handle = meta[0]
 	data = None
 	
-	test = 1
+	test = 0
 	if test == 0:
 		prop = pyflycap.getproperty(handle, PROPERTY_TYPE_MAPPING["shutter"])
-		print("shutter property = " + str(prop) + '\n')
+		print("shutter property = " + str(prop))
 		for name, type in PROPERTY_TYPE_MAPPING.iteritems():
 			info = pyflycap.getpropertyinfo(handle, type)
 			print("\t" + name + " " + str(info))
@@ -51,8 +52,8 @@ try:
 		for i in range(3):
 			pyflycap.setproperty(handle, prop)
 			
-			format7config[0] = (i + 1)*50
-			format7config[1] = (i + 1)*80
+			format7config[0] = (i + 1)*32
+			format7config[1] = (i + 1)*64
 			pyflycap.setformat7config(handle, format7config)
 		
 			dataTuple = pyflycap.getflycapimage(handle)

@@ -19,9 +19,9 @@ post_binning = int(raw_input("post-processing binning[4] :") or 4)
 saving = raw_input("saving? leave blank for false: ") != ""
 print('saving = ' + str(saving))
 
-#magnification = 3.4 #imaging system magnification. Measured 4/8/14 for main chameleon
+magnification = 3.4 #imaging system magnification. Measured 4/8/14 for main chameleon
 #magnification = 3.6 #imaging system magnification. Measured 29/8/14 for flea
-magnification = 3.26 #imaging system magnification. Measured 27/10/15 for mini setup chameleon
+#magnification = 3.26 #imaging system magnification. Measured 27/10/15 for mini setup chameleon
 binning = 1 #please set manually, Settings -> Standard Video Modes -> 640x480 for bin=2
 px = binning * camera_pixel_size_map[camera_name] / magnification
 x0,y0=400,400 #defines center of subimage search area, without taking into account post-binning

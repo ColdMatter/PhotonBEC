@@ -5,8 +5,10 @@ from socket import gethostname
 hostname = gethostname()
 if gethostname()=="ph-rnyman-01":
 	comports={"3chan":3,"1chan":4}
+	default_Nchannels=3
 elif gethostname()=="ph-photonbec2":
-	comports={"3chan":4,"1chan":3}
+	default_Nchannels=1
+	comports={"3chan":4,"1chan":2}
 else:
 	print "This is not a control computer! Why do you want to control piezos?\n"
 
@@ -14,7 +16,7 @@ baud_rates={"3chan":115200,"1chan":115200} #Don't know why they're different
 model_numbers={"3chan":"MDT693B","1chan":"MDT694A"}
 
 class ThorlabsMDT69xA():
-    def __init__(self, Nchannels=3, keep_open=False):
+    def __init__(self, Nchannels=default_Nchannels, keep_open=False):
         self.Nchannels=Nchannels
         if Nchannels not in [1, 3]:
                 print "Unknown number of channels. Try again with either 3 or 1"

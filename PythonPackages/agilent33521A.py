@@ -38,6 +38,10 @@ class AgilentFunctionGenerator():
 	def setTTLOut(self):
 		self.writeCommand("SOUR:VOLT:HIGH 5")
 		self.writeCommand("SOUR:VOLT:LOW 0")
+	def setHighV(self, V):
+		self.writeCommand("SOUR:VOLT:HIGH "+str(V))
+	def setLowV(self, V):
+		self.writeCommand("SOUR:VOLT:LOW "+str(V))
 	def setDefaultParams(self):
 		self.outputOn()
 		self.setOutputHighZ()

@@ -14,7 +14,8 @@ import sys,__main__
 from PyQt4 import QtGui
 import time
 import numpy as np
-sys.path.append("C:\\photonbec\\Control\\PythonPackages\\")
+#sys.path.append("C:\\photonbec\\Control\\PythonPackages\\")
+sys.path.append("D:\Control\CavityLock")
 
 import cavity_lock_gui
 from stabiliser_class import Stabiliser

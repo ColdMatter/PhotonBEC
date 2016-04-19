@@ -55,6 +55,9 @@ def parabola_residuals(pars, xdata, parabola_row_size):
 	return ( xdata -  calc_data )**2
 	
 def colour_mask_image(im_raw, colour_weights):
+	'''
+	turns an image with three channels into a greyscale image
+	'''
 	return sum([colour_weights[j]*im_raw[:,:,j] for j in range(im_raw.shape[-1])], 0)
 
 
@@ -71,6 +74,8 @@ def find_max_pixel(im):
 
 #floodfill algorithm with special requirements
 # for instance also finds the max and min rows that were filled in
+#flood fills pixels with zero until it reaches a boundary
+#returns the boundaries in y that the flood fill reached
 def floodfill(im, startP, borderThreshold):
 	minFilledRow = im.shape[0]
 	maxFilledRow = 0

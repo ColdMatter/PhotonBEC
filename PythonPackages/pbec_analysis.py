@@ -80,8 +80,10 @@ except AttributeError:
 
 def number_distn(lam, lam0, T, amplitude, mu, offset):
 	"""
-	Calculation of expected number vs wavelength for thermalised photons
+	Calculation of expected number vs energy for thermalised photons
 	uses bose-einstein distribution, or boltzmann distribution if mu=0
+	
+	equations taken from 201404_normalising_be_distn.pdf
 	"""
 	#lam: wavelength
 	#lam0: cutoff wavelengths, corresponding to minimum accesible energy
@@ -315,7 +317,7 @@ class ExperimentalData(object):
 		self.data = data
 	def saveData(self):
 		raise Exception('called an abstract method')
-	def loadData(self):
+	def loadData(self, load_params):
 		raise Exception('called an abstract method')
 	def copy(self):
 		raise Exception('called an abstract method')
@@ -326,7 +328,7 @@ class CameraData(ExperimentalData):
 	def saveData(self):
 		filename = self.getFileName(make_folder=True)
 		imsave(filename, self.data)
-	def loadData(self):
+	def loadData(self, load_params):
 		filename = self.getFileName()
 		self.data = imread(filename)
 	def copy(self):
@@ -344,7 +346,8 @@ class SpectrometerData(ExperimentalData):
 		fil = open(filename, "w")
 		fil.write(js)
 		fil.close()	
-	def loadData(self, correct_transmission=True, shift_spectrum="spherical"):
+	def loadData(self, load_params, correct_transmission=True, shift_spectrum="spherical",mirrorTransmissionFunc=None):
+		###this is borderline backwards compatible
 		filename = self.getFileName()
 		fil = open(filename, "r")
 		raw_json = fil.read()
@@ -353,8 +356,11 @@ class SpectrometerData(ExperimentalData):
 		self.__dict__.update(decoded)
 		self.lamb = array(self.lamb)
 		self.spectrum = array(self.spectrum)
-		if correct_transmission:
-			transmissions = UltrafastMirrorTransmission(self.lamb, shift_spectrum=shift_spectrum)
+		if mirrorTransmissionFunc==None:
+			#modified 25/3/2016 by RAN
+			mirrorTransmissionFunc = UltrafastMirrorTransmission
+		if (load_params != None and load_params['spectrum_correct_transmission']) or (load_params == None and correct_transmission):
+			transmissions = mirrorTransmissionFunc(self.lamb, shift_spectrum=load_params['spectrum_shift_spectrum'])
 			self.spectrum = self.spectrum / transmissions	
 	def copy(self):
 		d = SpectrometerData(self.ts)
@@ -371,7 +377,7 @@ class InterferometerFringeData(ExperimentalData):
 			save_image_set(self.data, self.ts, self.extension)
 		else:
 			print "pbec_analysis.InterferometerFringeData warning: .data nonexistent, hence not saved"
-	def loadData(self):
+	def loadData(self, load_params):
 		self.data = load_image_set(self.ts, self.extension)
 	def copy(self):
 		c = InterferometerFringeData(self.ts)
@@ -451,11 +457,11 @@ class ExperimentalDataSet():
 		self.meta.load()
 		for (data_name,(data_class, extension)) in self.meta.dataset.iteritems():
 			self.dataset[data_name]=eval(data_class+"('"+self.ts+"', extension ='"+extension+"')")
-	def loadAllData(self):
+	def loadAllData(self, load_params=None):
 		#Should really try...except...finally
 		self.constructDataSet()
 		for data in self.dataset.values():
-			data.loadData()
+			data.loadData(load_params)
 
 
 
@@ -563,6 +569,39 @@ def smooth(x,window_len=10,window='hanning'):
     y=convolve(w/w.sum(),s,mode='same')
     return y[window_len-1:-window_len+1]
 
+def smooth_nD(x,window_len=10,window='hanning',axis=0):
+	#smooths nD data along one axis only.
+	from scipy.ndimage.filters import convolve
+	#axis argument still in testing
+	if x.ndim > 3: raise ValueError, "smooth only accepts 1,2 or 3 dimensional arrays."
+	if x.size < window_len: raise ValueError, "Input vector needs to be bigger than window size."
+	if window_len<3: return x
+	if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+		raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+
+	if window == 'flat': #moving average
+		w=ones(window_len,'d')
+	else:
+		w=eval(window+'(window_len)')
+    #
+	#Now extrude the 1D window into nD, along the correct axis
+	#if x.ndim==1: w_temp = ones()
+	if x.ndim==2:
+		if axis==0: 
+			w = array([w]) #seems to work
+		elif axis==1: 
+			w.transpose()#seems to work
+	elif x.ndim==3:
+		w = array([[w]]) #seems to work
+		if axis==1: 
+			w = w.transpose((2,1,0)) #seems to work
+		elif axis==0: 
+			w = w.transpose((0,2,1)) #seems to work
+	
+	y=convolve(x, w/w.sum(),mode='reflect')
+	return y
+
+	
 def UltrafastMirrorTransmission(interpolated_wavelengths,refractive_index = "144",shift_spectrum="planar",rescale_factor=5.2):
 	"""
 	Can be used for any wavelengths in the range 400 to 1000 (UNITS: nm)
@@ -595,6 +634,44 @@ def UltrafastMirrorTransmission(interpolated_wavelengths,refractive_index = "144
 	interpolated_transmissions = interpolated_transmissions / rescale_factor
 	
 	return interpolated_transmissions
+
+def LaserOptikMirrorTransmission(interpolated_wavelengths,refractive_index = "100", shift_spectrum="planar",rescale_factor=1):
+	"""
+	Can be used for any wavelengths in the range 400 to 800 (UNITS: nm)
+	Uses supplied calculation from LaserOptik
+	Interpolate over selected wavelengths: returns a function which takes wavelength (nm) as argument
+	Shifts transmission spectrum with calibration still to come, likewise for "rescale_factor"
+	"refractive_index" argument is only for backwards compatibility
+	"""
+        reflectivity_folder = data_root_folder + folder_separator+ "calibration_data" + folder_separator
+        #reflectivity_folder = "./"
+        reflectivity_filename = "LaserOptik20160129_Theorie_T.DAT"
+
+        fname = reflectivity_folder+reflectivity_filename
+        res = csv.reader(open(fname), delimiter='\t')
+        refl_text = [x for x in res][1:] #removes column headings
+
+        original_wavelengths = array([float(l[0]) for l in refl_text])
+        original_transmissions = array([float(l[1]) for l in refl_text])
+        original_reflectivities = 1-original_transmissions 
+	#
+	wavelength_shift = 0
+	if shift_spectrum == "planar": #shift to be measured
+		wavelength_shift = 0
+	elif shift_spectrum == "spherical":
+		wavelength_shift = 0 # shift to be measured
+	elif isinstance(shift_spectrum,Number):
+		wavelength_shift = shift_spectrum
+	#
+	interpolated_transmission_func = interp1d(original_wavelengths,original_transmissions)
+	interpolated_transmissions = interpolated_transmission_func(interpolated_wavelengths + wavelength_shift)
+	
+	#Transmission to be calibrated at at least one narrow wavelength
+	#Assume transmission scales with this factor at all wavelengths [not well justified assumption]
+	interpolated_transmissions = interpolated_transmissions / rescale_factor
+	
+	return interpolated_transmissions
+
 
 def getLambdaRange(lamb, fromL, toL):
 	lam = [(i,l) for (i,l) in enumerate(lamb) if (l>fromL) and (l<=toL)]
