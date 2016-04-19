@@ -13,7 +13,9 @@ import zipfile
 import io
 #from numpy import ones
 
-pbec_prefix = "pbec"
+#pbec_prefix = "pbec" #TO OVERRIDE THE pbec_prefix, DO THIS,FOR EXAMPLE:
+#>>>> import pbec_analysis
+#>>>> pbec_analysis.pbec_prefix = "mini"
 point_grey_chameleon_pixel_size = 3.75e-6
 point_grey_grasshopper_pixel_size = 5.86e-6
 point_grey_flea_pixel_size = 4.8e-6
@@ -25,30 +27,36 @@ interferometer_piezo_calibration_nm_movement_per_volt = 294.1 #see lab book 24/1
 camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
 			"flea": 4.8e-6, "grasshopper": 5.86e-6, "grasshopper_2d":5.86e-6}
 
+
 hostname = gethostname()
 if gethostname()=="ph-rnyman-01":
 	#ph-photonbec is also carries the name "ph-rnyman-01". Bah.
 	data_root_folder = "D:\\Data"
 	control_root_folder = "D:\\Control"
 	folder_separator="\\"
+	pbec_prefix = "pbec"
 elif gethostname()=="ph-photonbec2": #laptop
 	#data_root_folder = "C:\\photonbec\\Data"
 	#control_root_folder = "C:\\photonbec\\Control"
 	data_root_folder = "Y:\\Data"
 	control_root_folder = "Y:\\Control"
 	folder_separator="\\"
+	pbec_prefix = "mini"
 elif gethostname()=="ph-rnyman":
 	#only works for data that has been backed up to the local d_drive
 	data_root_folder = "/home/d_drive/Experiment/photonbec/Data"
 	#data_root_folder = "./Data"
 	control_root_folder = "/home/d_drive/Experiment/photonbec/Control"
 	folder_separator="/"
+	pbec_prefix = "pbec"
 elif gethostname()=="Potato3":
 	#only works for data that copied to correct part of Temp folder
         data_root_folder =  "C:\\stuff\\temp\\Imperial_PhotonBEC\\Data\\"
         control_root_folder = "C:\\stuff\\temp\\Imperial_PhotonBEC\\Control_partial\\"
 	folder_separator="\\"
+	pbec_prefix = "pbec"
 else:
+	pbec_prefix = "pbec"
 	folder_separator = os.sep
 	test_dirs = ["Analysis", "analysis", "Data", "data"] #coded 01/4/14 by JM, with luck should work anywhere
 	pathlist = os.getcwd().split(os.sep)
