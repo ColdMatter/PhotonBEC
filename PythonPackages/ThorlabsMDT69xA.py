@@ -1,7 +1,7 @@
 #execfile("ThorlabsMDT69xA.py")
 import serial
 from socket import gethostname
-
+#noisy line added 19/4/16
 hostname = gethostname()
 if gethostname()=="ph-rnyman-01":
 	comports={"3chan":3,"1chan":4}
