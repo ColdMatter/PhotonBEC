@@ -7,7 +7,10 @@ int main(void) {
 	
 	HMODULE lib = LoadLibrary(".\\avs-spectro\\Debug\\avs-spectro.dll");
 	if(!lib)
-		return printf("LoadLibrary(): %\n", GetLastError());
+		printf("first error LoadLibrary(): %d\n", GetLastError());
+		lib = LoadLibrary("avs-spectro.dll");
+		if(!lib)
+			return printf("LoadLibrary(): %d\n", GetLastError());
 	printf("loaded dll\n");
 
 	/*	

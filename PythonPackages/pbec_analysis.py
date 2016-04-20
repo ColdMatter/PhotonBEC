@@ -37,9 +37,9 @@ if gethostname()=="ph-rnyman-01":
 	pbec_prefix = "pbec"
 elif gethostname()=="ph-photonbec2": #laptop
 	#data_root_folder = "C:\\photonbec\\Data"
-	#control_root_folder = "C:\\photonbec\\Control"
+	control_root_folder = "C:\\photonbec\\Control"
 	data_root_folder = "Y:\\Data"
-	control_root_folder = "Y:\\Control"
+	#control_root_folder = "Y:\\Control"
 	folder_separator="\\"
 	pbec_prefix = "mini"
 elif gethostname()=="ph-rnyman":

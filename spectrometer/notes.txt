@@ -31,3 +31,7 @@ its possible to convert scope data (ADC counts) to power distribution, ctrl+f it
 
 btw for dlls in MSVS use dumpbin \exports <nameofdll> to see the names 
  in the developer command promopt for VS2012
+ 
+ 
+ 20/4/2016
+ to open the microsoft visual studios project, make sure to open it using the .sln, the so-called solution file

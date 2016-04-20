@@ -303,8 +303,8 @@ class __Camera(object):
 camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
 			"flea": 4.8e-6, "grasshopper": 5.86e-6, "grasshopper_2d":5.86e-6}
 
-serialNumber_cameraLabel_map = {"int_chameleon": 14110699, "chameleon": 15299245,
-			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 14110699}
+serialNumber_cameraLabel_map = {"chameleon": 15299245,
+			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 12350594}
 def getCameraByLabel(label):
 	number = 0
 	if label != None:
