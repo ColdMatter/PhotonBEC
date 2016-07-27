@@ -49,9 +49,16 @@ class Spectrometer(object):
 			#self.setup()
 		return self.instance
 		
+	def __init__(self,do_setup=True):
+		#Added 27/7/16 by RAN and BTW
+		if do_setup:
+			self.setup()
+		
 	def setup(self):
 		dllDirectory = pbec_analysis.control_root_folder + "\\spectrometer\\"
+		#print "dllDirectory is" + str(dllDirectory)
 		if self.open:
+			print "already open"
 			pass #ADDED 28/8/14 by RAN
 			#raise IOError("spectrometer is already setup")
 		try:

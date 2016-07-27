@@ -1,5 +1,3 @@
-﻿  stdafx.cpp
-  avs-spectro.cpp
-  dllmain.cpp
+﻿  dllmain.cpp
      Creating library C:\photonbec\Control\spectrometer\avs-spectro\Debug\avs-spectro.lib and object C:\photonbec\Control\spectrometer\avs-spectro\Debug\avs-spectro.exp
   avs-spectro.vcxproj -> C:\photonbec\Control\spectrometer\avs-spectro\Debug\avs-spectro.dll

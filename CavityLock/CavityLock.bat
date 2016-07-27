@@ -1,2 +1,2 @@
-python D:/Control/CavityLock/cavity_lock.py
+python C:/photonbec/Control/CavityLock/cavity_lock.py
 pause 

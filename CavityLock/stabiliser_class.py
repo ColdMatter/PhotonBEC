@@ -14,6 +14,8 @@ def set_cavity_length_voltage(v):
 from socket import gethostname
 if gethostname()=="ph-rnyman-01":
 	camera_label = "flea"
+	hardwidth = 800
+	hardheight = 800 #image size for flea
 	import SingleChannelAO
 	def set_cavity_length_voltage(v):
 		SingleChannelAO.SetAO1(v)
@@ -24,26 +26,34 @@ if gethostname()=="ph-rnyman-01":
 	default_I_const = 20
 	default_II_gain = +100 #note sign is always positive: square of sign of I gain
 	default_II_const=200
+	default_control_range = (0,1.0)
 elif gethostname()=="ph-photonbec2": #laptop
-	camera_label = "chameleon"
-	import ThorlabsMDT69xA as piezo
-	pzt = piezo.ThorlabsMDT69xA(Nchannels=1, keep_open=True)
+	camera_label = "minisetup_chameleon"
+	hardwidth = 1280
+	hardheight = 960 #image size for minisetup_chameleon
+	#import ThorlabsMDT69xA as piezo
+	#pzt = piezo.ThorlabsMDT69xA(Nchannels=1, keep_open=True)
+	#def set_cavity_length_voltage(v):
+	#	pzt.setXvolts(v)
+	import SingleChannelAO
 	def set_cavity_length_voltage(v):
-		pzt.setXvolts(v)
-	dxdy = (250, 250)
-	min_acceptable_radius = 50
-	default_P_gain = 1.5e-3
-	default_I_gain = 5e-3#-5e-4
+		SingleChannelAO.SetAO1(v)
+	dxdy = (400, 400)
+	min_acceptable_radius = 30#50
+	default_P_gain = +0.01#1.5e-3
+	default_I_gain = +0.05#5e-3#-5e-4
 	default_I_const = 20
-	default_II_gain = 8e-4 #note sign is always positive: square of sign of I gain
-	default_II_const = 250
+	default_II_gain = +30#8e-4 #note sign is always positive: square of sign of I gain
+	default_II_const = 200#250
+	default_control_range = (0,3.0)
 
 	
 #flea is for the main experiment
 #chameleon for the mini-setup
 camera_config = {
 	'flea': {"auto_exposure": 0, "shutter": 4, "gain": 0, "frame_rate": 150},
-	'chameleon': {"auto_exposure": 0, "shutter": 0.03, "gain": 0, "frame_rate": 18}
+	'chameleon': {"auto_exposure": 0, "shutter": 0.03, "gain": 0, "frame_rate": 18},
+	'minisetup_chameleon': {"auto_exposure": 0, "shutter": 0.04, "gain": 0, "frame_rate": 18}
 }
 
 class _StabiliserThread(threading.Thread):
@@ -110,7 +120,11 @@ class Stabiliser():
 		self.error_message = None
 		self.channel=0 #red data only
 		self.cam_label = camera_label
-		self.control_range = (0,1.0)
+		#if gethostname()=="ph-rnyman-01": #altered by Walker 6/5/16 to include mini_setup
+		#	self.control_range = (0,1.0)
+		#elif gethostname()=="ph-photonbec2": #laptop
+		#	self.control_range = (0,1.0)
+		self.control_range = default_control_range
 		self.control_offset=mean(self.control_range)
 		self.control_gain = 0 #0-> no output voltage; 1-> full; -1-> negative
 		#self.bandwidth_throttle=0.15 #slows down acquisition so other devices can use USB
@@ -173,7 +187,7 @@ class Stabiliser():
 			radial_profile_smooth_len=1,peak_radial_width_window=self.peak_window)
 		#TODO: also infer ring radius, self.ring_rad = ring_radius(....)
 
-	def start_acquisition(self,width=800,height=800):
+	def start_acquisition(self,width=hardwidth,height=hardheight):
 		#Hard-coded image size "because reasons" [J. Marelic, 27/10/14]
 		cam_info=self.cam.setup()
 		#Default camera properties which need overriding
@@ -181,7 +195,7 @@ class Stabiliser():
 		#NOTE: 17/11/14: why are exposure and frame_rate not being set correctly automatically?
 		for key in set_dict:
 			self.cam.set_property(key, set_dict[key], auto=False)
-		self.cam.set_centered_region_of_interest(width, height)
+		#self.cam.set_centered_region_of_interest(width, height)
 		self.thread.paused=False
 		
 	def stop_acquisition(self):
