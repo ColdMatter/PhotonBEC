@@ -1,3 +1,7 @@
 *.pyc
 *.pyd
 Experiments/
+*.exe
+spectrometer/avs-spectro.dll
+spectrometer/avs-spectro/Debug/*
+spectrometer/avs-spectro/avs-spectro/Debug/*
