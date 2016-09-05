@@ -49,6 +49,13 @@ elif gethostname()=="ph-rnyman":
 	control_root_folder = "/home/d_drive/Experiment/photonbec/Control"
 	folder_separator="/"
 	pbec_prefix = "pbec"
+elif gethostname()=="ph-rnyman2":
+	#only works for data that has been backed up to the local d_drive
+	data_root_folder = "/home/d_drive/Experiment/photonbec/Data"
+	#data_root_folder = "./Data"
+	control_root_folder = "/home/d_drive/Experiment/photonbec/Control"
+	folder_separator="/"
+	pbec_prefix = "pbec"
 elif gethostname()=="Potato3":
 	#only works for data that copied to correct part of Temp folder
         data_root_folder =  "C:\\stuff\\temp\\Imperial_PhotonBEC\\Data\\"

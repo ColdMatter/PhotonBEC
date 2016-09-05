@@ -96,7 +96,7 @@ def calc_visibility_fourier(signal, axis=0, ratio_freq=0, f_search_range = 0.04,
 		visibilities = [None]
 	return visibilities
 
-def colour_to_monochrome(im):
+def colour_to_monochrome(im, colour_weights=colour_weights):
 	return sum(im*colour_weights, 2) / sum(colour_weights)
 
 def calc_visibility_mm(signal, axis=0):

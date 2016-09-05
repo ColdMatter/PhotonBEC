@@ -51,6 +51,8 @@ class AgilentFunctionGenerator():
 		self.setTTLOut()
 	def getPulseWidth(self):
 		return self.agilent.ask("FUNC:PULS:WIDT?\r\n")
+	def getFrequency(self):
+		return self.agilent.ask("FREQ?\r\n")
 
 #TESTING
 """

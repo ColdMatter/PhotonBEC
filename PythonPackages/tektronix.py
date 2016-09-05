@@ -3,18 +3,24 @@
 #ipython --gui=qt
 #exec(open("tektronix.py").read())
 import visa
+
 from pylab import *
 
 #---------------------------------
 #USB-BASED TEKTRONIX OSCILLOSCOPE CLASS
 #---------------------------------
 class Tektronix():
-	def __init__(self,USB_name="USB0::0x0699::0x03AA::C013639"):
+	def __init__(self,USB_name="USB0::0x0699::0x03AA::C013639", binary=False):
 		USB_name = USB_name
 		self.tek = visa.instrument(USB_name)
 		s = self.tek.ask("SELECT?")
 		select_list = s.split(";")
 		self.Nchannels = len(select_list)/ 2 #NOT CHECKED FOR 4-CHAN SCOPE, but expected to work
+		self.binary = binary
+		if binary:
+			self.tek.write("WFMPre:ENC BIN")
+		else:
+			self.tek.write("WFMPre:ENC ASC")
 	def stopAcquisition(self):
 		self.tek.write("ACQ:STATE STOP")
 	def startAcquisition(self, run_once=False):
@@ -62,11 +68,14 @@ class Tektronix():
 	def getVoltageScales(self):
 		voltage_scales = zeros(self.Nchannels)
 		for chan in self.getActiveChannels():
-			self.tek.write("DATA:SOURCE CH"+str(chan))
-			voltage_scales[chan-1]=float(self.tek.ask("WFMPRE:YMULT?"))
+			#self.tek.write("DATA:SOURCE CH"+str(chan))
+			#voltage_scales[chan-1]=float(self.tek.ask("WFMPRE:YMULT?"))
+			voltage_scales[chan-1]=float(self.tek.ask("CH1:VOLTS?"))
 		return voltage_scales #zero values for inactive channels
-	def setVoltageScales(self,channel):
-		pass #TODO 
+	def setVoltageScale(self, chan, scale):
+		self.tek.write("DATA:SOURCE CH"+str(chan))
+		#self.tek.write("WFMPre:YMULT " + str(scale))
+		self.tek.write("CH1:VOLTS " + str(scale))
 	def getData(self):
 		voltage_scales = self.getVoltageScales()
 		channel_data = [[]]*self.Nchannels #empty lists for data
@@ -80,6 +89,40 @@ class Tektronix():
 		t_data = xincr*array(range(len(channel_data[chan-1])))
 		return t_data,channel_data #empty arrays for inactive channels
 
+	###faster routines for obtaining data
+	def getTData(self, rawchanneldata):
+		xincr=float(self.tek.ask("WFMPRE:XINCR?"))
+		if self.binary:
+			data_list = rawchanneldata
+		else:
+			data_list = rawchanneldata.split(",")
+		t_data = xincr*array(range(len(data_list)))
+		return t_data
+	def setChannel(self, chan):
+		self.tek.write("DATA:SOURCE CH "+str(chan))
+	def setDataRange(self, start=0, stop=2500):
+		''' start and stop are in the range [0, 2500] '''
+		self.tek.write("DATa:STARt " + str(start))
+		self.tek.write("DATa:STOP " + str(stop))
+	def getRawChannelDataAsString(self):
+		curve = self.tek.ask("CURVE?")
+		return curve
+		
+	def close(self):
+		self.tek.close()
+	
+	def get_voltage_conversion_values(self):
+		yoff = float(self.tek.ask("WFMPre:YOFf?"))
+		ymult = float(self.tek.ask("WFMPre:YMUlt?"))
+		yzero = float(self.tek.ask("WFMPre:YZEro?"))
+		return (yoff, ymult, yzero)
+	
+	def convert_raw_data_to_volts(self, curve_in_dl, conversion_values):
+		yoff, ymult, yzero = conversion_values
+		##see page 212 in manual Tektronix_TDS1001C_EDU_programmer_manual.pdf
+		value_in_YUNits = ((curve_in_dl - yoff) * ymult) + yzero
+		return value_in_YUNits
+		
 if 0:
 	tek = Tektronix()
 

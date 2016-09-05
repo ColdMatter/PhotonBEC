@@ -19,10 +19,10 @@ if gethostname()=="ph-rnyman-01":
 		SingleChannelAO.SetAO1(v)
 	dxdy = (200, 200)
 	min_acceptable_radius = 30
-	default_P_gain = -1.5e-3#-2e-4
-	default_I_gain = -3e-3#-5e-4
+	default_P_gain = -1.5e-3
+	default_I_gain = -1e-3
 	default_I_const = 20
-	default_II_gain = +100 #note sign is always positive: square of sign of I gain
+	default_II_gain = +20 #note sign is always positive: square of sign of I gain
 	default_II_const=200
 elif gethostname()=="ph-photonbec2": #laptop
 	camera_label = "chameleon"
@@ -42,7 +42,7 @@ elif gethostname()=="ph-photonbec2": #laptop
 #flea is for the main experiment
 #chameleon for the mini-setup
 camera_config = {
-	'flea': {"auto_exposure": 0, "shutter": 4, "gain": 0, "frame_rate": 150},
+	'flea': {"auto_exposure": 0, "shutter": 1, "gain": 0, "frame_rate": 150},
 	'chameleon': {"auto_exposure": 0, "shutter": 0.03, "gain": 0, "frame_rate": 18}
 }
 
@@ -117,7 +117,7 @@ class Stabiliser():
 		self.bandwidth_throttle=0.001 #slows down acquisition so other devices can use USB
 		self.print_frequency =0#for diagnostic purposes
 		#
-		self.x0_est,self.y0_est=389,474	#approximate centre of rings, in pixels
+		self.x0_est,self.y0_est=400,400	#approximate centre of rings, in pixels
 		#The centre assumes an on-CCD RoI of width w800 x h800, left 240, top 112 (centred)
 		#go to FlyCapGUI -> Settings dialog box -> Custom Video Modes
 		#Also, play with Packet size to try to eliminate image tearing problems
