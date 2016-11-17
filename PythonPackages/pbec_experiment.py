@@ -14,25 +14,10 @@ import pyflycap
 import pyspectro
 import SingleChannelAO, SingleChannelAI, LaserQuantum
 
+import spectrometer_utils
+
 def getLambdaRange(lamb, fromL, toL):
-	assert(fromL <= toL)
-	assert(fromL >= lamb[0])
-	assert(toL <= lamb[-1])
-	hi = 0 #this is a crap way of doing it but this function
-	lo = 0 # isnt a bottleneck so the speed hit doesnt matter
-	for i, v in enumerate(lamb):
-		if v > fromL:
-			lo = i
-			break
-	for i, v in enumerate(lamb):
-		if v > toL:
-			hi = i
-			break
-	return (hi, low)
-	#return (
-	#	int( (fromL - lamb[0]) * len(lamb) / (lamb[-1] - lamb[0]) ),
-	#	int( (toL - lamb[0]) * len(lamb) / (lamb[-1] - lamb[0]) )
-	#	)
+	return spectrometer_utils.get_lambda_range(lamb, fromL, toL)
 
 class Spectrometer(object):
 

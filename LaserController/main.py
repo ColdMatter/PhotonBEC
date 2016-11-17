@@ -65,7 +65,7 @@ ui.powerSlider.sliderReleased.connect(setValueChangedBySlider)
 #---Text control for power------
 def setValueChangedByText():
     try:
-		newValue = int(ui.setText.text())
+		newValue = float(ui.setText.text())
     except:
 		pass
     else:
