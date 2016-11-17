@@ -6,8 +6,10 @@ from PyQt4 import QtGui, QtCore
 from pylab import *
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from socket import gethostname
 
 sys.path.append("D:\\Control\\PythonPackages\\")
+sys.path.append("C:\\photonbec\\Control\\PythonPackages\\") #for laptop ph-photonbec2
 import hene_utils
 
 #Default values for stabiliser
@@ -131,15 +133,21 @@ class DisplayCameraImageCanvas(FigureCanvas):
 		#p = self.axesImage.get_axes().get_position().get_points()
 		#print str(p)# + ', ' + str(self.axes.axes.y())
 		
-		#print m_evt.pos()
 		#<JM> i am ashamed that i have resorted to this kind of coding..
-		hardcoded_gui_im_position = (99, 52)
-		hardcoded_gui_im_size = (415, 415)
-		hardcoded_image_size = (800, 800)
-		self.stabiliser.y0_est = (m_evt.pos().x() - hardcoded_gui_im_position[0]) *\
-			hardcoded_image_size[0] / hardcoded_gui_im_size[0]
-		self.stabiliser.x0_est = (m_evt.pos().y() - hardcoded_gui_im_position[1]) *\
-			hardcoded_image_size[1] / hardcoded_gui_im_size[1]
+		#altered by Walker 6/5/16 to include mini_setup
+		if gethostname()=="ph-rnyman-01":
+			hardcoded_gui_im_position = (99, 52)
+			hardcoded_gui_im_size = (415, 415)
+		elif gethostname()=="ph-photonbec2": #laptop
+			hardcoded_gui_im_position = (57*1.5, 64*1.5)
+			hardcoded_gui_im_size = (282*1.5, 212*1.5)
+		hardcoded_image_size = (self.im_raw.shape[1], self.im_raw.shape[0]) ###(800, 800) for main, (1280, 960) for mini
+		print 'mouse position = ' + str(m_evt.pos()) + ' im_raw.shape = ' + str(self.im_raw.shape) + ' imamge_size = ' + str(self.im_raw.shape[:2])
+		self.stabiliser.y0_est = int((m_evt.pos().x() - hardcoded_gui_im_position[0]) *\
+			hardcoded_image_size[0] / hardcoded_gui_im_size[0])
+		self.stabiliser.x0_est = int((m_evt.pos().y() - hardcoded_gui_im_position[1]) *\
+			hardcoded_image_size[1] / hardcoded_gui_im_size[1])
+		print 'x0, y0 _est = ' + str((self.stabiliser.x0_est, self.stabiliser.y0_est))
 		self.stabiliser.centre = (self.stabiliser.x0_est, self.stabiliser.y0_est) #line added 17/11/14 by RAN
 		self.ring_rad = hene_utils.ring_radius(self.im_raw,\
 			(self.stabiliser.x0_est,self.stabiliser.y0_est),\
@@ -150,9 +158,9 @@ class DisplayCameraImageCanvas(FigureCanvas):
 		c = Circle((self.stabiliser.y0_est,self.stabiliser.x0_est),self.ring_rad,facecolor="none",edgecolor="g",linewidth=2,linestyle="dashdot")
 		self.axes.add_artist(c)
 
-		print self.ring_rad
+		print 'ring rad = ' + str(self.ring_rad)
 		
-		print self.stabiliser.x0_est, self.stabiliser.y0_est
+
 		
 
 class CheckCentreWindow(QtGui.QWidget):
