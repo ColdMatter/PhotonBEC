@@ -3,6 +3,8 @@
 
 sys.path.append("D:\\Control\\PythonPackages\\")
 sys.path.append("Y:\\Control\\PythonPackages\\")
+sys.path.append("C:\\photonbec\\Control\\PythonPackages\\")
+
 
 from pbec_analysis import *
 from pbec_experiment import get_single_image
@@ -12,6 +14,7 @@ from analyse_images import mean_and_std_dev
 from scipy.misc import imsave, imresize
 import Image
 import os
+from socket import gethostname
 
 number_of_cycles = int(raw_input("number of cycles[1] :") or 1)
 camera_name = raw_input("camera name[chameleon] :") or "chameleon"
@@ -20,9 +23,19 @@ interval = int(raw_input("interval/msec[100] :") or 100) / 1000.0
 saving = raw_input("saving? leave blank for false: ") != ""
 print('saving = ' + str(saving))
 
+hostname = gethostname()
+if gethostname()=="ph-rnyman-01":
+	magnification = 3.6 #imaging system magnification. Measured 29/8/14 for flea
+elif gethostname()=="ph-photonbec2": #laptop
+	magnification = 5.8 #imaging system magnification. Calculated 6/9/16 for mini setup chameleon
+else:
+	print("we don\'t know which computer we\'re on")
+
+
 #magnification = 3.4 #imaging system magnification. Measured 4/8/14 for main chameleon
-magnification = 3.6 #imaging system magnification. Measured 29/8/14 for flea
+#magnification = 3.6 #imaging system magnification. Measured 29/8/14 for flea
 #magnification = 3.26 #imaging system magnification. Measured 27/10/15 for mini setup chameleon
+
 binning = 1 #please set manually, Settings -> Standard Video Modes -> 640x480 for bin=2
 px = binning * camera_pixel_size_map[camera_name] / magnification
 x0,y0=400,400 #defines center of subimage search area, without taking into account post-binning

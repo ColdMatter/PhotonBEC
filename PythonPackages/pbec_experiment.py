@@ -293,7 +293,7 @@ class __Camera(object):
 #so in the future "flea" "interferometer" "large chip" could all map to 14080462
 #TODO this is copied to pbec_analysis, stop using this version in pbec_experiment
 camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
-			"flea": 4.8e-6, "grasshopper": 5.86e-6, "grasshopper_2d":5.86e-6}
+			"flea": 4.8e-6, "grasshopper": 5.86e-6, "grasshopper_2d":5.86e-6, "minisetup_chameleon":1e-6} #Check minisetup_chameleon!!!
 
 serialNumber_cameraLabel_map = {"chameleon": 15299245,
 			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 12350594}
