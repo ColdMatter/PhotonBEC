@@ -79,6 +79,13 @@ else:
 	if not found:
 		print("failed to find data root folder")
 		
+
+#pbec_prefix can be overridden by defining the variable pbec_prefix_override before importing pbec_analysis
+import __main__
+try:
+    pbec_prefix = __main__.pbec_prefix_override
+except:
+    pass
 #
 # physics / photon bec specific functions
 #
