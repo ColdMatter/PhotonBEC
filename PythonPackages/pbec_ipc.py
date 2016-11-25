@@ -25,6 +25,9 @@ DEFAULT_PORT = 47902
 #TODO write a dictionary mapping names to ports, then start_server() with a name instead of unmaintainable port numbers
 PORT_NUMBERS = {'cavity_lock': DEFAULT_PORT, 'laser_controller': DEFAULT_PORT+1, 'piezo_controller': DEFAULT_PORT+2}
 
+HOST_ADDRESSES = {'ph-photonbec':'ph-photonbec.qols.ph.ic.ac.uk'} #other hosts to be added later as need be
+
+
 IPC_BIN_CLIENT_GREETING = 'pbecipcbin\r\n'
 IPC_TEXT_CLIENT_GREETING = 'pbecipctxt\r\n'
 IPC_SERVER_HANDSHAKE = 'pbec ipc handshake. reply \'' + IPC_TEXT_CLIENT_GREETING.rstrip() + \
@@ -165,7 +168,8 @@ class IPCServer(threading.Thread):
 		verbose('closing server')
 		server_sock.close()
 
-def start_server(evalGlobals, port = DEFAULT_PORT, host = 'localhost'):
+def start_server(evalGlobals, port = DEFAULT_PORT, host = ''):
+        #host = "" means "accept connections form anywhere"
 	signal_cond = threading.Condition()
 	bind_successful = [True]
 	with signal_cond:
@@ -173,9 +177,10 @@ def start_server(evalGlobals, port = DEFAULT_PORT, host = 'localhost'):
 		signal_cond.wait()
 	return bind_successful[0]
 
-def socket_connect(port = DEFAULT_PORT):
+def socket_connect(port = DEFAULT_PORT, host = 'localhost'):
+        #Modified 25/11/16 by RAN to make non-localhost connections possible
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	sock.connect(('localhost', port))
+	sock.connect((host, port))
 	sock.recv(len(IPC_SERVER_HANDSHAKE)) #throw away the handshake
 	sock.sendall(IPC_BIN_CLIENT_GREETING)
 	ack = sock_ipc_recv(True, sock, None)
@@ -202,22 +207,22 @@ def socket_close(sock):
 	finally:
 		pass
 
-def ipc_eval(expr, port = 'cavity_lock'):
+def ipc_eval(expr, port = 'cavity_lock',host='localhost'):
 	'''
 	Must pass a python expression as a string
 	'''
 	if isinstance(port, str):
 		port = PORT_NUMBERS[port]
-	sock = socket_connect(port)
+	sock = socket_connect(port,host=host)
 	ret = socket_eval(sock, expr)
 	socket_close(sock)
 	return ret
 
-def ipc_exec(expr, port = DEFAULT_PORT):
+def ipc_exec(expr, port = DEFAULT_PORT,host='localhost'):
 	'''
 	Must pass a python expression as a string
 	'''
-	sock = socket_connect(port)
+	sock = socket_connect(port,host=host)
 	socket_exec(sock, expr)
 	socket_close(sock)
 
@@ -240,10 +245,10 @@ if __name__ == "__main__":
 	
 
 #NOTES FROm 13/11/14
-def ipc_get_array(arr_name):
+def ipc_get_array(arr_name,port = 'cavity_lock',host='localhost'):
 	import pickle
-	ipc_exec('import pickle')
-	arr_local_p = ipc_eval('pickle.dumps('+arr_name+')')
+	ipc_exec('import pickle',port=port,host=host)
+	arr_local_p = ipc_eval('pickle.dumps('+arr_name+')',port=port,host=host)
 	arr_local_p = arr_local_p.decode('string_escape')
 	arr_local_p = arr_local_p[1:-1]
 	return pickle.loads(arr_local_p)

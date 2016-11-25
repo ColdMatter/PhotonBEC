@@ -3,6 +3,18 @@
 #ipython
 #exec(open("agilent33521A.py").read())
 import visa
+import socket
+hostname = socket.gethostname()
+default_AFG_name="USB0::0x0957::0x1607::MY50003870"
+if hostname.lower()=="ph-rnyman-01":
+	AFG_name = default_AFG_name
+	backend = "@py"
+	line_end="\r\n"
+elif hostname.lower()=="ph-photonbec2":
+	AFG_name = default_AFG_name+"::INSTR"
+	backend = ""
+	line_end=""
+	
 
 #---------------------------------
 #USB-BASED AGILENT FUNCTION GENERATOR CLASS
@@ -16,11 +28,19 @@ class AgilentFunctionGenerator():
 	
 	NOTE: it seems to prefer being connected via USB2 not USB3.
 	"""
-	def __init__(self,USB_name="USB0::0x0957::0x1607::MY50003870"):
-		USB_name = USB_name
-		self.agilent = visa.instrument(USB_name)
+	def __init__(self,USB_name=AFG_name):
+		#USB_name = USB_name
+		#self.agilent = visa.instrument(USB_name)
+		if hostname.lower() in ["ph-rnyman2","ph-photonbec2"]:
+                    #For installations with pyvisa version >=? 1.5
+                    rm = visa.ResourceManager(backend) #Use pyvisa-py backend
+                    self.agilent = rm.open_resource(AFG_name)
+                else:
+                    #For installations with pyvisa versionn <1.5
+                    self.agilent = visa.instrument(AFG_name)
+
 	def writeCommand(self,s):
-		self.agilent.write(s+"\r\n")
+		self.agilent.write(s+line_end)
 	def outputOn(self):
 		self.writeCommand("OUTP ON")
 	def outputOff(self):
@@ -50,9 +70,9 @@ class AgilentFunctionGenerator():
 		self.setFrequency(500) #500 Hz repetition rate
 		self.setTTLOut()
 	def getPulseWidth(self):
-		return self.agilent.ask("FUNC:PULS:WIDT?\r\n")
+		return self.agilent.ask("FUNC:PULS:WIDT?"+line_end)
 	def getFrequency(self):
-		return self.agilent.ask("FREQ?\r\n")
+		return self.agilent.ask("FREQ?"+line_end)
 
 #TESTING
 """
