@@ -16,6 +16,8 @@ elif hostname.lower()=="ph-photonbec2":
 	line_end=""
 	
 
+###for manual, look in D:\Docs\Manuals\Agilent\
+
 #---------------------------------
 #USB-BASED AGILENT FUNCTION GENERATOR CLASS
 #---------------------------------
@@ -63,20 +65,31 @@ class AgilentFunctionGenerator():
 	def setLowV(self, V):
 		self.writeCommand("SOUR:VOLT:LOW "+str(V))
 	def setDefaultParams(self):
-		self.outputOn()
 		self.setOutputHighZ()
 		self.setPulseMode()
 		self.setPulseWidth(500e-9) #500 ns pulses
 		self.setFrequency(500) #500 Hz repetition rate
 		self.setTTLOut()
+		self.setOutputPolarityInverted()
+		self.outputOn()
 	def getPulseWidth(self):
 		return self.agilent.ask("FUNC:PULS:WIDT?"+line_end)
 	def getFrequency(self):
 		return self.agilent.ask("FREQ?"+line_end)
+	def setOutputPolarityNormal(self):
+		self.writeCommand("OUTP:POL NORM")
+	def setOutputPolarityInverted(self):
+		self.writeCommand("OUTP:POL INV")
+	def getOutputPolarity(self):
+		return self.agilent.ask("OUTP:POL?"+line_end)
 
 #TESTING
 """
 #USB_function_generator_name = visa.get_instruments_list()[1] #not sure about the index here. [0] is for tektronix. Robustness?
+
+#On ph-photonbec2 try
+#>>>> rm = visa.ResourceManager()
+#>>>>rm.list_resources()
 
 USB_function_generator_name= "USB0::0x0957::0x1607::MY50003870"
 

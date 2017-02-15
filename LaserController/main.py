@@ -3,6 +3,7 @@
 
 import sys
 sys.path.append("D:\\Control\\PythonPackages\\")
+sys.path.append("Y:\\Control\\PythonPackages\\")
 
 #ipython --gui=qt
 #exec(open("main.py").read())

@@ -3,6 +3,7 @@
 
 import sys
 sys.path.append("D:\\Control\\PythonPackages\\")
+sys.path.append("PythonPackages/")
 
 print "Setting AOM voltage.."
 import SingleChannelAO

@@ -1,6 +1,7 @@
 
 import sys
 sys.path.append("D:\\Control\\PythonPackages\\")
+sys.path.append("Y:Control/PythonPackages/")
 
 from serial import SerialException
 

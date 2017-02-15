@@ -9,6 +9,8 @@ import piezo_controller_server
 min_volts = 0
 max_volts = 75.0
 
+print "Starting"
+
 class PiezoControllerGUI(QWidget):
 	def __init__(self, pzt_server):
 		self.pzt_server = pzt_server
