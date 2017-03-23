@@ -8,7 +8,7 @@ if gethostname()=="ph-rnyman-01":
 	default_Nchannels=3
 elif gethostname()=="ph-photonbec2":
 	default_Nchannels=1
-	comports={"3chan":4,"1chan":2}
+	comports={"3chan":4,"1chan":4}
 else:
 	print "This is not a control computer! Why do you want to control piezos?\n"
 

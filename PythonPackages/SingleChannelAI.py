@@ -32,10 +32,12 @@ def SingleChannelAI(Npts=1000,rate=1.0e4,device="Dev1",channel="ai0",minval=-10.
 	#DAQmx Start Code
 	ErrorHandler(analog_input.StartTask())
 
+	timeout = 1.5 * Npts / rate
+	#Definition:  q.ReadAnalogF64(self, numSampsPerChan, timeout, fillMode, readArray, arraySizeInSamps, sampsPerChanRead, reserved)
 	#DAQmx Read Code
 	ErrorHandler(\
 		analog_input.ReadAnalogF64(\
-		1000,10.0,DAQmx_Val_GroupByChannel,data,1000,byref(int32()),None\
+		Npts, timeout, DAQmx_Val_GroupByChannel, data, Npts, byref(int32()), None\
 		))
 	#Data is now in "data" array
 	return data

@@ -45,6 +45,7 @@ elif gethostname()=="ph-photonbec2": #laptop
 elif gethostname()=="ph-rnyman":
 	#only works for data that has been backed up to the local d_drive
 	data_root_folder = "/home/d_drive/Experiment/photonbec/Data"
+	#data_root_folder = "/run/user/1001/gvfs/ftp:host=ph-photonbec.qols.ph.ic.ac.uk/Data"
 	#data_root_folder = "./Data"
 	control_root_folder = "/home/d_drive/Experiment/photonbec/Control"
 	folder_separator="/"
@@ -407,6 +408,74 @@ class InterferometerFringeData(ExperimentalData):
 			c.data = self.data.copy()
 		return c
 
+class InterferometerSpectrometerFringeData(ExperimentalData):
+	def __init__(self, ts, extension='_spec_fringes.json'):
+		ExperimentalData.__init__(self, ts, extension)
+		self.spectra=None
+		self.lamb=None
+		self.fine_position_volts=None
+	def saveData(self):
+		#TODO: make sure it can handle 2D arrays, or lists of arrays
+		d = {"ts": self.ts, "lamb": list(self.lamb), "spectra": list(self.spectra),"fine_position_volts":list(self.fine_position_volts)}
+		filename = self.getFileName(make_folder=True)
+		js = json.dumps(d, indent=4)
+		fil = open(filename, "w")
+		fil.write(js)
+		fil.close()
+	def loadData(self, load_params, correct_transmission=True, shift_spectrum="spherical",mirrorTransmissionFunc=None):
+		#TODO: load some data.
+		filename = self.getFileName()
+		fil = open(filename, "r")
+		raw_json = fil.read()
+		fil.close()
+		decoded = json.loads(raw_json)
+		self.__dict__.update(decoded)
+		self.lamb = array(self.lamb)
+		self.spectra = array(self.spectra)
+		self.fine_position_volts = array(self.fine_position_volts)
+		if mirrorTransmissionFunc==None:
+			#modified 25/3/2016 by RAN
+			mirrorTransmissionFunc = UltrafastMirrorTransmission
+		if (load_params != None and load_params['spectrum_correct_transmission']) or (load_params == None and correct_transmission):
+			transmissions = mirrorTransmissionFunc(self.lamb, shift_spectrum=load_params['spectrum_shift_spectrum'])
+			#FOLLOWING LINE IS UNTESTED
+			for s in list(self.spectra):
+				s = s/transmissions
+			#self.spectrum = self.spectrum / transmissions	
+
+	def copy(self):
+		c = InterferometerSpectrometerFringeData(self.ts)
+		for arr in [self.fine_position_volts,self.lamb,self.spectra]:
+			if self.arr != None:
+				c.arr = self.arr.copy()
+		return c
+class DAQData(ExperimentalData):
+	def __init__(self, ts, extension='_daq.json', data=None, rate=1e4, channel="ai0", minval=0.0, maxval=3.5):
+		ExperimentalData.__init__(self, ts, extension, data=data)
+		self.rate = rate
+		self.channel = channel
+		self.minval = minval
+		self.maxval = maxval
+	def saveData(self):
+		d = {"ts": self.ts, "rate_s_per_sec": self.rate, "minval_V": self.minval, "maxval_V": self.maxval,
+			"data": list(self.data)}
+		filename = self.getFileName(make_folder=True)
+		js = json.dumps(d, indent=4)
+		fil = open(filename, "w")
+		fil.write(js)
+		fil.close()
+	def loadData(self, load_params):
+		filename = self.getFileName()
+		fil = open(filename, "r")
+		raw_json = fil.read()
+		fil.close()
+		decoded = json.loads(raw_json)
+		self.__dict__.update(decoded)
+		self.data = array(self.data)
+	def copy(self):
+		d = DAQData(self.ts, rate=self.rate, channel=self.channel, minval=self.minval, maxval=self.maxval)
+		d.data = self.data.copy()
+		return d
 
 class MetaData():
 	def __init__(self, ts, parameters={}, comments=""):
@@ -657,7 +726,7 @@ def UltrafastMirrorTransmission(interpolated_wavelengths,refractive_index = "144
 	
 	return interpolated_transmissions
 
-def LaserOptikMirrorTransmission(interpolated_wavelengths,refractive_index = "100", shift_spectrum="planar",rescale_factor=1):
+def LaserOptikMirrorTransmission(interpolated_wavelengths,refractive_index = "100", shift_spectrum=7,rescale_factor=0.622222):
 	"""
 	Can be used for any wavelengths in the range 400 to 800 (UNITS: nm)
 	Uses supplied calculation from LaserOptik

@@ -171,6 +171,35 @@ class SignalData:
 	#
 	mycopy=SignalData(t=copy(new_t),st=copy(new_st))
 	return mycopy
+	
+    def CropFreq(self, f1=0, f2=1):
+	#t1=self.t.min(),
+	#t2 = self.t.max()
+	keep_flag = [(ff>f1)and(ff<f2) for ff in self.f]
+	f_crop = self.f[find(keep_flag)]
+	sf_crop = self.sf[find(keep_flag)]
+	self.f = f_crop.copy()
+	self.sf = sf_crop.copy()
+	
+    def CopyAndCropFreq(self, t1=0, t2=1):
+	assert(False) #this function not finished
+	#Note: does not copy Fourier Transform
+	if self.t ==None:
+	    new_t =None
+	    new_st=None
+	else:
+		#keep_flag = (self.t>t1) & (self.t<t2)
+		#new_t = self.t[keep_flag]
+		#new_st = self.st[keep_flag]
+		dt = self.t[4]-self.t[3] # first data points often corrupted. Why?
+		ind1 = floor((t1 - self.t[0])/dt)
+		ind2 = floor((t2 - self.t[0])/dt)
+		new_t  = self.t[ind1:ind2]
+		new_st = self.st[ind1:ind2]
+	#
+	mycopy=SignalData(t=copy(new_t),st=copy(new_st))
+	return mycopy
+	
     def PlotMe(self,fignum=359):
 	figure(fignum)
 	if (self.t==None) & (self.st==None):
