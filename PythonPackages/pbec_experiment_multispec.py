@@ -34,8 +34,9 @@ class Spectrometer(object):
 			#self.setup()
 		return self.instance
 		
-	def __init__(self,do_setup=True):
+	def __init__(self,do_setup=True,handle=0):
 		#Added 27/7/16 by RAN and BTW
+		self.handle=handle
 		if do_setup:
 			self.setup()
 		
@@ -48,10 +49,10 @@ class Spectrometer(object):
 			#raise IOError("spectrometer is already setup")
 		try:
 			print 'Calling pyspectro'
-			self.pixelCount = pyspectro.setupavs1(dllDirectory)
+			self.pixelCount = pyspectro.setupavs1(dllDirectory,self.handle)
 			print 'Back from first pyspectro call'
 			self.lamb = numpy.array([0.1] * self.pixelCount)
-			pyspectro.getlambda(self.lamb)
+			pyspectro.getlambda(self.lamb,self.handle)
 			self.open = True
 		except Exception as e:
 			###self.close() #Commented out 28/8/14 by RAN
@@ -69,7 +70,7 @@ class Spectrometer(object):
 			pRange = (0, self.pixelCount - 1)
 			if lamb_range != None:
 				pRange = getLambdaRange(self.lamb, lamb_range[0], lamb_range[1])
-			pyspectro.setupavs2(pRange, intTime, nAverage, nMeasure)
+			pyspectro.setupavs2(pRange, intTime, nAverage, nMeasure,self.handle)
 			self.spectrum = numpy.array([0.1] * (pRange[1] - pRange[0]+1))
 		except Exception as e:
 			###self.close() #Commented out 28/8/14 by RAN
@@ -79,7 +80,7 @@ class Spectrometer(object):
 		if not self.open:
 			raise IOError("spectrometer has been close()d")
 		try:
-			timestamp = pyspectro.readavsspectrum(self.spectrum, 10000)
+			timestamp = pyspectro.readavsspectrum(self.spectrum, 10000,self.handle)
 			#FIXME: background correction not inplace. Needs to be available.
 			return self.spectrum
 		except Exception as e:
@@ -89,7 +90,7 @@ class Spectrometer(object):
 	def close(self):
 		self.open = False
 		#print("freeing avs spectro, hopefully this is always called")
-		pyspectro.closeavs()
+		pyspectro.closeavs(self.handle)
 
 CAMERA_PROPERTY_TYPE_MAPPING = {"brightness": 0, "auto_exposure": 1, "sharpness": 2, "white_balance": 3,
 	"hue": 4, "saturation": 5, "gamma": 6, "iris": 7, "focus": 8, "zoom": 9, "pan": 10, "tilt": 11,
@@ -297,7 +298,7 @@ class __Camera(object):
 camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
 			"flea": 4.8e-6, "grasshopper": 5.86e-6, "grasshopper_2d":5.86e-6, "minisetup_chameleon":1e-6} #Check minisetup_chameleon!!!
 
-serialNumber_cameraLabel_map = {"chameleon": 16316680,
+serialNumber_cameraLabel_map = {"chameleon": 15299245,
 			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 12350594}
 def getCameraByLabel(label):
 	number = 0

@@ -13,8 +13,8 @@ GRASSHOPPER_2 = 14435619
 MINISETUP_CHAMELEON = 12350594
 serialNumbers = {"chameleon": CHAMELEON, "flea": FLEA, "grasshopper": GRASSHOPPER, "grasshopper2": GRASSHOPPER_2, "minisetup_chameleon": MINISETUP_CHAMELEON}
 
-#dllLocation = "D:\\Control\\camera"
-dllLocation = "C:\photonbec\Control\camera" #Altered by Walker
+dllLocation = "D:\\Control\\camera"
+#dllLocation = "C:\photonbec\Control\camera" #Altered by Walker
 serialNumber = 0 #any camera
 if len(sys.argv) > 1:
 	serialNumber = serialNumbers[sys.argv[1].lower()]
