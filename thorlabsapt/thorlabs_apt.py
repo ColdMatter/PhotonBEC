@@ -278,7 +278,8 @@ class BSC201(ThorlabsAPT):
 		
 #getMotorPosition() and 
 class TST101(ThorlabsAPT):
-	def __init__(self, comport=8, channel_ident=1):
+	#Probably the tilt motor
+	def __init__(self, comport=19, channel_ident=1):
 		super(type(self), self).__init__(comport, channel_ident)
 		self.setHomeParameters()
 		self.setVelocityParameters()
@@ -301,7 +302,8 @@ class TST101(ThorlabsAPT):
 		return self.stepMotorAbsolute(int(distance * zst213_encoder_unit_position))
 
 class TDC001(ThorlabsAPT):
-	def __init__(self, comport=14, channel_ident=1):
+	#Probably the rotation mount.
+	def __init__(self, comport=20, channel_ident=1):
 		super(type(self), self).__init__(comport, channel_ident)
 		self.setHomeParameters()
 		self.setVelocityParameters()

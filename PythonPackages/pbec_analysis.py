@@ -476,6 +476,34 @@ class DAQData(ExperimentalData):
 		d = DAQData(self.ts, rate=self.rate, channel=self.channel, minval=self.minval, maxval=self.maxval)
 		d.data = self.data.copy()
 		return d
+		
+class ScopeData(ExperimentalData):
+	def __init__(self, ts, extension='_scope.json', t_data=None, channel_data=None):
+		ExperimentalData.__init__(self, ts, extension)
+		self.t_data = t_data
+		self.channel_data = channel_data
+		
+	def saveData(self):
+		d = {"ts": self.ts, "t_data": list(self.t_data), "channel_data": [list(cd) for cd in self.channel_data]}
+		filename = self.getFileName(make_folder=True)
+		js = json.dumps(d, indent=4)
+		fil = open(filename, "w")
+		fil.write(js)
+		fil.close()
+	def loadData(self, load_params):
+		filename = self.getFileName()
+		fil = open(filename, "r")
+		raw_json = fil.read()
+		fil.close()
+		decoded = json.loads(raw_json)
+		self.__dict__.update(decoded)
+		self.t_data = self.t_data
+		self.channel_data = self.channel_data
+	def copy(self):
+		d = ScopeData(self.ts, extension=self.extension)
+		self.t_data = copy(self.t_data)
+		self.channel_data = copy(self.channel_data)
+		return d
 
 class MetaData():
 	def __init__(self, ts, parameters={}, comments=""):

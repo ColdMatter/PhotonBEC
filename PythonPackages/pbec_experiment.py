@@ -47,7 +47,9 @@ class Spectrometer(object):
 			pass #ADDED 28/8/14 by RAN
 			#raise IOError("spectrometer is already setup")
 		try:
+			print 'Calling pyspectro'
 			self.pixelCount = pyspectro.setupavs1(dllDirectory)
+			print 'Back from first pyspectro call'
 			self.lamb = numpy.array([0.1] * self.pixelCount)
 			pyspectro.getlambda(self.lamb)
 			self.open = True

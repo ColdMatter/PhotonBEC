@@ -24,8 +24,10 @@ def verbose(l):
 DEFAULT_PORT = 47902
 #TODO write a dictionary mapping names to ports, then start_server() with a name instead of unmaintainable port numbers
 PORT_NUMBERS = {'cavity_lock': DEFAULT_PORT, 'laser_controller': DEFAULT_PORT+1, 'piezo_controller': DEFAULT_PORT+2}
+PORT_NUMBERS.update({'spectrometer_cavity_lock':DEFAULT_PORT+3})
 
 HOST_ADDRESSES = {'ph-photonbec':'ph-photonbec.qols.ph.ic.ac.uk'} #other hosts to be added later as need be
+HOST_ADDRESSES.update({'ph-photonbec2':'ph-photonbec2.qols.ph.ic.ac.uk'})
 
 
 IPC_BIN_CLIENT_GREETING = 'pbecipcbin\r\n'

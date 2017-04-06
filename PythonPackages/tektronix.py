@@ -70,7 +70,8 @@ class Tektronix():
 		for chan in self.getActiveChannels():
 			#self.tek.write("DATA:SOURCE CH"+str(chan))
 			#voltage_scales[chan-1]=float(self.tek.ask("WFMPRE:YMULT?"))
-			voltage_scales[chan-1]=float(self.tek.ask("CH1:VOLTS?"))
+			#voltage_scales[chan-1]=float(self.tek.ask("CH1:VOLTS?"))
+			voltage_scales[chan-1]=float(self.tek.ask("CH"+str(chan)+":VOLTS?"))
 		return voltage_scales #zero values for inactive channels
 	def setVoltageScale(self, chan, scale):
 		self.tek.write("DATA:SOURCE CH"+str(chan))
