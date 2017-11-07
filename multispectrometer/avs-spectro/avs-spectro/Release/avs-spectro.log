@@ -1,0 +1,11 @@
+﻿  stdafx.cpp
+  avs-spectro.cpp
+  dllmain.cpp
+     Creating library D:\Control\multispectrometer\avs-spectro\Release\avs-spectro.lib and object D:\Control\multispectrometer\avs-spectro\Release\avs-spectro.exp
+  Generating code
+  10 of 12 functions (83.3%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  avs-spectro.vcxproj -> D:\Control\multispectrometer\avs-spectro\Release\avs-spectro.dll
+  avs-spectro.vcxproj -> D:\Control\multispectrometer\avs-spectro\Release\avs-spectro.pdb (Full PDB)
