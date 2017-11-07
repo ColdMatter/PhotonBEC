@@ -11,6 +11,7 @@ from scipy import constants
 from numbers import Number
 import zipfile
 import io
+import h5py
 #from numpy import ones
 
 #pbec_prefix = "pbec" #TO OVERRIDE THE pbec_prefix, DO THIS,FOR EXAMPLE:
@@ -29,10 +30,9 @@ camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
 
 
 hostname = gethostname()
-if gethostname()=="ph-rnyman-01":
-	#ph-photonbec is also carries the name "ph-rnyman-01". Bah.
-	data_root_folder = "D:\\Data"
-	control_root_folder = "D:\\Control"
+if gethostname()=="ph-photonbec":
+	data_root_folder = "Z:\\Data"
+	control_root_folder = "Z:\\Control"
 	folder_separator="\\"
 	pbec_prefix = "pbec"
 elif gethostname()=="ph-photonbec2": #laptop
@@ -61,6 +61,11 @@ elif gethostname()=="Potato3":
 	#only works for data that copied to correct part of Temp folder
         data_root_folder =  "C:\\stuff\\temp\\Imperial_PhotonBEC\\Data\\"
         control_root_folder = "C:\\stuff\\temp\\Imperial_PhotonBEC\\Control_partial\\"
+	folder_separator="\\"
+	pbec_prefix = "pbec"
+elif gethostname()=="ph-photonbec3":
+	data_root_folder = "D:\\Data"
+	control_root_folder = "D:\\Control"
 	folder_separator="\\"
 	pbec_prefix = "pbec"
 else:
@@ -172,7 +177,7 @@ def datafolder_from_timestamp(ts=make_timestamp(),make=False):
 	folder_year=folder_month[:-2]
 	#Yearly folders
 	year_folder = data_root_folder+folder_separator+folder_year
-	if (os.listdir(data_root_folder).count(folder_year)==0) & make:
+	if make & (os.listdir(data_root_folder).count(folder_year)==0):
 		os.mkdir(year_folder)
 	#
 	#Monthly folders
@@ -449,6 +454,51 @@ class InterferometerSpectrometerFringeData(ExperimentalData):
 			if self.arr != None:
 				c.arr = self.arr.copy()
 		return c
+class ThresholdSpectrometerData(ExperimentalData):
+	def __init__(self, ts, extension='_threshold_spec.json'):
+		ExperimentalData.__init__(self, ts, extension)
+		self.spectra=None
+		self.lamb=None
+		self.powers=None
+		self.aom_volts=None
+		self.rep_rates=None
+	def saveData(self):
+		#TODO: make sure it can handle 2D arrays, or lists of arrays
+		#d = {"ts": self.ts, "lamb": list(self.lamb), "spectra": list(self.spectra),"powers":list(self.powers),"aom_volts":list(self.aom_volts),"rep_rates":list(self.rep_rates)}
+		d = {"ts": self.ts, "lamb": list(self.lamb), "spectra": list(self.spectra)}
+		filename = self.getFileName(make_folder=True)
+		js = json.dumps(d, indent=4)
+		fil = open(filename, "w")
+		fil.write(js)
+		fil.close()
+	def loadData(self, load_params, correct_transmission=True, shift_spectrum="spherical",mirrorTransmissionFunc=None):
+		#TODO: load some data.
+		filename = self.getFileName()
+		fil = open(filename, "r")
+		raw_json = fil.read()
+		fil.close()
+		decoded = json.loads(raw_json)
+		self.__dict__.update(decoded)
+		self.lamb = array(self.lamb)
+		self.spectra = array(self.spectra)
+		self.powers = array(self.powers)
+		self.aom_volts = array(self.aom_volts)
+		self.rep_rates = array(self.rep_rates)
+		if mirrorTransmissionFunc==None:
+			#modified 25/3/2016 by RAN
+			mirrorTransmissionFunc = UltrafastMirrorTransmission
+		if (load_params != None and load_params['spectrum_correct_transmission']) or (load_params == None and correct_transmission):
+			transmissions = mirrorTransmissionFunc(self.lamb, shift_spectrum=load_params['spectrum_shift_spectrum'])
+			#FOLLOWING LINE IS UNTESTED
+			corrected_spectra = array([s/transmissions for s in list(self.spectra)])
+			self.spectra = corrected_spectra
+
+	def copy(self):
+		c = InterferometerSpectrometerFringeData(self.ts)
+		for arr in [self.powers,self.aom_volts,self.rep_rates,self.lamb,self.spectra]:
+			if self.arr != None:
+				c.arr = self.arr.copy()
+		return c
 class DAQData(ExperimentalData):
 	def __init__(self, ts, extension='_daq.json', data=None, rate=1e4, channel="ai0", minval=0.0, maxval=3.5):
 		ExperimentalData.__init__(self, ts, extension, data=data)
@@ -504,6 +554,140 @@ class ScopeData(ExperimentalData):
 		self.t_data = copy(self.t_data)
 		self.channel_data = copy(self.channel_data)
 		return d
+
+class CorrelatorData(ExperimentalData):
+	def __init__(self, ts=None, extension='_TDC_timestamps_hdf5.zip',data=None,timestamps=None):
+		ExperimentalData.__init__(self, ts, extension,data=data)
+	def setData(self, data, timestamps=None):
+		if data !=None:
+			raw_timestamps, channels, timebase = data
+			self.raw_timestamps = raw_timestamps
+			self.channels = channels
+			self.timebase = timebase
+			self.timestamps = timestamps
+		else:
+			self.timestamps = None
+			self.channels = None
+	def saveData(self):
+		#NOTE: for compression purposes, the raw integer timestamps are saved NOT the timebase timestamps
+		temp_filename = "temp.hdf5" #Later, perhaps make use of an IO buffer to avoid real files
+		filename = self.getFileName(make_folder=True)
+		h5_fil = h5py.File(temp_filename, "w")
+		try:
+			hdf5_dataset = h5_fil.create_dataset("channels", shape(self.channels), dtype='int8',data=self.channels)
+			hdf5_dataset = h5_fil.create_dataset("raw_timestamps", shape(self.channels), dtype='int64',data=self.raw_timestamps)
+			hdf5_dataset = h5_fil.create_dataset("timebase", (1,), dtype='float32',data=[self.timebase])
+		finally:
+			h5_fil.close()#File is only written when "close()" is called.
+		
+		try:
+			zip_filename = timestamp_to_filename(self.ts, self.extension, True)
+			zip_file = zipfile.ZipFile(filename,mode="w")
+			zip_file.write(temp_filename,compress_type=zipfile.ZIP_DEFLATED)
+		finally:
+			zip_file.close()
+
+	def loadData(self, load_params):
+		#TODO: compatibility with more compressed format
+		filename = self.getFileName(make_folder=False)
+		zip_file = zipfile.ZipFile(filename,mode="r")
+		temp_filename = "temp.hdf5" #Later, perhaps make use of an IO buffer to avoid real files
+		zip_file.extractall(".")
+		zip_file.close()
+		h5_fil = h5py.File(temp_filename, "r") #read only?
+		self.timebase=h5_fil["timebase"].value[0]
+		self.channels = array(h5_fil["channels"].value)
+		self.raw_timestamps = array(h5_fil["raw_timestamps"].value)
+		h5_fil.close()
+		self.timestamps = self.raw_timestamps * self.timebase#[rts*self.timebase for rts in self.raw_timestamps]
+	def copy(self):
+		d = CorrelatorData(self.ts)
+		d.timestamps = self.timestamps.copy()
+		d.channels = self.channels.copy()
+		d.raw_channels=self.raw_channels.copy()
+		d.timebase = self.timebase.copy()
+		return d
+	def getHistogram(self, trigger_channel=0,signal_channel=1):
+		#channels=where((self.channels==trigger_channel) or (self.channels==signal_channel))[0][1:]
+		#channels=where(self.channels in [trigger_channel, signal_channel])[0][1:]
+		is_usable_channel = [(c in [trigger_channel,signal_channel]) for c in self.channels]
+		channel_indices=where(is_usable_channel)[0][1:] #why is the first element removed?
+		timestamps_filtered=(self.timestamps)[channel_indices]
+		trigger_indices=where(self.channels==trigger_channel)[0][1:]
+		timestamp_blocks=split(timestamps_filtered,trigger_indices)
+		#channel_blocks = split((self.channels)[channel_indices], trigger_indices)#for testing purposes only
+		#-------------------
+		#FOLLOWING LINE IS PROBABLY VERY WRONG
+		#TODO: START HERE TOMORROW
+		#timestamp_blocks_signal = [a[1:] if len(a)>2 else [] for a in timestamp_blocks ] #TODO: check this logic really is correct
+		timestamp_blocks_signal = [a[1:] if len(a)>=2 else [] for a in timestamp_blocks ] #TODO: check this logic really is correct
+		#-------------------
+		trigger_timestamps = [a[0] for a in timestamp_blocks if len(a)!=0]
+		offset_timestamps=[]
+		for i,trigger_timestamp in enumerate(trigger_timestamps):
+			offset_timestamps.append(timestamp_blocks_signal[i] - trigger_timestamp)
+		combined_timestamps = [ts for sublist in offset_timestamps for ts in sublist]
+		return combined_timestamps
+	
+	def getSignalRelativeTimestamps(self):
+		pass
+	def plotHistogram(self,timebase, tmin=1e-9, tmax=10e-9,trigger_channel=0,signal_channel=1,fignum=432):
+		figure(fignum),clf()
+		combined_timestamps=self.getHistogram(trigger_channel,signal_channel)
+		split_combined_timestamps = [stamp for stamp in combined_timestamps if tmin<stamp<tmax]
+		print(size(split_combined_timestamps))
+		min_ts,max_ts = min(split_combined_timestamps), max(split_combined_timestamps)
+		nbins = int((tmax-tmin)/(2*timebase))
+		print(nbins)
+		hist1=hist(1e9*array(split_combined_timestamps), bins=nbins,range=(1e9*min_ts,1e9*max_ts),histtype="step")
+		xlim(1e9*tmin,1e9*tmax)
+		grid(1)
+		xlabel(r"Time (ns)")
+		ylabel("cps / bin [WRONG UNITS!]")
+		title(self.ts)
+		show()
+	
+	def getTotalCounts(self,selected_channels=None):
+		if selected_channels==None:
+			selected_channels = set(self.channels)
+		chan_counts = {}
+		for c in selected_channels:
+			chan_counts[c]=list(self.channels).count(c)
+		chan_counts[0] = chan_counts[0]-list(self.timestamps).count(0) #remove unused buffer elements
+		return chan_counts
+	def plotCoincidences(self,):
+		ts_ch = zip(self.timestamps,self.channels)
+		detected_channels = self.getTotalCounts().keys()
+		figure(2),clf()
+		for c in detected_channels:
+		 tsc = [tc[0] for tc in ts_ch if tc[1]==c] 
+		 plot(tsc,label="Ch"+str(c))
+		xlabel("count")
+		ylabel("timestamp index")
+		legend(loc="best")
+		grid(1)
+		show()
+	def getAutoCorrelation(self,auto_col_channel=0):
+		auto_col_indices=where(self.channels==auto_col_channel)[0][1:]
+		indices_1=auto_col_indices[::2] 
+		indices_2=auto_col_indices[1::2]
+		fake_1=[self.timestamps[n] for n in indices_1]
+		fake_2=[self.timestamps[n] for n in indices_2]
+		auto_col=[b - a for a, b in zip(fake_1, fake_2)]
+		return auto_col
+	def plotAutoCorrelation(self,timebase,tmin=1e-9, tmax=10e-9,auto_col_channel=0):
+		figure(3),clf()
+		auto_col_timestamps=self.getAutoCorrelation(auto_col_channel)
+		split_timestamps = [stamp for stamp in auto_col_timestamps if tmin<stamp<tmax]
+		min_ts,max_ts = min(split_timestamps), max(split_timestamps)
+		nbins = int((tmax-tmin)/(2*timebase))
+		hist1=hist(1e9*array(split_timestamps), bins=nbins,range=(1e9*min_ts,1e9*max_ts),histtype="step")
+		xlim(1e9*tmin,1e9*tmax)
+		grid(1)
+		xlabel(r"Time (ns)")
+		ylabel("cps / bin")
+		show()
+
 
 class MetaData():
 	def __init__(self, ts, parameters={}, comments=""):

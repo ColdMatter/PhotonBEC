@@ -16,8 +16,12 @@ serialNumbers = {"chameleon": CHAMELEON, "flea": FLEA, "grasshopper": GRASSHOPPE
 dllLocation = "D:\\Control\\camera"
 #dllLocation = "C:\photonbec\Control\camera" #Altered by Walker
 serialNumber = 0 #any camera
-if len(sys.argv) > 1:
-	serialNumber = serialNumbers[sys.argv[1].lower()]
+#serialNumber = serialNumbers["grasshopper"]
+#if len(sys.argv) > 1:
+#	serialNumber = serialNumbers[sys.argv[1].lower()]
+#Changed BTW 20170705, we seem to have more sys.argvs now...
+if len(sys.argv) > 2:
+	serialNumber = serialNumbers[sys.argv[2].lower()]
 
 PROPERTY_TYPE_MAPPING = {"brightness": 0, "auto_exposure": 1, "sharpness": 2, "white_balance": 3,
 	"hue": 4, "saturation": 5, "gamma": 6, "iris": 7, "focus": 8, "zoom": 9, "pan": 10, "tilt": 11,
@@ -106,4 +110,6 @@ finally:
 	print("closing everything")
 	if handle != -1:
 		pyflycap.closeflycap(handle)
+	print("freeing library")
 	pyflycap.freelibrary()
+	print "Library free"

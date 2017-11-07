@@ -34,7 +34,7 @@ class Spectrometer(object):
 			#self.setup()
 		return self.instance
 		
-	def __init__(self,do_setup=True):
+	def __init__(self, do_setup=True):
 		#Added 27/7/16 by RAN and BTW
 		if do_setup:
 			self.setup()
@@ -47,9 +47,7 @@ class Spectrometer(object):
 			pass #ADDED 28/8/14 by RAN
 			#raise IOError("spectrometer is already setup")
 		try:
-			print 'Calling pyspectro'
 			self.pixelCount = pyspectro.setupavs1(dllDirectory)
-			print 'Back from first pyspectro call'
 			self.lamb = numpy.array([0.1] * self.pixelCount)
 			pyspectro.getlambda(self.lamb)
 			self.open = True
@@ -109,6 +107,7 @@ class __Camera(object):
 		self.error = None
 		
 	def setup(self):
+		print "Entering camera setup"
 		self.error = None
 		dllDirectory = pbec_analysis.control_root_folder + "\\camera\\"
 		if self.open:
@@ -120,6 +119,7 @@ class __Camera(object):
 			keys = ("handle", "modelName", "vendorName", "sensorInfo",
 				"sensorResolution", "firmwareVersion", "firmwareBuildTime")
 			self.handle = cam_info[0]
+			print "handle = ", self.handle
 			self.cam_info = dict(zip(keys, cam_info))
 			return self.cam_info
 		except Exception as exc:
@@ -297,8 +297,11 @@ class __Camera(object):
 camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
 			"flea": 4.8e-6, "grasshopper": 5.86e-6, "grasshopper_2d":5.86e-6, "minisetup_chameleon":1e-6} #Check minisetup_chameleon!!!
 
+#serialNumber_cameraLabel_map = {"chameleon": 16316680,
+#			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 12350594}
 serialNumber_cameraLabel_map = {"chameleon": 16316680,
-			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 12350594}
+			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 15299245}
+			
 def getCameraByLabel(label):
 	number = 0
 	if label != None:

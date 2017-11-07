@@ -20,8 +20,8 @@ def SingleChannelAO(value,device="Dev1",channel="ao0",minval=0,maxval=5,timeout=
 
 #
 
-def SetAO0(value):
-	SingleChannelAO(value,device="Dev1",channel="ao0",minval=0,maxval=5,timeout=1)
+def SetAO0(value,device="Dev1",channel="ao0",minval=0,maxval=5,timeout=1):
+	SingleChannelAO(value,device=device,channel=channel,minval=minval,maxval=maxval,timeout=timeout)
 	
-def SetAO1(value):
-	SingleChannelAO(value,device="Dev1",channel="ao1",minval=0,maxval=5,timeout=1)
+def SetAO1(value,device="Dev1",channel="ao1",minval=0,maxval=5,timeout=1):
+	SingleChannelAO(value,device=device,channel=channel,minval=minval,maxval=maxval,timeout=timeout)

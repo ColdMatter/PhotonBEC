@@ -13,7 +13,7 @@ def ErrorHandler(error_number):
 		print "Error number "+str(error_number)+" encountered"
 
 
-def SingleChannelAI(Npts=1000,rate=1.0e4,device="Dev1",channel="ai0",minval=-10.0,maxval=10.0):
+def SingleChannelAI(Npts=1000,rate=1.0e4,device="Dev1",channel="ai0",minval=-10.0,maxval=10.0,terminalConfig="DAQmx_Val_RSE"):
 	#Cannot read just a single point. Minimum 2.
 	analog_input = Task()
 	data = zeros((Npts,), dtype=float64)
@@ -22,7 +22,7 @@ def SingleChannelAI(Npts=1000,rate=1.0e4,device="Dev1",channel="ai0",minval=-10.
 	devchan=device+"/"+channel
 	ErrorHandler(\
 		analog_input.CreateAIVoltageChan(\
-		devchan,"",DAQmx_Val_Cfg_Default,minval,maxval,DAQmx_Val_Volts,None\
+		devchan,"",DAQmx_Val_RSE,minval,maxval,DAQmx_Val_Volts,None\
 			))
 	ErrorHandler(\
 		analog_input.CfgSampClkTiming(\

@@ -1,5 +1,6 @@
 REM added -c mingw64 to end of second line -LZ
 REM BTW Took -c mingw64 out 25/7/16. See comments below
+REM BTW switched back to -c mingw64 4/7/17 for new computer. Alchemy!
 @echo off
 SET VS90COMNTOOLS=%VS140COMNTOOLS%
 python setup.py install

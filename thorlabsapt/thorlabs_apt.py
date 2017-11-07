@@ -9,7 +9,7 @@ from apt_messages import *
 import apt_messages #yes, I know, there's a hack going on
 
 
-
+device_to_comport_map = {'delay_stage':18,'rotation_stage':20,'vertical_one':21,'vertical_two':19,'horizontal_two':22,'horizontal_one':23}
 
 
 header_length=6 #length of header in bytes
@@ -249,7 +249,7 @@ prm1_mz8e_encoder_unit_position = 1919.64
 
 #NOTE: The code "super(type(self), self)" is dealing with Python's Object-Oriented Programming limitations.
 class BSC201(ThorlabsAPT):
-	def __init__(self, comport=13, channel_ident=1):
+	def __init__(self, comport=device_to_comport_map['delay_stage'], channel_ident=1):
 		super(type(self), self).__init__(comport, channel_ident)
 		self.setHomeParameters()
 		self.setVelocityParameters()
@@ -278,8 +278,8 @@ class BSC201(ThorlabsAPT):
 		
 #getMotorPosition() and 
 class TST101(ThorlabsAPT):
-	#Probably the tilt motor
-	def __init__(self, comport=19, channel_ident=1):
+	#The old style stepper motor controller
+	def __init__(self, comport=device_to_comport_map['vertical_two'], channel_ident=1):
 		super(type(self), self).__init__(comport, channel_ident)
 		self.setHomeParameters()
 		self.setVelocityParameters()
@@ -301,9 +301,33 @@ class TST101(ThorlabsAPT):
 	def moveAbsolute(self, distance):
 		return self.stepMotorAbsolute(int(distance * zst213_encoder_unit_position))
 
+class KST101(ThorlabsAPT):
+	#The new style stepper motor controller
+	def __init__(self, comport=device_to_comport_map['vertical_one'], channel_ident=1):
+		super(type(self), self).__init__(comport, channel_ident)
+		self.setHomeParameters()
+		self.setVelocityParameters()
+		self.setBacklashCorrection()
+
+	#default taken from the Thorlabs APT software
+	#relates to motor zst213
+	#ran thorlabs APT software then ran getXXX() methods
+	def setHomeParameters(self, velocity=26954160, offset=200862):
+		super(type(self), self).setHomeParameters(velocity, offset)
+	def setVelocityParameters(self, maxVel=107816640, acc=22085, minVel=0):
+		super(type(self), self).setVelocityParameters(maxVel, acc, minVel)
+	def setBacklashCorrection(self, backlash=40172):
+		super(type(self), self).setBacklashCorrection(backlash)
+		
+	#units in meters
+	def moveRelative(self, rel_distance):
+		return self.stepMotorRelative(int(rel_distance * zst213_encoder_unit_position))
+	def moveAbsolute(self, distance):
+		return self.stepMotorAbsolute(int(distance * zst213_encoder_unit_position))
+		
 class TDC001(ThorlabsAPT):
-	#Probably the rotation mount.
-	def __init__(self, comport=20, channel_ident=1):
+	#The rotation mount.
+	def __init__(self, comport=device_to_comport_map['rotation_stage'], channel_ident=1):
 		super(type(self), self).__init__(comport, channel_ident)
 		self.setHomeParameters()
 		self.setVelocityParameters()

@@ -6,7 +6,7 @@ import visa
 import socket
 hostname = socket.gethostname()
 default_AFG_name="USB0::0x0957::0x1607::MY50003870"
-if hostname.lower()=="ph-rnyman-01":
+if hostname.lower()=="ph-photonbec":
 	AFG_name = default_AFG_name
 	backend = "@py"
 	line_end="\r\n"
@@ -14,7 +14,10 @@ elif hostname.lower()=="ph-photonbec2":
 	AFG_name = default_AFG_name+"::INSTR"
 	backend = ""
 	line_end=""
-	
+elif hostname.lower()=="ph-photonbec3":
+	AFG_name = default_AFG_name
+	backend = ""
+	line_end=""
 
 ###for manual, look in D:\Docs\Manuals\Agilent\
 
@@ -33,7 +36,7 @@ class AgilentFunctionGenerator():
 	def __init__(self,USB_name=AFG_name):
 		#USB_name = USB_name
 		#self.agilent = visa.instrument(USB_name)
-		if hostname.lower() in ["ph-rnyman2","ph-photonbec2"]:
+		if hostname.lower() in ["ph-rnyman2","ph-photonbec2","ph-photonbec3"]:
                     #For installations with pyvisa version >=? 1.5
                     rm = visa.ResourceManager(backend) #Use pyvisa-py backend
                     self.agilent = rm.open_resource(AFG_name)

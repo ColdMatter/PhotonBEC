@@ -14,6 +14,7 @@ print "Starting"
 class PiezoControllerGUI(QWidget):
 	def __init__(self, pzt_server):
 		self.pzt_server = pzt_server
+		self.pzt_server.gui = self #Line added 31/5/17 by RAN. Experimental.
 		self.initUI()
 
 	def initUI(self):

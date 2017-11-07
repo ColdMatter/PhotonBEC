@@ -63,6 +63,11 @@ elif gethostname()=="Potato3":
         control_root_folder = "C:\\stuff\\temp\\Imperial_PhotonBEC\\Control_partial\\"
 	folder_separator="\\"
 	pbec_prefix = "pbec"
+elif gethostname()=="ph-photonbec3":
+	data_root_folder = "D:\\Data"
+	control_root_folder = "D:\\Control"
+	folder_separator="\\"
+	pbec_prefix = "pbec"
 else:
 	pbec_prefix = "pbec"
 	folder_separator = os.sep

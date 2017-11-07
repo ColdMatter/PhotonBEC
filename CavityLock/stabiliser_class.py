@@ -13,6 +13,7 @@ def set_cavity_length_voltage(v):
 
 from socket import gethostname
 if gethostname()=="ph-rnyman-01":
+	#DEFUNCT: PLEASE REPLACE WITH ph-photonbec
 	camera_label = "flea"
 	hardwidth = 800
 	hardheight = 800 #image size for flea
@@ -24,8 +25,8 @@ if gethostname()=="ph-rnyman-01":
 	default_P_gain = -1.5e-3
 	default_I_gain = -1e-3
 	default_I_const = 20
-	default_II_gain = +20 #note sign is always positive: square of sign of I gain
-	default_II_const=200
+	default_II_gain = +150 #note sign is always positive: square of sign of I gain
+	default_II_const=400
 	default_control_range = (0,1.0)
 elif gethostname()=="ph-photonbec2": #laptop
 	camera_label = "minisetup_chameleon"
@@ -46,6 +47,21 @@ elif gethostname()=="ph-photonbec2": #laptop
 	default_II_gain = +30#8e-4 #note sign is always positive: square of sign of I gain
 	default_II_const = 200#250
 	default_control_range = (0,3.0)
+if gethostname()=="ph-photonbec3":
+	camera_label = "flea"
+	hardwidth = 800
+	hardheight = 800 #image size for flea
+	import SingleChannelAO
+	def set_cavity_length_voltage(v):
+		SingleChannelAO.SetAO1(v)
+	dxdy = (200, 200)
+	min_acceptable_radius = 30
+	default_P_gain = -5e-3
+	default_I_gain = -2e-4
+	default_I_const = 100
+	default_II_gain = +1000 #note sign is always positive: square of sign of I gain
+	default_II_const=400
+	default_control_range = (0,1.0)
 
 	
 #flea is for the main experiment

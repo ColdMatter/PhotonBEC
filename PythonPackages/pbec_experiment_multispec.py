@@ -7,11 +7,14 @@ import numpy
 from scipy.misc import imsave
 
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"camera")
-sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"spectrometer")
+sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"multispectrometer")
+#sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"spectrometer")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"PythonPackages")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"thorlabsapt")
 import pyflycap
 import pyspectro
+dllDirectory = pbec_analysis.control_root_folder + "\\multispectrometer\\"
+#pyspectro.setupdll(dllDirectory,0)
 import SingleChannelAO, SingleChannelAI, LaserQuantum
 
 import spectrometer_utils
@@ -19,6 +22,8 @@ import spectrometer_utils
 def getLambdaRange(lamb, fromL, toL):
 	return spectrometer_utils.get_lambda_range(lamb, fromL, toL)
 
+print "Hello there"
+	
 class Spectrometer(object):
 
 	instance = None
@@ -28,36 +33,40 @@ class Spectrometer(object):
 	open = False
 	
 
-	def __new__(self, *args, **kwargs):
-		if not self.instance: #makes it a singleton
-			self.instance = super(Spectrometer, self).__new__(self, *args, **kwargs)
-			#self.setup()
-		return self.instance
+	#def __new__(self, *args, **kwargs):
+	#	if not self.instance: #makes it a singleton
+	#		self.instance = super(Spectrometer, self).__new__(self, *args, **kwargs)
+	#		#self.setup()
+	#	return self.instance
 		
-	def __init__(self,do_setup=True,handle=0):
+	def __init__(self,do_setupavs=True,handle=1,name='mini_setup'):
 		#Added 27/7/16 by RAN and BTW
 		self.handle=handle
-		if do_setup:
-			self.setup()
+		self.name = name
+		self.setup(do_setupavs)
 		
-	def setup(self):
-		dllDirectory = pbec_analysis.control_root_folder + "\\spectrometer\\"
+	def setup(self,do_setupavs=True):
+		#dllDirectory = pbec_analysis.control_root_folder + "\\spectrometer\\"
+		#dllDirectory = pbec_analysis.control_root_folder + "\\multispectrometer\\"
+		#dllDirectory = "Y:\\Control\\spectrometer_Ben_Learning_20170330\\"
 		#print "dllDirectory is" + str(dllDirectory)
 		if self.open:
 			print "already open"
 			pass #ADDED 28/8/14 by RAN
 			#raise IOError("spectrometer is already setup")
+		
 		try:
-			print 'Calling pyspectro'
-			self.pixelCount = pyspectro.setupavs1(dllDirectory,self.handle)
-			print 'Back from first pyspectro call'
+			self.pixelCount = pixelCount_spectrometerLabel_map[self.name]
+			self.serial = serialNumber_spectrometerLabel_map[self.name]
+			if do_setupavs:
+				self.handle = pyspectro.setupavs1(dllDirectory, self.handle, self.serial)
 			self.lamb = numpy.array([0.1] * self.pixelCount)
-			pyspectro.getlambda(self.lamb,self.handle)
+			pyspectro.getlambda(self.lamb, self.handle)
 			self.open = True
 		except Exception as e:
 			###self.close() #Commented out 28/8/14 by RAN
 			raise e
-	
+			
 	#lamb_range = None for the whole range
 	#nMeasure = -1 for infinite measurements
 	def start_measure(self, intTime, nAverage, nMeasure=-1, lamb_range=None):
@@ -70,12 +79,18 @@ class Spectrometer(object):
 			pRange = (0, self.pixelCount - 1)
 			if lamb_range != None:
 				pRange = getLambdaRange(self.lamb, lamb_range[0], lamb_range[1])
-			pyspectro.setupavs2(pRange, intTime, nAverage, nMeasure,self.handle)
+			print "Parameters for setupavs2 are: ",pRange, intTime, nAverage, nMeasure, self.handle
+			pyspectro.setupavs2(pRange, intTime, nAverage, nMeasure, self.handle)
 			self.spectrum = numpy.array([0.1] * (pRange[1] - pRange[0]+1))
 		except Exception as e:
 			###self.close() #Commented out 28/8/14 by RAN
 			raise e	
 	
+	def change_measure(self, intTime, nAverage, nMeasure=-1, lamb_range=None):
+		pyspectro.stopavsmeasure(self.handle)
+		self.start_measure(intTime, nAverage, nMeasure=-1, lamb_range=None)
+
+			
 	def get_data(self):
 		if not self.open:
 			raise IOError("spectrometer has been close()d")
@@ -90,7 +105,18 @@ class Spectrometer(object):
 	def close(self):
 		self.open = False
 		#print("freeing avs spectro, hopefully this is always called")
-		pyspectro.closeavs(self.handle)
+		pyspectro.closeavs(dllDirectory,self.handle)
+	
+	def closedll(self):
+		self.open = False
+		#print("freeing avs spectro, hopefully this is always called")
+		pyspectro.closedll(dllDirectory,self.handle)
+	
+	
+serialNumber_spectrometerLabel_map = {"black": '1504174U1',
+			"grey": '1301201U1',"newbie":'1709352U1'}
+pixelCount_spectrometerLabel_map = {"black": 2048,
+			"grey": 2068,"newbie":2048}
 
 CAMERA_PROPERTY_TYPE_MAPPING = {"brightness": 0, "auto_exposure": 1, "sharpness": 2, "white_balance": 3,
 	"hue": 4, "saturation": 5, "gamma": 6, "iris": 7, "focus": 8, "zoom": 9, "pan": 10, "tilt": 11,

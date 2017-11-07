@@ -12,4 +12,4 @@ import SingleChannelAO
 #SingleChannelAO.SetAO0(1.14) #Value on 24/7/15
 #SingleChannelAO.SetAO0(0)
 
-SingleChannelAO.SetAO0(0.0)
+SingleChannelAO.SetAO0(0.8)

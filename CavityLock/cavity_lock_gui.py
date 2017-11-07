@@ -135,7 +135,7 @@ class DisplayCameraImageCanvas(FigureCanvas):
 		
 		#<JM> i am ashamed that i have resorted to this kind of coding..
 		#altered by Walker 6/5/16 to include mini_setup
-		if gethostname()=="ph-rnyman-01":
+		if gethostname() in ["ph-rnyman-01","ph-photonbec3"]:
 			hardcoded_gui_im_position = (99, 52)
 			hardcoded_gui_im_size = (415, 415)
 		elif gethostname()=="ph-photonbec2": #laptop
