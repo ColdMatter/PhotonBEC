@@ -390,7 +390,6 @@ class JSONData(ExperimentalData):
 		d = JSONData(self.ts,self.data,self.extension)
 		d.data = self.data.copy() #Might work, might now
 		return d
-	
 
 class SpectrometerData(ExperimentalData):
 	def __init__(self, ts, extension='_spectrum.json'):
@@ -687,65 +686,64 @@ class CorrelatorData(ExperimentalData):
 		return merged_signal_ts_list
 
 	def getDoubleSignalTimestamps(self, trigger_channel, signal_channel1, signal_channel2):
-                debug=False
-                if debug: t1=time.time()
+		debug=True
+		if debug: t1=time.time()
 		combined_timestamps_and_channels = zip(self.channels, self.raw_timestamps)
-                if debug: t2=time.time(); print "step 2: "+str(t2-t1)
-                '''
-		useful_timestamps_and_channels = filter(lambda x: x[0] in [trigger_channel, signal_channel1, signal_channel2], combined_timestamps_and_channels)
-		#print "Length of timestamp list before cutting useless timestamps = ", len(combined_timestamps_and_channels)
-		#print "Length of timestamp list after cutting useless timestamps = ", len(useful_timestamps_and_channels)
-		'''
-		useful_timestamps_and_channels = combined_timestamps_and_channels
+		if debug: t2=time.time(); print "step 2: "+str(t2-t1)
 		
 		#Loop over the list, splitting is into blocks associated with each trigger
-                if debug: t3=time.time(); print "step 3: "+str(t3-t2)
-		#channel_counts = self.getTotalCounts()
-		#trigger_count = channel_counts[trigger_channel]
+		if debug: t3=time.time(); print "step 3: "+str(t3-t2)
+		channel_counts = self.getTotalCounts()
+		trigger_count = channel_counts[trigger_channel]
 		#signal1_count = channel_counts[signal_channel1]
 		#signal2_count = channel_counts[signal_channel2]
 		
-                if debug: t4=time.time(); print "step 4: "+str(t4-t3)
+		if debug: t4=time.time(); print "step 4: "+str(t4-t3)
 		trigger_and_signal_blocks=[]
 		this_block=[]
 		#This loop is the slow step, probably because of dynamic memory allocation
-		for i,(ch,ts) in enumerate(useful_timestamps_and_channels):
-                    ch,ts = useful_timestamps_and_channels[i]
-                    if ch==trigger_channel:
-                        if this_block==[]:
-                            this_block = [(ch,ts)]
-                        else:
-                            trigger_and_signal_blocks.append(this_block)
-                            this_block = [(ch,ts)]
-                    else:
-                        this_block.append([ch,ts])
+		highest_channel = max([trigger_channel, signal_channel1, signal_channel2])+1
+		organised_events = zeros((highest_channel,trigger_count+1)) #Make a 2D array now. This allocates the necessary memory for timestamp block (new trigger event = new block).
+		trigger_number = 0
+		pair_events, channel1_events, channel2_events = [], [], []
+		
+		if debug: t41=time.time(); print "step 4.1: "+str(t41-t4)
 
-		#Note: we can ignore all the empty trigger block only if we know how many blocks there were in total
-                if debug: t5=time.time(); print "step 5: "+str(t5-t4)
-		non_empty_blocks = [a for a in trigger_and_signal_blocks if len(a)>1]
-		offset_blocks_signal = [[(pair[0],pair[1] - a[0][1]) for pair in a[1:]] for a in non_empty_blocks]
+		#Create a map from channel number to a truth value. This is quicker than a boolean operation.
+		#Need to do this as a list, to make sure we stay as integers for speed of if evaluation.
+		trig_map, s1_map, s2_map = [0 for i in range(highest_channel)], [0 for i in range(highest_channel)], [0 for i in range(highest_channel)]	
+		trig_map[trigger_channel], s1_map[signal_channel1], s2_map[signal_channel2] = 1, 1, 1 #Assign the truth values
+		
+		last_channel = 0
+		for (ch,ts) in combined_timestamps_and_channels:
+			trigger_number+=trig_map[ch]
+			organised_events[ch,trigger_number] = ts
+			if s1_map[ch]:
+				channel1_events.append(trigger_number)
+				if s2_map[last_channel]:
+					pair_events.append(trigger_number)
+			if s2_map[ch]:
+				channel2_events.append(trigger_number)
+				if s1_map[last_channel]:
+					pair_events.append(trigger_number)
+			last_channel = ch
+			
+		if debug: t42=time.time(); print "step 4.2: "+str(t42-t41)
+		
+		relative_timestamps1 = (organised_events[signal_channel1]-organised_events[trigger_channel])
+		relative_timestamps2 = (organised_events[signal_channel2]-organised_events[trigger_channel])
+		if debug: t43=time.time(); print "step 4.3: "+str(t43-t42)
+		
+		#print pair_events
+		
+		print "About to filter"
+		relative_timestamps_pairs = [[relative_timestamps1[i],relative_timestamps2[i]] for i in pair_events]
+		relative_timestamps1 = [relative_timestamps1[i] for i in channel1_events]
+		relative_timestamps2 = [relative_timestamps2[i] for i in channel2_events]
 
-		pair_blocks1 = [a for a in offset_blocks_signal if len(a)==2]
-		pair_blocks2 = [a for a in pair_blocks1 if a[0][0]!=a[1][0]]
-                if debug: t6=time.time(); print "step 6: "+str(t6-t5)
-		for x in pair_blocks2:
-			x.sort()
-		timestamp_pairs = [(a[0][1],a[1][1]) for a in pair_blocks2]
-
-                if debug: t7=time.time(); print "step 7: "+str(t7-t6)
-		offset_blocks_signal_ts_only_channel1 = [[a[1] for a in b if a[0]==signal_channel1] for b in offset_blocks_signal]
-                if debug: t8=time.time(); print "step 8: "+str(t8-t7)
-                #List comprehension works much faster than flatten?!
-                #In principle "itertools.chain.from_iterable" should be even faster
-                merged_signal_ts_list_channel1 = [a for b in offset_blocks_signal_ts_only_channel1 for a in b]
-                if debug: t9=time.time(); print "step 9: "+str(t9-t8)
-		offset_blocks_signal_ts_only_channel2 = [[a[1] for a in b if a[0]==signal_channel2] for b in offset_blocks_signal]
-                if debug: t10=time.time(); print "step 10: "+str(t10-t9)
-                merged_signal_ts_list_channel2 = [a for b in offset_blocks_signal_ts_only_channel2 for a in b]
-                if debug: t11=time.time(); print "step 11: "+str(t11-t10)
-
-                if debug: print "Total time: "+str(t11-t1)
-		return merged_signal_ts_list_channel1, merged_signal_ts_list_channel2, timestamp_pairs
+		if debug: t11=time.time();
+		if debug: print "Total time: "+str(t11-t1)
+		return relative_timestamps1, relative_timestamps2, relative_timestamps_pairs
 		
 	def plotHistogram(self,bin_width, tmin=1e-9, tmax=10e-9,trigger_channel=0,signal_channel=1,fignum=432,clearfig=True,**kwargs):
 		figure(fignum)
