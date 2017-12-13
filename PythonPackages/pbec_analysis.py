@@ -363,6 +363,34 @@ class CameraData(ExperimentalData):
 		d = CameraData(self.ts)
 		d.data = self.data.copy()
 		return d
+		
+class JSONData(ExperimentalData):
+	def __init__(self, ts, extension='_json.json', data=None):
+		ExperimentalData.__init__(self, ts, extension=extension)
+		if type(data)==type({}):
+			self.data=data
+		else:
+			print "Data must be a dictionary"
+			#break #Throw exception: "data type should be a dictionary"
+	def saveData(self):
+		filename = self.getFileName(make_folder=True)
+		js = json.dumps({"data":self.data}, indent=4)
+		fil = open(filename, "w")
+		fil.write(js)
+		fil.close()	
+	def loadData(self,load_params):
+		###this is borderline backwards compatible
+		filename = self.getFileName()
+		fil = open(filename, "r")
+		raw_json = fil.read()
+		fil.close()
+		decoded = json.loads(raw_json)
+		self.__dict__.update(decoded)
+	def copy(self):
+		d = JSONData(self.ts,self.data,self.extension)
+		d.data = self.data.copy() #Might work, might now
+		return d
+	
 
 class SpectrometerData(ExperimentalData):
 	def __init__(self, ts, extension='_spectrum.json'):
@@ -607,54 +635,154 @@ class CorrelatorData(ExperimentalData):
 		d.raw_channels=self.raw_channels.copy()
 		d.timebase = self.timebase.copy()
 		return d
-	def getHistogram(self, trigger_channel=0,signal_channel=1):
-		#channels=where((self.channels==trigger_channel) or (self.channels==signal_channel))[0][1:]
-		#channels=where(self.channels in [trigger_channel, signal_channel])[0][1:]
-		is_usable_channel = [(c in [trigger_channel,signal_channel]) for c in self.channels]
-		channel_indices=where(is_usable_channel)[0][1:] #why is the first element removed?
-		timestamps_filtered=(self.timestamps)[channel_indices]
-		trigger_indices=where(self.channels==trigger_channel)[0][1:]
-		timestamp_blocks=split(timestamps_filtered,trigger_indices)
-		#channel_blocks = split((self.channels)[channel_indices], trigger_indices)#for testing purposes only
-		#-------------------
-		#FOLLOWING LINE IS PROBABLY VERY WRONG
-		#TODO: START HERE TOMORROW
-		#timestamp_blocks_signal = [a[1:] if len(a)>2 else [] for a in timestamp_blocks ] #TODO: check this logic really is correct
-		timestamp_blocks_signal = [a[1:] if len(a)>=2 else [] for a in timestamp_blocks ] #TODO: check this logic really is correct
-		#-------------------
-		trigger_timestamps = [a[0] for a in timestamp_blocks if len(a)!=0]
-		offset_timestamps=[]
-		for i,trigger_timestamp in enumerate(trigger_timestamps):
-			offset_timestamps.append(timestamp_blocks_signal[i] - trigger_timestamp)
-		combined_timestamps = [ts for sublist in offset_timestamps for ts in sublist]
-		return combined_timestamps
-	
-	def getSignalRelativeTimestamps(self):
-		pass
-	def plotHistogram(self,timebase, tmin=1e-9, tmax=10e-9,trigger_channel=0,signal_channel=1,fignum=432):
-		figure(fignum),clf()
-		combined_timestamps=self.getHistogram(trigger_channel,signal_channel)
+	def getHistogram(self, bin_width, tmin=1e-9, tmax=10e-9,trigger_channel=0,signal_channel=1):
+		combined_timestamps = self.getSignalRelativeTimestamps(trigger_channel, signal_channel)
 		split_combined_timestamps = [stamp for stamp in combined_timestamps if tmin<stamp<tmax]
-		print(size(split_combined_timestamps))
 		min_ts,max_ts = min(split_combined_timestamps), max(split_combined_timestamps)
-		nbins = int((tmax-tmin)/(2*timebase))
-		print(nbins)
-		hist1=hist(1e9*array(split_combined_timestamps), bins=nbins,range=(1e9*min_ts,1e9*max_ts),histtype="step")
+		nbins = int((tmax-tmin)/(2*bin_width)) #why the factor 2?
+		trigger_counts = self.getTotalCounts()[trigger_channel]
+		hist1=histogram(1e9*array(split_combined_timestamps), \
+			bins=nbins,range=(1e9*min_ts,1e9*max_ts), \
+			weights=ones_like(split_combined_timestamps)/trigger_counts)
+		return hist1
+	
+	def getSignalRelativeTimestamps(self, trigger_channel, signal_channel):
+		combined_timestamps_and_channels = zip(self.channels, self.timestamps)
+		#useful_timestamps_and_channels = filter(lambda x: x[0] in [trigger_channel, signal_channel], combined_timestamps_and_channels)
+		useful_timestamps_and_channels = combined_timestamps_and_channels #Don't filter
+		#Loop over the list, splitting is into blocks associated with each trigger
+		
+		trigger_and_signal_blocks=[]
+		this_block=[]
+		#trigger_count = list(self.channels).count(trigger_channel)
+		#signal_count = list(self.channels).count(signal_channel)
+		'''
+		for i in range(len(useful_timestamps_and_channels)):
+				ch,ts = useful_timestamps_and_channels[i]
+				#print i, ch, ts
+				if ch==trigger_channel:
+					if this_block==[]:
+						this_block.append((ch,ts))
+					else:
+						trigger_and_signal_blocks.append(copy(this_block))
+						this_block = list(copy([(ch,ts)]))
+				else:
+					this_block.append(list(copy((ch,ts))))
+                '''
+                for i,(ch,ts) in enumerate(useful_timestamps_and_channels):
+                    ch,ts = useful_timestamps_and_channels[i]
+                    if ch==trigger_channel:
+                        if this_block==[]:
+                            this_block = [(ch,ts)]
+                        else:
+                            trigger_and_signal_blocks.append(this_block)
+                            this_block = [(ch,ts)]
+                    else:
+                        this_block.append([ch,ts])#why can't I use a tuple here?
+
+		#Note: we can ignore all the empty trigger block only if we know how many blocks there were in total
+		non_empty_blocks = [a for a in trigger_and_signal_blocks if len(a)>1]
+		offset_blocks_signal_ts_only = [array([b[1] for b in a[1:] if b[0]==signal_channel ])-a[0][1] for a in non_empty_blocks]
+		merged_signal_ts_list = [a for b in offset_blocks_signal_ts_only for a in b]
+		return merged_signal_ts_list
+
+	def getDoubleSignalTimestamps(self, trigger_channel, signal_channel1, signal_channel2):
+                debug=False
+                if debug: t1=time.time()
+		combined_timestamps_and_channels = zip(self.channels, self.raw_timestamps)
+                if debug: t2=time.time(); print "step 2: "+str(t2-t1)
+                '''
+		useful_timestamps_and_channels = filter(lambda x: x[0] in [trigger_channel, signal_channel1, signal_channel2], combined_timestamps_and_channels)
+		#print "Length of timestamp list before cutting useless timestamps = ", len(combined_timestamps_and_channels)
+		#print "Length of timestamp list after cutting useless timestamps = ", len(useful_timestamps_and_channels)
+		'''
+		useful_timestamps_and_channels = combined_timestamps_and_channels
+		
+		#Loop over the list, splitting is into blocks associated with each trigger
+                if debug: t3=time.time(); print "step 3: "+str(t3-t2)
+		#channel_counts = self.getTotalCounts()
+		#trigger_count = channel_counts[trigger_channel]
+		#signal1_count = channel_counts[signal_channel1]
+		#signal2_count = channel_counts[signal_channel2]
+		
+                if debug: t4=time.time(); print "step 4: "+str(t4-t3)
+		trigger_and_signal_blocks=[]
+		this_block=[]
+		#This loop is the slow step, probably because of dynamic memory allocation
+		for i,(ch,ts) in enumerate(useful_timestamps_and_channels):
+                    ch,ts = useful_timestamps_and_channels[i]
+                    if ch==trigger_channel:
+                        if this_block==[]:
+                            this_block = [(ch,ts)]
+                        else:
+                            trigger_and_signal_blocks.append(this_block)
+                            this_block = [(ch,ts)]
+                    else:
+                        this_block.append([ch,ts])
+
+		#Note: we can ignore all the empty trigger block only if we know how many blocks there were in total
+                if debug: t5=time.time(); print "step 5: "+str(t5-t4)
+		non_empty_blocks = [a for a in trigger_and_signal_blocks if len(a)>1]
+		offset_blocks_signal = [[(pair[0],pair[1] - a[0][1]) for pair in a[1:]] for a in non_empty_blocks]
+
+		pair_blocks1 = [a for a in offset_blocks_signal if len(a)==2]
+		pair_blocks2 = [a for a in pair_blocks1 if a[0][0]!=a[1][0]]
+                if debug: t6=time.time(); print "step 6: "+str(t6-t5)
+		for x in pair_blocks2:
+			x.sort()
+		timestamp_pairs = [(a[0][1],a[1][1]) for a in pair_blocks2]
+
+                if debug: t7=time.time(); print "step 7: "+str(t7-t6)
+		offset_blocks_signal_ts_only_channel1 = [[a[1] for a in b if a[0]==signal_channel1] for b in offset_blocks_signal]
+                if debug: t8=time.time(); print "step 8: "+str(t8-t7)
+                #List comprehension works much faster than flatten?!
+                #In principle "itertools.chain.from_iterable" should be even faster
+                merged_signal_ts_list_channel1 = [a for b in offset_blocks_signal_ts_only_channel1 for a in b]
+                if debug: t9=time.time(); print "step 9: "+str(t9-t8)
+		offset_blocks_signal_ts_only_channel2 = [[a[1] for a in b if a[0]==signal_channel2] for b in offset_blocks_signal]
+                if debug: t10=time.time(); print "step 10: "+str(t10-t9)
+                merged_signal_ts_list_channel2 = [a for b in offset_blocks_signal_ts_only_channel2 for a in b]
+                if debug: t11=time.time(); print "step 11: "+str(t11-t10)
+
+                if debug: print "Total time: "+str(t11-t1)
+		return merged_signal_ts_list_channel1, merged_signal_ts_list_channel2, timestamp_pairs
+		
+	def plotHistogram(self,bin_width, tmin=1e-9, tmax=10e-9,trigger_channel=0,signal_channel=1,fignum=432,clearfig=True,**kwargs):
+		figure(fignum)
+		if clearfig: 
+			clf()
+		combined_timestamps = self.getSignalRelativeTimestamps(trigger_channel, signal_channel)
+		split_combined_timestamps = [stamp for stamp in combined_timestamps if tmin<stamp<tmax]
+		min_ts,max_ts = min(split_combined_timestamps), max(split_combined_timestamps)
+		nbins = int((tmax-tmin)/(2*bin_width)) #why the factor 2?
+		trigger_counts = self.getTotalCounts()[trigger_channel]
+		hist1=hist(1e9*array(split_combined_timestamps), \
+			bins=nbins,range=(1e9*min_ts,1e9*max_ts),histtype="step", weights=ones_like(split_combined_timestamps)/trigger_counts,**kwargs)
 		xlim(1e9*tmin,1e9*tmax)
 		grid(1)
 		xlabel(r"Time (ns)")
-		ylabel("cps / bin [WRONG UNITS!]")
+		ylabel("counts / bin / trigger")
 		title(self.ts)
 		show()
+		self.histogram = hist1
 	
 	def getTotalCounts(self,selected_channels=None):
-		if selected_channels==None:
-			selected_channels = set(self.channels)
-		chan_counts = {}
-		for c in selected_channels:
-			chan_counts[c]=list(self.channels).count(c)
-		chan_counts[0] = chan_counts[0]-list(self.timestamps).count(0) #remove unused buffer elements
-		return chan_counts
+                all_channels = set(self.channels)
+                sc_array = array(list(all_channels))
+                hist_bins = set(append((sc_array-0.5), sc_array+0.5))
+                hist_bins = sorted(list(hist_bins))
+                #Histogram function runs faster than list comprehension it seems
+                hist = histogram(self.channels, bins=hist_bins)
+                count_vals = hist[0]
+                count_keys = array(hist[1][:-1]+0.5,dtype=int)
+                count_dict = dict(zip(count_keys,count_vals))
+                if selected_channels==None:
+                    return count_dict
+                else:
+                    return  { c: count_dict[c] if c in all_channels else 0 for c in selected_channels}
+	
+	#---------------
+	#After this, the code is untested
 	def plotCoincidences(self,):
 		ts_ch = zip(self.timestamps,self.channels)
 		detected_channels = self.getTotalCounts().keys()
@@ -687,6 +815,8 @@ class CorrelatorData(ExperimentalData):
 		xlabel(r"Time (ns)")
 		ylabel("cps / bin")
 		show()
+	#END untested region
+	#---------------
 
 
 class MetaData():
@@ -978,6 +1108,7 @@ def LaserOptikMirrorTransmission(interpolated_wavelengths,refractive_index = "10
 
 def getLambdaRange(lamb, fromL, toL):
 	lam = [(i,l) for (i,l) in enumerate(lamb) if (l>fromL) and (l<=toL)]
+	#print lam
 	return lam[0][0], lam[-1][0]
 
 #EOF

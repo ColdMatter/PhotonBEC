@@ -52,17 +52,30 @@ if gethostname()=="ph-photonbec3":
 	hardwidth = 800
 	hardheight = 800 #image size for flea
 	import SingleChannelAO
-	def set_cavity_length_voltage(v):
-		SingleChannelAO.SetAO1(v)
 	dxdy = (200, 200)
 	min_acceptable_radius = 30
-	default_P_gain = -5e-3
-	default_I_gain = -2e-4
-	default_I_const = 100
-	default_II_gain = +1000 #note sign is always positive: square of sign of I gain
-	default_II_const=400
-	default_control_range = (0,1.0)
-
+	potential_divider = True
+	if potential_divider:
+		default_P_gain = -0.10
+		default_I_gain = -0.05
+		default_I_const = 5
+		default_II_gain = +200 #note sign is always positive: square of sign of I gain
+		default_II_const=1000
+		default_control_range = (0,5)
+		def set_cavity_length_voltage(v):
+			SingleChannelAO.SetAO1(v, minval=default_control_range[0],maxval=default_control_range[1])
+			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
+	else:
+		default_P_gain = -5e-3
+		default_I_gain = -2e-4
+		default_I_const = 100
+		default_II_gain = +1000 #note sign is always positive: square of sign of I gain
+		default_II_const=400
+		default_control_range = (0,5)
+		def set_cavity_length_voltage(v):
+			SingleChannelAO.SetAO1(v, minval=default_control_range[0],maxval=default_control_range[1])
+			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
+	
 	
 #flea is for the main experiment
 #chameleon for the mini-setup
@@ -115,7 +128,7 @@ class _StabiliserThread(threading.Thread):
 					set_cavity_length_voltage(parent.Vout)
 					#Gather the outputs
 					r = {"ts":parent.ts, "ring_rad":parent.ring_rad, \
-						"Vout":round(parent.Vout,3), "pic value":parent.pic.control_value()}
+						"Vout":round(parent.Vout,6), "pic value":parent.pic.control_value()}
 					if parent.print_frequency > 0:
 						if len(parent.results) % parent.print_frequency == 0: 
 							print r["ts"], r["Vout"], r["ring_rad"], r["pic value"]

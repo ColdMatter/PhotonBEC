@@ -9,10 +9,11 @@ static HMODULE avs_spectro = NULL;
 //static long hDevice = 1;
 
 typedef int (*HW)(int);
-typedef int (*SA1)(long*, char*);
+typedef int (*SA1)(long*, unsigned short*);
 typedef int (*GL)(long, double*);
 typedef int (*SA2)(long, unsigned short, unsigned short, float, unsigned int, short);
 typedef int (*RAS)(long, double*, unsigned int*, long);
+typedef int (*SM)(long);
 typedef int (*CA)(long);
 
 static HW fhelloworld = NULL;
@@ -20,6 +21,7 @@ static SA1 fSetupAVS1 = NULL;
 static SA2 fSetupAVS2 = NULL;
 static GL fGetLambda = NULL;
 static RAS fReadAVSSpectrum = NULL;
+static SM fStopMeasure = NULL;
 static CA fCloseAVS = NULL;
 
 //http://www.tutorialspoint.com/python/python_further_extensions.htm
@@ -90,14 +92,15 @@ static PyObject* pyspectro_setupavs1(PyObject* self, PyObject* args) {
 	fGetLambda = (GL)GetProcAddress(avs_spectro, "GetLambda");
 	fSetupAVS2 = (SA2)GetProcAddress(avs_spectro, "SetupAVS2");
 	fReadAVSSpectrum = (RAS)GetProcAddress(avs_spectro, "ReadAVSSpectrum");
+	fStopMeasure = (SM)GetProcAddress(avs_spectro, "StopMeasure");
 	fCloseAVS = (CA)GetProcAddress(avs_spectro, "CloseAVS");
-	if(!fSetupAVS1 || !fSetupAVS2 || !fGetLambda || !fReadAVSSpectrum || !fCloseAVS)
+	if(!fSetupAVS1 || !fSetupAVS2 || !fGetLambda || !fReadAVSSpectrum || !fCloseAVS || !fStopMeasure)
 		printf("fail to get procedure: %d\n", (int)GetLastError());
 	
 	int err;
 	unsigned short pixelNum;
 	
-	if((err = fSetupAVS1(&hDevice, serial)) != 0) {
+	if((err = fSetupAVS1(&hDevice, &pixelNum)) != 0) {
 		char line[512];
 		snprintf(line, sizeof(line), "SetupAVS1(): %d\n", err);
 		PyErr_SetString(PyExc_IOError, line);
@@ -191,6 +194,23 @@ static PyObject* pyspectro_readavsspectrum(PyObject* self, PyObject* args) {
 	return Py_BuildValue("i", timestamp);
 }
 
+static PyObject* pyspectro_stopmeasure(PyObject* self, PyObject* args) {
+	printf("Stopping Measure\n");
+	
+	long hDevice;
+	
+	if(PyArg_ParseTuple(args, "l", &hDevice) == 0) {
+		return NULL;
+	}
+	
+	if(hDevice) {
+		printf("Inside if\n");
+		fStopMeasure(hDevice);
+		printf("Stopped measure\n");
+	}
+	Py_RETURN_NONE;
+}
+
 static PyObject* pyspectro_closeavs(PyObject* self, PyObject* args) {
 	printf("Closing\n");
 	
@@ -205,19 +225,38 @@ static PyObject* pyspectro_closeavs(PyObject* self, PyObject* args) {
 		return NULL;
 	}
 	
-	printf("Past first if, so going to close\n");
 	if(hDevice) {
 		fCloseAVS(hDevice);
 		//&hDevice = 0;
 	}
-	printf("Past the closing step\n");
 	//if(avs_spectro) {
 	//	printf("Going to try to free avs-spectro lib\n");
 	//	FreeLibrary(avs_spectro);
-	//	printf("Have freed the library (inside if)");
-	//	avs_spectro = NULL;
+	//	printf("Have freed the library (inside if)\n");
+		//avs_spectro = NULL;
 	//}
-	printf("Not freeing the library. Possible a bad idea.\n");
+	printf("Not freeing the library. Possibly a bad idea.\n");
+	Py_RETURN_NONE;
+}
+
+static PyObject* pyspectro_closedll(PyObject* self, PyObject* args) {
+	printf("Closing\n");
+	
+	char *dllDirectory;
+	long hDevice;
+	if(PyArg_ParseTuple(args, "sl", &dllDirectory, &hDevice) == 0) {
+		return NULL;
+	}
+	SetDllDirectory(dllDirectory);
+	
+	
+	if(avs_spectro) {
+		printf("Going to try to free avs-spectro lib\n");
+		FreeLibrary(avs_spectro);
+		printf("Have freed the library (inside if)\n");
+		avs_spectro = NULL;
+	}
+	//printf("Not freeing the library. Possibly a bad idea.\n");
 	Py_RETURN_NONE;
 }
 
@@ -227,7 +266,9 @@ static PyMethodDef pyspectro_funcs[] = {
 	{"getlambda", (PyCFunction)pyspectro_getlambda, METH_VARARGS, "doc string here"},
 	{"setupavs2", (PyCFunction)pyspectro_setupavs2, METH_VARARGS, "doc string here"},
 	{"readavsspectrum", (PyCFunction)pyspectro_readavsspectrum, METH_VARARGS, "doc string here"},
+	{"stopmeasure", (PyCFunction)pyspectro_stopmeasure, METH_VARARGS, "doc string here"},
 	{"closeavs", (PyCFunction)pyspectro_closeavs, METH_VARARGS, "doc string here"},
+	{"closedll", (PyCFunction)pyspectro_closedll, METH_VARARGS, "doc string here"},
     {NULL}
 };
 

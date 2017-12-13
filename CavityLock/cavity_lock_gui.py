@@ -16,7 +16,7 @@ import hene_utils
 default_set_ring_rad=170
 
 #Parameters for graph
-plot_buffer_length = 2000
+plot_buffer_length = 1000
 label_fontsize=9
 
 class EmbeddedUpdatingGraph(FigureCanvas):
@@ -66,7 +66,8 @@ class EmbeddedUpdatingGraph(FigureCanvas):
 		self.axes211.plot(time_numbers, float_vouts, "*", markersize=3)
 		self.axes211.set_xlabel("time (s since midnight)")
 		self.axes211.set_ylabel("Control voltage (mV)")
-		self.axes211.set_ylim(1000*array(self.stabiliser.control_range)) #should reflect the stabilister control range!!!
+		#self.axes211.set_ylim(1000*array(self.stabiliser.control_range)) #should reflect the stabilister control range!!!
+		self.axes211.set_ylim(min(float_vouts),max(float_vouts)) #should reflect the stabilister control range!!!
 		self.axes211.grid(True)
 		
 		#subplot(2,1,2)
@@ -193,7 +194,7 @@ class ApplicationWindow(QtGui.QMainWindow):
 		QtGui.QMainWindow.__init__(self)
 		self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 		self.setWindowTitle("Cavity Length Stabilisation")
-		self.setGeometry(QtCore.QRect(920, 40, 600, 500))
+		self.setGeometry(QtCore.QRect(780, 30, 600, 500))
 		#Set some useful parameters
 		self.acquisition_running = False
 		self.lock_on = False

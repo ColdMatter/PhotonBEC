@@ -37,7 +37,7 @@ def find_spectrum_cutoff(lamb, spectrum, data_lamb_range=(530, 630), spectromete
 	
 	if max(spectrum_less_background) > noise_stddev*20:
 		#find lambda0 with threshold being a fraction of peak value
-		threshold = max(spectrum_less_background) / 15
+		threshold = max(spectrum_less_background) / 5
 		very_noisey=False
 	else:
 		#find lambda0 with threshold being a multiple of std dev
@@ -46,7 +46,9 @@ def find_spectrum_cutoff(lamb, spectrum, data_lamb_range=(530, 630), spectromete
 		# have a continuous crossover when going from one function to the other
 		very_noisey=True
 		
-	spec_data_range = pbeca.getLambdaRange(lamb, *data_lamb_range)
+	#spec_data_range = pbeca.getLambdaRange(lamb, *data_lamb_range)
+	spec_data_range = pbeca.getLambdaRange(lamb, data_lamb_range[0], data_lamb_range[1])
+	#print *data_lamb_range
 	try:
 		argmax_of_data_range = spec_data_range[0] + np.argmax(spectrum_less_background[spec_data_range[0]:spec_data_range[1]])
 		spectrum_after_peak = spectrum_less_background[argmax_of_data_range:spec_data_range[1]]

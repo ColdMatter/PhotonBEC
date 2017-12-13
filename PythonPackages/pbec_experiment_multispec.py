@@ -22,8 +22,6 @@ import spectrometer_utils
 def getLambdaRange(lamb, fromL, toL):
 	return spectrometer_utils.get_lambda_range(lamb, fromL, toL)
 
-print "Hello there"
-	
 class Spectrometer(object):
 
 	instance = None
@@ -102,10 +100,13 @@ class Spectrometer(object):
 			self.close()
 			raise e
 		
+	def stop_measure(self):
+		pyspectro.stopmeasure(self.handle)
+	
 	def close(self):
 		self.open = False
 		#print("freeing avs spectro, hopefully this is always called")
-		pyspectro.closeavs(dllDirectory,self.handle)
+		pyspectro.closeavs(self.handle)
 	
 	def closedll(self):
 		self.open = False
@@ -117,6 +118,8 @@ serialNumber_spectrometerLabel_map = {"black": '1504174U1',
 			"grey": '1301201U1',"newbie":'1709352U1'}
 pixelCount_spectrometerLabel_map = {"black": 2048,
 			"grey": 2068,"newbie":2048}
+min_int_time_spectrometerLabel_map = {"black": 1.05,
+			"grey": 2e-3,"newbie":1.05}
 
 CAMERA_PROPERTY_TYPE_MAPPING = {"brightness": 0, "auto_exposure": 1, "sharpness": 2, "white_balance": 3,
 	"hue": 4, "saturation": 5, "gamma": 6, "iris": 7, "focus": 8, "zoom": 9, "pan": 10, "tilt": 11,

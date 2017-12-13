@@ -200,13 +200,19 @@ DLLFUN int ReadAVSSpectrum(long hDevice,
 	return 0;
 }
 
+DLLFUN int StopMeasure(long hDevice) {
+	int err;
+	printf("Inside avs-spectro\n");
+	if((err = AVS_StopMeasure(hDevice)) != ERR_SUCCESS) {
+		fprintf(stderr, "StopMeasure(): %d\n", err);
+		return 1;
+	}
+	return 0;
+}
+
 DLLFUN int CloseAVS(long hDevice) {
-	printf("Checkpoint Alpha");
 	AVS_StopMeasure(hDevice);
-	printf("Checkpoint Bravo");
 	AVS_Deactivate(hDevice);
-	printf("Checkpoint Charlie");
 	AVS_Done(); //btw if you dont call these you have to restart the spectrometer after!
-	printf("Checkpoint Delta");
 	return 0; //should error check all these, meh
 }
