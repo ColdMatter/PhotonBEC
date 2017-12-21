@@ -52,9 +52,9 @@ if gethostname()=="ph-photonbec3":
 	hardwidth = 800
 	hardheight = 800 #image size for flea
 	import SingleChannelAO
-	dxdy = (200, 200)
+	dxdy = (250, 250) #Changed to make bigger BTW 20171215
 	min_acceptable_radius = 30
-	potential_divider = True
+	potential_divider = False
 	if potential_divider:
 		default_P_gain = -0.10
 		default_I_gain = -0.05
@@ -66,12 +66,12 @@ if gethostname()=="ph-photonbec3":
 			SingleChannelAO.SetAO1(v, minval=default_control_range[0],maxval=default_control_range[1])
 			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
 	else:
-		default_P_gain = -5e-3
-		default_I_gain = -2e-4
-		default_I_const = 100
-		default_II_gain = +1000 #note sign is always positive: square of sign of I gain
-		default_II_const=400
-		default_control_range = (0,5)
+		default_P_gain = -0.04
+		default_I_gain = -0.04
+		default_I_const = 5
+		default_II_gain = +200 #note sign is always positive: square of sign of I gain
+		default_II_const=1000
+		default_control_range = (0,1)
 		def set_cavity_length_voltage(v):
 			SingleChannelAO.SetAO1(v, minval=default_control_range[0],maxval=default_control_range[1])
 			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
@@ -80,7 +80,7 @@ if gethostname()=="ph-photonbec3":
 #flea is for the main experiment
 #chameleon for the mini-setup
 camera_config = {
-	'flea': {"auto_exposure": 0, "shutter": 1, "gain": 0, "frame_rate": 150},
+	'flea': {"auto_exposure": 0, "shutter": 0.1, "gain": 0, "frame_rate": 150},
 	'chameleon': {"auto_exposure": 0, "shutter": 0.03, "gain": 0, "frame_rate": 18},
 	'minisetup_chameleon': {"auto_exposure": 0, "shutter": 0.04, "gain": 0, "frame_rate": 18}
 }

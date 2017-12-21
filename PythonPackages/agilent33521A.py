@@ -6,6 +6,7 @@ import visa
 import socket
 hostname = socket.gethostname()
 default_AFG_name="USB0::0x0957::0x1607::MY50003870"
+#default_AFG_name="USB\VID_0957&PID_1607\MY50003870"
 if hostname.lower()=="ph-photonbec":
 	AFG_name = default_AFG_name
 	backend = "@py"
