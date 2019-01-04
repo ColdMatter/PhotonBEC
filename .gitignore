@@ -5,3 +5,6 @@ Experiments/
 spectrometer/avs-spectro.dll
 spectrometer/avs-spectro/Debug/*
 spectrometer/avs-spectro/avs-spectro/Debug/*
+multispectrometer/avs-spectro.dll
+multispectrometer/avs-spectro/Debug/*
+multispectrometer/avs-spectro/avs-spectro/Debug/*
