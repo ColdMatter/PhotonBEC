@@ -12,6 +12,7 @@ from numbers import Number
 import zipfile
 import io
 import h5py
+import struct
 #from numpy import ones
 
 #pbec_prefix = "pbec" #TO OVERRIDE THE pbec_prefix, DO THIS,FOR EXAMPLE:
@@ -66,6 +67,11 @@ elif gethostname()=="Potato3":
 elif gethostname()=="ph-photonbec3":
 	data_root_folder = "D:\\Data"
 	control_root_folder = "D:\\Control"
+	folder_separator="\\"
+	pbec_prefix = "pbec"
+elif gethostname()=="ph-photonbec4":
+	data_root_folder = "D:\\Data"
+	control_root_folder = "C:\\photonbec\\Control"
 	folder_separator="\\"
 	pbec_prefix = "pbec"
 else:
@@ -413,7 +419,12 @@ class SpectrometerData(ExperimentalData):
 		self.spectrum = array(self.spectrum)
 		if mirrorTransmissionFunc==None:
 			#modified 25/3/2016 by RAN
-			mirrorTransmissionFunc = UltrafastMirrorTransmission
+			#mirrorTransmissionFunc = UltrafastMirrorTransmission
+			#modified 25/6/2018 by BTW to read mirrorTransmissionFunc from load_params
+			try:
+				mirrorTransmissionFunc = load_params["mirror_transmission_func"]
+			except KeyError:
+				mirrorTransmissionFunc = UltrafastMirrorTransmission
 		if (load_params != None and load_params['spectrum_correct_transmission']) or (load_params == None and correct_transmission):
 			transmissions = mirrorTransmissionFunc(self.lamb, shift_spectrum=load_params['spectrum_shift_spectrum'])
 			self.spectrum = self.spectrum / transmissions	
@@ -513,13 +524,18 @@ class ThresholdSpectrometerData(ExperimentalData):
 		self.rep_rates = array(self.rep_rates)
 		if mirrorTransmissionFunc==None:
 			#modified 25/3/2016 by RAN
-			mirrorTransmissionFunc = UltrafastMirrorTransmission
+			#mirrorTransmissionFunc = UltrafastMirrorTransmission
+			#modified 25/6/2018 by BTW to read mirrorTransmissionFunc from load_params
+			try:
+				mirrorTransmissionFunc = load_params["mirror_transmission_func"]
+			except KeyError:
+				mirrorTransmissionFunc = UltrafastMirrorTransmission
 		if (load_params != None and load_params['spectrum_correct_transmission']) or (load_params == None and correct_transmission):
 			transmissions = mirrorTransmissionFunc(self.lamb, shift_spectrum=load_params['spectrum_shift_spectrum'])
 			#FOLLOWING LINE IS UNTESTED
 			corrected_spectra = array([s/transmissions for s in list(self.spectra)])
 			self.spectra = corrected_spectra
-
+			
 	def copy(self):
 		c = InterferometerSpectrometerFringeData(self.ts)
 		for arr in [self.powers,self.aom_volts,self.rep_rates,self.lamb,self.spectra]:
@@ -582,7 +598,9 @@ class ScopeData(ExperimentalData):
 		self.channel_data = copy(self.channel_data)
 		return d
 
-class CorrelatorData(ExperimentalData):
+class CorrelatorData_general(ExperimentalData):
+	#Different classes for ID800 and ID900 differ only in loadData for now (BTW 20180717)
+	#Keep ID800 class called CorrelatorData for backwards compatibility
 	def __init__(self, ts=None, extension='_TDC_timestamps_hdf5.zip',data=None,timestamps=None):
 		ExperimentalData.__init__(self, ts, extension,data=data)
 	def setData(self, data, timestamps=None):
@@ -614,19 +632,6 @@ class CorrelatorData(ExperimentalData):
 		finally:
 			zip_file.close()
 
-	def loadData(self, load_params):
-		#TODO: compatibility with more compressed format
-		filename = self.getFileName(make_folder=False)
-		zip_file = zipfile.ZipFile(filename,mode="r")
-		temp_filename = "temp.hdf5" #Later, perhaps make use of an IO buffer to avoid real files
-		zip_file.extractall(".")
-		zip_file.close()
-		h5_fil = h5py.File(temp_filename, "r") #read only?
-		self.timebase=h5_fil["timebase"].value[0]
-		self.channels = array(h5_fil["channels"].value)
-		self.raw_timestamps = array(h5_fil["raw_timestamps"].value)
-		h5_fil.close()
-		self.timestamps = self.raw_timestamps * self.timebase#[rts*self.timebase for rts in self.raw_timestamps]
 	def copy(self):
 		d = CorrelatorData(self.ts)
 		d.timestamps = self.timestamps.copy()
@@ -703,7 +708,9 @@ class CorrelatorData(ExperimentalData):
 		this_block=[]
 		#This loop is the slow step, probably because of dynamic memory allocation
 		highest_channel = max([trigger_channel, signal_channel1, signal_channel2])+1
-		organised_events = zeros((highest_channel,trigger_count+1)) #Make a 2D array now. This allocates the necessary memory for timestamp block (new trigger event = new block).
+		number_of_phantom_channels = 1 #20180103 mask=1+2+4+8, but there is an erroneous channel 4 signal (should be 0,1,2,3)
+		organised_events = zeros((highest_channel+number_of_phantom_channels,trigger_count+1)) #Make a 2D array now. This allocates the necessary memory for timestamp block (new trigger event = new block).
+		organised_parities = zeros((highest_channel+number_of_phantom_channels,trigger_count+1)) #Make a 2D array now. This allocates the necessary memory for timestamp block (new trigger event = new block).
 		trigger_number = 0
 		pair_events, channel1_events, channel2_events = [], [], []
 		
@@ -711,13 +718,24 @@ class CorrelatorData(ExperimentalData):
 
 		#Create a map from channel number to a truth value. This is quicker than a boolean operation.
 		#Need to do this as a list, to make sure we stay as integers for speed of if evaluation.
-		trig_map, s1_map, s2_map = [0 for i in range(highest_channel)], [0 for i in range(highest_channel)], [0 for i in range(highest_channel)]	
+		trig_map = [0 for i in range(highest_channel+number_of_phantom_channels)]
+		s1_map = [0 for i in range(highest_channel+number_of_phantom_channels)]
+		s2_map = [0 for i in range(highest_channel+number_of_phantom_channels)]	
 		trig_map[trigger_channel], s1_map[signal_channel1], s2_map[signal_channel2] = 1, 1, 1 #Assign the truth values
 		
 		last_channel = 0
+		last_parity=0
+		last_ts=0
 		for (ch,ts) in combined_timestamps_and_channels:
 			trigger_number+=trig_map[ch]
+			if (ts!=last_ts)&((ts%2)!=(last_ts%2)):
+				parity = 1
+			elif ((ts!=last_ts)&((ts%2)==(last_ts%2))):
+				parity=0
+			elif (ts==last_ts):
+				parity=last_parity
 			organised_events[ch,trigger_number] = ts
+			organised_parities[ch,trigger_number] = parity
 			if s1_map[ch]:
 				channel1_events.append(trigger_number)
 				if s2_map[last_channel]:
@@ -727,6 +745,8 @@ class CorrelatorData(ExperimentalData):
 				if s1_map[last_channel]:
 					pair_events.append(trigger_number)
 			last_channel = ch
+			last_ts = ts
+			last_parity = parity
 			
 		if debug: t42=time.time(); print "step 4.2: "+str(t42-t41)
 		
@@ -737,13 +757,101 @@ class CorrelatorData(ExperimentalData):
 		#print pair_events
 		
 		print "About to filter"
-		relative_timestamps_pairs = [[relative_timestamps1[i],relative_timestamps2[i]] for i in pair_events]
-		relative_timestamps1 = [relative_timestamps1[i] for i in channel1_events]
-		relative_timestamps2 = [relative_timestamps2[i] for i in channel2_events]
+		self.relative_timestamps_pairs = [[relative_timestamps1[i],relative_timestamps2[i]] for i in pair_events]
+		self.relative_timestamps1 = [relative_timestamps1[i] for i in channel1_events]
+		self.relative_timestamps2 = [relative_timestamps2[i] for i in channel2_events]
+		
+		self.relative_timestamps_pairs_parities = [[organised_parities[signal_channel1][i], organised_parities[signal_channel2][i]] for i in pair_events]
+		self.relative_timestamps1_parities = [organised_parities[signal_channel1][i] for i in channel1_events]
+		self.relative_timestamps2_parities = [organised_parities[signal_channel2][i] for i in channel2_events]
+		
 
 		if debug: t11=time.time();
 		if debug: print "Total time: "+str(t11-t1)
-		return relative_timestamps1, relative_timestamps2, relative_timestamps_pairs
+		return 0
+	
+	def getDoubleSignalTimestampsFilteredOpticalTrigger(self, electronic_trigger_channel, optical_trigger_channel, signal_channel1, signal_channel2):
+		debug=True
+		if debug: t1=time.time()
+		combined_timestamps_and_channels = zip(self.channels, self.raw_timestamps)
+		if debug: t2=time.time(); print "step 2: "+str(t2-t1)
+		
+		#Loop over the list, splitting is into blocks associated with each trigger
+		if debug: t3=time.time(); print "step 3: "+str(t3-t2)
+		channel_counts = self.getTotalCounts()
+		trigger_count = channel_counts[electronic_trigger_channel]
+		#signal1_count = channel_counts[signal_channel1]
+		#signal2_count = channel_counts[signal_channel2]
+		
+		if debug: t4=time.time(); print "step 4: "+str(t4-t3)
+		trigger_and_signal_blocks=[]
+		this_block=[]
+		#This loop is the slow step, probably because of dynamic memory allocation
+		highest_channel = max([electronic_trigger_channel, optical_trigger_channel, signal_channel1, signal_channel2])+1
+		number_of_phantom_channels = 1 #20180103 mask=1+2+4+8, but there is an erroneous channel 4 signal (should be 0,1,2,3)
+		organised_events = zeros((highest_channel+number_of_phantom_channels,trigger_count+1)) #Make a 2D array now. This allocates the necessary memory for timestamp block (new trigger event = new block).
+		organised_parities = zeros((highest_channel+number_of_phantom_channels,trigger_count+1)) #Make a 2D array now. This allocates the necessary memory for timestamp block (new trigger event = new block).
+		trigger_number = 0
+		pair_events, channel1_events, channel2_events = [], [], []
+		
+		if debug: t41=time.time(); print "step 4.1: "+str(t41-t4)
+
+		#Create a map from channel number to a truth value. This is quicker than a boolean operation.
+		#Need to do this as a list, to make sure we stay as integers for speed of if evaluation.
+		op_trig_map =	[0 for i in range(highest_channel+number_of_phantom_channels)]
+		el_trig_map =	[0 for i in range(highest_channel+number_of_phantom_channels)] 
+		s1_map = 		[0 for i in range(highest_channel+number_of_phantom_channels)] 
+		s2_map = 		[0 for i in range(highest_channel+number_of_phantom_channels)]	
+		op_trig_map[optical_trigger_channel], el_trig_map[electronic_trigger_channel], s1_map[signal_channel1], s2_map[signal_channel2] = 1, 1, 1, 1 #Assign the truth values
+		
+		last_channel = 0
+		last_parity=0
+		last_ts=0
+		for (ch,ts) in combined_timestamps_and_channels:
+			trigger_number+=el_trig_map[ch]
+			
+			if (ts!=last_ts)&((ts%2)!=(last_ts%2)):
+				parity = 1
+			elif ((ts!=last_ts)&((ts%2)==(last_ts%2))):
+				parity=0
+			elif (ts==last_ts):
+				parity=last_parity
+			organised_events[ch,trigger_number] = ts
+			organised_parities[ch,trigger_number] = parity
+			if s1_map[ch]:
+				channel1_events.append(trigger_number)
+				if s2_map[last_channel]:
+					pair_events.append(trigger_number)
+			if s2_map[ch]:
+				channel2_events.append(trigger_number)
+				if s1_map[last_channel]:
+					pair_events.append(trigger_number)
+			last_channel = ch
+			last_ts = ts
+			last_parity = parity
+			
+		if debug: t42=time.time(); print "step 4.2: "+str(t42-t41)
+		
+		relative_timestamps1 = (organised_events[signal_channel1]-organised_events[optical_trigger_channel])
+		relative_timestamps2 = (organised_events[signal_channel2]-organised_events[optical_trigger_channel])
+		relative_timestamps_trigger = (organised_events[optical_trigger_channel]-organised_events[electronic_trigger_channel])
+		if debug: t43=time.time(); print "step 4.3: "+str(t43-t42)
+		
+		#print pair_events
+		
+		print "About to filter"
+		self.relative_timestamps_pairs = [[relative_timestamps1[i],relative_timestamps2[i],relative_timestamps_trigger[i]] for i in pair_events]
+		self.relative_timestamps1 = [relative_timestamps1[i] for i in channel1_events]
+		self.relative_timestamps2 = [relative_timestamps2[i] for i in channel2_events]
+		self.relative_timestamps_trigger = relative_timestamps_trigger
+		
+		self.relative_timestamps_pairs_parities = [[organised_parities[signal_channel1][i], organised_parities[signal_channel2][i]] for i in pair_events]
+		self.relative_timestamps1_parities = [organised_parities[signal_channel1][i] for i in channel1_events]
+		self.relative_timestamps2_parities = [organised_parities[signal_channel2][i] for i in channel2_events]
+			
+		if debug: t11=time.time();
+		if debug: print "Total time: "+str(t11-t1)
+		return 0
 		
 	def plotHistogram(self,bin_width, tmin=1e-9, tmax=10e-9,trigger_channel=0,signal_channel=1,fignum=432,clearfig=True,**kwargs):
 		figure(fignum)
@@ -816,7 +924,78 @@ class CorrelatorData(ExperimentalData):
 	#END untested region
 	#---------------
 
+class CorrelatorData(CorrelatorData_general): 
+	#ID800, but don't put this in the name for backwards compatibility
+	def loadData(self, load_params):
+		#TODO: compatibility with more compressed format
+		filename = self.getFileName(make_folder=False)
+		zip_file = zipfile.ZipFile(filename,mode="r")
+		temp_filename = "temp.hdf5" #Later, perhaps make use of an IO buffer to avoid real files
+		zip_file.extractall(".")
+		zip_file.close()
+		h5_fil = h5py.File(temp_filename, "r") #read only?
+		self.timebase=h5_fil["timebase"].value[0]
+		self.channels = array(h5_fil["channels"].value)
+		self.raw_timestamps = array(h5_fil["raw_timestamps"].value)
+		h5_fil.close()
+		self.timestamps = self.raw_timestamps * self.timebase#[rts*self.timebase for rts in self.raw_timestamps]
 
+class CorrelatorData_ID900(CorrelatorData_general):
+	#The ID900 saves data in an unhelpful format and location.
+	#The philosophy here is to hack away at the loadData so it looks like the ID800 data when loaded.
+	#Get raw timestamps off the ID900 by triggering ("Start" channel) only once at the start of the experiment.
+	#In the future either the format the ID900 takes the data in will change (our preferred option), 
+	#OR it will become clear we have this new format for the long haul, in which case we can optimise the data handling.
+	#Stay inefficient but functional for now as the format may change.
+	#BTW 20180718
+	def loadData(self, load_params):
+		try:
+			channels = load_params["channels"]
+		except KeyError:
+			channels = [1,2,3,4]
+		#Reformat timestamp
+		year, month, day, hour, minute, sec = self.ts[0:4], self.ts[4:6], self.ts[6:8], self.ts[9:11], self.ts[11:13], self.ts[13:15]
+		filename_base = year+"-"+month+"-"+day+"T"+hour+"_"+minute+"_"+sec+"_C"
+		datafile_path = "C:\Users\photonbec\Documents\\"
+		filenames = [datafile_path + filename_base + str(ch) +".bin" for ch in channels]
+		
+		ts_size = 8 #Bytes
+		ts_type = 'Q' #long long or int64
+
+		#combined_timestamps_and_channels = []
+		
+		timestamps = []
+		channel_data = []
+		for m, filename in enumerate(filenames):
+			fil = open(filename,'rb')
+
+			still_values = 0
+			n_stamps = 0
+			values = []
+			print filename
+			while (still_values == 0):
+				try:
+					values.append(struct.unpack(ts_type,fil.read(ts_size)))
+					n_stamps+=1
+				except:
+					still_values = 1
+			fil.close()
+			print len(values), n_stamps
+			channel_values = [channels[m] for i in range(n_stamps)]
+			print len(channel_values)
+			timestamps += list(values)
+			print len(timestamps)
+			channel_data += list(channel_values)
+			print len(channel_data)
+			
+		combined_timestamps_and_channels = zip(timestamps,channel_data)
+		combined_timestamps_and_channels.sort(key=lambda tup: tup[0])
+		print shape(combined_timestamps_and_channels)
+		self.raw_timestamps = [x[0][0] for x in combined_timestamps_and_channels]
+		print shape(self.raw_timestamps)
+		self.channels = [x[1] for x in combined_timestamps_and_channels]
+		print shape(self.channels)
+	
 class MetaData():
 	def __init__(self, ts, parameters={}, comments=""):
 		self.ts = ts
@@ -1084,7 +1263,7 @@ def LaserOptikMirrorTransmission(interpolated_wavelengths,refractive_index = "10
 
         original_wavelengths = array([float(l[0]) for l in refl_text])
         original_transmissions = array([float(l[1]) for l in refl_text])
-        original_reflectivities = 1-original_transmissions 
+        original_reflectivities = 1-original_transmissions
 	#
 	wavelength_shift = 0
 	if shift_spectrum == "planar": #shift to be measured

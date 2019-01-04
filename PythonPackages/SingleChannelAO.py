@@ -10,7 +10,7 @@ def ErrorHandler(error_number):
 	if error_number not in [0,None]:
 		print "Error number "+str(error_number)+" encountered"
 
-def SingleChannelAO(value,device="Dev1",channel="ao0",minval=0,maxval=5,timeout=1):
+def SingleChannelAO(value,device="Dev3",channel="ao0",minval=0,maxval=5,timeout=1):
 	analog_output = Task()
 	ErrorHandler(\
 		analog_output.CreateAOVoltageChan(\
@@ -20,8 +20,11 @@ def SingleChannelAO(value,device="Dev1",channel="ao0",minval=0,maxval=5,timeout=
 
 #
 
-def SetAO0(value,device="Dev1",channel="ao0",minval=0,maxval=5,timeout=1):
+def SetAO0(value,device="Dev3",channel="ao0",minval=0,maxval=5,timeout=1):
 	SingleChannelAO(value,device=device,channel=channel,minval=minval,maxval=maxval,timeout=timeout)
 	
-def SetAO1(value,device="Dev1",channel="ao1",minval=0,maxval=5,timeout=1):
+def SetAO1(value,device="Dev3",channel="ao1",minval=0,maxval=5,timeout=1):
+	SingleChannelAO(value,device=device,channel=channel,minval=minval,maxval=maxval,timeout=timeout)
+	
+def SetAO2(value,device="Dev3",channel="ao2",minval=0,maxval=5,timeout=1):
 	SingleChannelAO(value,device=device,channel=channel,minval=minval,maxval=maxval,timeout=timeout)

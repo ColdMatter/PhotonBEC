@@ -1,4 +1,6 @@
-#modified by LZ to pass dll directory in setup functions for spectrometer and camera
+#Allows a single spectrometer to be used when multiple spectrometers are connected. Very crude. Much better using the multispectrometer server which uses ctypes. 
+#Ctypes could be implemeted here, but the multispectrometer server makes this redundant.
+#Also includes important spectrometer properties for multispec server.
 
 from pylab import *
 import pbec_analysis
@@ -21,6 +23,13 @@ import spectrometer_utils
 
 def getLambdaRange(lamb, fromL, toL):
 	return spectrometer_utils.get_lambda_range(lamb, fromL, toL)
+	
+serialNumber_spectrometerLabel_map = {"black": '1504174U1',
+			"grey": '1301201U1',"newbie":'1709352U1'}
+pixelCount_spectrometerLabel_map = {"black": 2048,
+			"grey": 2068,"newbie":2048}
+min_int_time_spectrometerLabel_map = {"black": 1.05,
+			"grey": 2e-3,"newbie":1.05}
 
 class Spectrometer(object):
 
@@ -113,13 +122,6 @@ class Spectrometer(object):
 		#print("freeing avs spectro, hopefully this is always called")
 		pyspectro.closedll(dllDirectory,self.handle)
 	
-	
-serialNumber_spectrometerLabel_map = {"black": '1504174U1',
-			"grey": '1301201U1',"newbie":'1709352U1'}
-pixelCount_spectrometerLabel_map = {"black": 2048,
-			"grey": 2068,"newbie":2048}
-min_int_time_spectrometerLabel_map = {"black": 1.05,
-			"grey": 2e-3,"newbie":1.05}
 
 CAMERA_PROPERTY_TYPE_MAPPING = {"brightness": 0, "auto_exposure": 1, "sharpness": 2, "white_balance": 3,
 	"hue": 4, "saturation": 5, "gamma": 6, "iris": 7, "focus": 8, "zoom": 9, "pan": 10, "tilt": 11,

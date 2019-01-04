@@ -104,7 +104,7 @@ class Picoscope6407(_Singleton):
 	def close(self):
 		self.ps.close_unit()
 	
-	def set_active_channels(self,channels_to_activate=[]):
+	def set_active_channels(self,channels_to_activate=[],deactivate_unwanted_channels = False):
 		'''
 		channel_settings must have a values "A","B","C" or "D" 
 		for each of the channels you wish to be active
@@ -112,28 +112,35 @@ class Picoscope6407(_Singleton):
 		#TODO: Make use of the channel settings, passable as arguments
 		self.open()#might be needed!
 		self.active_channels = {}
-		for c in channels_to_activate:
+		all_channels = ["A","B","C","D"]
+		for c in all_channels:
 			channel = self.ps.m.Channels.__dict__[c] #WRONG WAY ROUND!
 			state = self.ps.m.ChannelState()
-			state.enabled=True
+			if c in channels_to_activate:
+				state.enabled = True
+				self.active_channels.update({c:channel})
+			else:
+				state.enables = False
 			state.coupling = self.ps.m.Couplings.dc50 #dc50 Ohms is only allowed value for 6407
 			state.range = self.ps.m.Ranges.r100mv #100mV is the only allowed range for the 6407
 			self.status = self.ps.set_channel(channel, state) 
 			self._handle_errors()
-			self.active_channels.update({c:channel})
 		
-	def set_trigger(self, source, threshold):
+					
+	def set_trigger(self, source, threshold, direction=2,delay=0):
 		'''
 		Give a letter for the trigger source channel.
 		The threshold is a fraction of the total signal, I think.
+		direction: I'm not sure, but I think {0:"ABOVE", 1: "BELOW",2:"RISING",3:"FALLING", 4:"RISING_OR_FALLING"}
+		delay: should be in SI units please
 		'''
+		timebase_delay = int(delay /  float(time_per_sample(self.timebase)))
 		self.open()#might be needed!
 		enabled = True
 		self.trigger_source = source #a string, "A" or "B" or "C" or "D"
 		self.trigger_threshold = threshold
-		direction = 0
 		if source in self.active_channels:
-			self.status = self.ps.set_simple_trigger(enabled, self.active_channels[source], threshold, direction,delay=0,waitfor=0)
+			self.status = self.ps.set_simple_trigger(enabled, self.active_channels[source], threshold, direction,delay=timebase_delay,waitfor=0)
 			self._handle_errors()
 
 		else:
@@ -164,7 +171,17 @@ class Picoscope6407(_Singleton):
 		Set the device into BLOCK mode, run and read out the data, just the once.
 		'''
 		self.open()#might be needed!
-		self.timebase = timebase #at least "2" please. Must be integer.
+		self.timebase = timebase
+		#Warn if timebase and active channels are incompatible
+		if timebase == 0:
+			if len(self.active_channels)>1:
+				print "Picoscope6407 warning: timebase=0 only compatible with one active channel"
+		elif timebase == 1:
+			channel_letters = self.active_channels.keys()
+			if (channel_letters.count("A") & channel_letters.count("B")) or (channel_letters.count("C") & channel_letters.count("D")):
+				print "Picoscope6407 warning: timebase=1 only compatible with two active channels for certain channel pairs. See documentation."
+				
+				
 		interval = time_per_sample(self.timebase) * self.samples * 1e9 #in nanoseconds
 		self.status = self.ps.collect_segment(self.segment, interval, timebase=self.timebase)
 		self._handle_errors()
@@ -186,15 +203,18 @@ class Picoscope6407(_Singleton):
 if __name__ == "__main__":
 	import picoscope
 	scope = picoscope.Picoscope6407(open_device=True)
-	scope.set_active_channels(["B","C"])
-	scope.set_trigger("C",0.0) #trigger-channel label and fractional trigger value
-	scope.initialise_measurement(samples=int(1e3))
-	scope.acquire_and_readout(timebase=2) #see documentation for meaning. Small means short.
+	scope.set_active_channels(["C","B"],deactivate_unwanted_channels=True)
+	#For fastest sampling (timebase 1 or maybe even 0) I may need to explicitly de-activate the unused channels
+	#300 ns trigger delay (offset) seems necessary, and I don't know why
+	scope.set_trigger("B",+0.5,direction=3,delay=300e-9) #trigger-channel label and fractional trigger value
+	scope.initialise_measurement(samples=int(3e4))
+	scope.acquire_and_readout(timebase=1) #see documentation for meaning. Small means short.
 
 	figure(1),clf()
 	for c in sorted(scope.active_channels):
 		plot(1e9*scope.time_axis,1e3*scope.data[c],".--",label=c)
 
 	xlabel("time (ns)"),ylabel("signal (mV)")
-	xlim(0,500),grid(1),legend()
+	xlim(1880,1900),grid(1),legend()
+	#xlim(0,500),grid(1),legend()
 #EoF 

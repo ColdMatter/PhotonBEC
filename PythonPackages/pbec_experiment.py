@@ -110,6 +110,7 @@ class __Camera(object):
 		print "Entering camera setup"
 		self.error = None
 		dllDirectory = pbec_analysis.control_root_folder + "\\camera\\"
+		print dllDirectory
 		if self.open:
 			#raise IOError("camera is already setup")
 			return self.cam_info
@@ -134,10 +135,17 @@ class __Camera(object):
 			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage(self.handle)
 			if verbose: print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
 			calcedDataLen = row*col*bitsPerPixel/8 #for some reason, this does not always equal dataLen
-			if (self.imageData == None) or len(self.imageData) != calcedDataLen:
-				self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
-				#print("rebuilding imageData handle=" + str(self.handle) +
-				#	", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
+			#if verbose: print 'len of image data = ', len(self.imageData)
+			if verbose: print 'calculated length = ', calcedDataLen
+			#if (self.imageData == None) or len(self.imageData) != calcedDataLen:
+			try:
+				if (self.imageData == None):
+					self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
+			except ValueError:
+				if dataLen != calcedDataLen:
+					self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
+					print("rebuilding imageData handle=" + str(self.handle) +
+						", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
 			if verbose: print "_Camera.get_image: calling getflycapdata"
 			pyflycap.getflycapdata(self.handle, self.imageData)
 			if verbose: print "_Camera.get_image: getflycapimage returned"

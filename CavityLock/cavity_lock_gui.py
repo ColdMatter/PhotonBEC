@@ -9,7 +9,8 @@ from matplotlib.figure import Figure
 from socket import gethostname
 
 sys.path.append("D:\\Control\\PythonPackages\\")
-sys.path.append("C:\\photonbec\\Control\\PythonPackages\\") #for laptop ph-photonbec2
+sys.path.append("Y:\\Control\\PythonPackages\\") #for laptop ph-photonbec2
+#sys.path.append("C:\\photonbec\\Control\\PythonPackages\\") #for laptop ph-photonbec2
 import hene_utils
 
 #Default values for stabiliser
