@@ -640,15 +640,24 @@ class CorrelatorData_general(ExperimentalData):
 		d.timebase = self.timebase.copy()
 		return d
 	def getHistogram(self, bin_width, tmin=1e-9, tmax=10e-9,trigger_channel=0,signal_channel=1):
+		#Edited by BTW 20190111 to use tmin, tmax in histogram, not min_ts, max_ts
 		combined_timestamps = self.getSignalRelativeTimestamps(trigger_channel, signal_channel)
 		split_combined_timestamps = [stamp for stamp in combined_timestamps if tmin<stamp<tmax]
-		min_ts,max_ts = min(split_combined_timestamps), max(split_combined_timestamps)
+		#min_ts,max_ts = min(split_combined_timestamps), max(split_combined_timestamps)
 		nbins = int((tmax-tmin)/(2*bin_width)) #why the factor 2?
 		trigger_counts = self.getTotalCounts()[trigger_channel]
+		#hist1=histogram(1e9*array(split_combined_timestamps), \
+		#	bins=nbins,range=(1e9*min_ts,1e9*max_ts), \
+		#	weights=ones_like(split_combined_timestamps)/trigger_counts)
 		hist1=histogram(1e9*array(split_combined_timestamps), \
-			bins=nbins,range=(1e9*min_ts,1e9*max_ts), \
+			bins=nbins,range=(1e9*tmin,1e9*tmax), \
 			weights=ones_like(split_combined_timestamps)/trigger_counts)
 		return hist1
+	
+	def getFilteredTimestamps(self,tmin,tmax,trigger_channel,signal_channel):
+		combined_timestamps = self.getSignalRelativeTimestamps(trigger_channel, signal_channel)
+		split_combined_timestamps = [stamp for stamp in combined_timestamps if tmin<stamp<tmax]
+		return split_combined_timestamps
 	
 	def getSignalRelativeTimestamps(self, trigger_channel, signal_channel):
 		combined_timestamps_and_channels = zip(self.channels, self.timestamps)
@@ -854,16 +863,19 @@ class CorrelatorData_general(ExperimentalData):
 		return 0
 		
 	def plotHistogram(self,bin_width, tmin=1e-9, tmax=10e-9,trigger_channel=0,signal_channel=1,fignum=432,clearfig=True,**kwargs):
+		#Edited by BTW 20190111 to use tmin, tmax in histogram, not min_ts, max_ts
 		figure(fignum)
 		if clearfig: 
 			clf()
 		combined_timestamps = self.getSignalRelativeTimestamps(trigger_channel, signal_channel)
 		split_combined_timestamps = [stamp for stamp in combined_timestamps if tmin<stamp<tmax]
-		min_ts,max_ts = min(split_combined_timestamps), max(split_combined_timestamps)
+		#min_ts,max_ts = min(split_combined_timestamps), max(split_combined_timestamps)
 		nbins = int((tmax-tmin)/(2*bin_width)) #why the factor 2?
 		trigger_counts = self.getTotalCounts()[trigger_channel]
+		#hist1=hist(1e9*array(split_combined_timestamps), \
+		#	bins=nbins,range=(1e9*min_ts,1e9*max_ts),histtype="step", weights=ones_like(split_combined_timestamps)/trigger_counts,**kwargs)
 		hist1=hist(1e9*array(split_combined_timestamps), \
-			bins=nbins,range=(1e9*min_ts,1e9*max_ts),histtype="step", weights=ones_like(split_combined_timestamps)/trigger_counts,**kwargs)
+			bins=nbins,range=(1e9*tmin,1e9*tmax),histtype="step", weights=ones_like(split_combined_timestamps)/trigger_counts,**kwargs)
 		xlim(1e9*tmin,1e9*tmax)
 		grid(1)
 		xlabel(r"Time (ns)")

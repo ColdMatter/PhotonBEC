@@ -58,7 +58,7 @@ elif gethostname()=="ph-photonbec2": #laptop
 			SingleChannelAO.SetAO0(v, minval=default_control_range[0],maxval=default_control_range[1])
 			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
 
-if gethostname()=="ph-photonbec3":
+elif gethostname()=="ph-photonbec3":
 	camera_label = "flea"
 	hardwidth = 800
 	hardheight = 800 #image size for flea
@@ -86,8 +86,67 @@ if gethostname()=="ph-photonbec3":
 		def set_cavity_length_voltage(v):
 			SingleChannelAO.SetAO1(v, minval=default_control_range[0],maxval=default_control_range[1])
 			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
+
+elif gethostname()=="ph-photonbec":
+	camera_label = "flea"
+	hardwidth = 800
+	hardheight = 800 #image size for flea
+	import SingleChannelAO
+	dxdy = (250, 250) #Changed to make bigger BTW 20171215
+	min_acceptable_radius = 30
+	potential_divider = False
+	if potential_divider:
+		default_P_gain = -0.10
+		default_I_gain = -0.05
+		default_I_const = 5
+		default_II_gain = +200 #note sign is always positive: square of sign of I gain
+		default_II_const=1000
+		default_control_range = (0,5)
+		def set_cavity_length_voltage(v):
+			SingleChannelAO.SetAO0(v, minval=default_control_range[0],maxval=default_control_range[1],device="Dev2")
+			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
+	else:
+		default_P_gain = -0.005
+		default_I_gain = -0.01
+		default_I_const = 20
+		default_II_gain = +50 #note sign is always positive: square of sign of I gain
+		default_II_const=1000
+		default_control_range = (0,1)
+		def set_cavity_length_voltage(v):
+			SingleChannelAO.SetAO0(v, minval=default_control_range[0],maxval=default_control_range[1],device="Dev2")
+			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output			
+
+elif gethostname()=="ph-photonbec4":
+	camera_label = "flea"
+	hardwidth = 800
+	hardheight = 800 #image size for flea
+	import SingleChannelAO
+	dxdy = (250, 250) #Changed to make bigger BTW 20171215
+	min_acceptable_radius = 30
+	potential_divider = False
+	if potential_divider:
+		default_P_gain = -0.10
+		default_I_gain = -0.05
+		default_I_const = 5
+		default_II_gain = +200 #note sign is always positive: square of sign of I gain
+		default_II_const=1000
+		default_control_range = (0,5)
+		def set_cavity_length_voltage(v):
+			SingleChannelAO.SetAO1(v, device="Dev1", minval=default_control_range[0],maxval=default_control_range[1])
+			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
+	else:
+		default_P_gain = -0.005
+		default_I_gain = -0.01
+		default_I_const = 20
+		default_II_gain = +50 #note sign is always positive: square of sign of I gain
+		default_II_const=1000
+		default_control_range = (0,1)
+		def set_cavity_length_voltage(v):
+			SingleChannelAO.SetAO1(v, device="Dev1", minval=default_control_range[0],maxval=default_control_range[1])
+			#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
 	
-	
+
+			
 #flea is for the main experiment
 #chameleon for the mini-setup
 camera_config = {
