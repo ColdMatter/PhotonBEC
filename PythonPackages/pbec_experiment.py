@@ -11,7 +11,9 @@ sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separat
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"PythonPackages")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"thorlabsapt")
 import pyflycap
-import pyspectro
+import socket
+if not socket.gethostname() == 'ph-photonbec4':
+	import pyspectro
 import SingleChannelAO, SingleChannelAI, LaserQuantum
 
 import spectrometer_utils
@@ -105,6 +107,7 @@ class __Camera(object):
 	def __init__(self, serialNumber):
 		self.serialNumber = serialNumber
 		self.error = None
+		self.initial_run = True
 		
 	def setup(self):
 		print "Entering camera setup"
@@ -349,7 +352,8 @@ camera_pixel_size_map = {"int_chameleon": 3.75e-6, "chameleon": 3.75e-6,
 #serialNumber_cameraLabel_map = {"chameleon": 16316680,
 #			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 12350594}
 serialNumber_cameraLabel_map = {"chameleon": 16316680,
-			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 15299245}
+			"flea": 14080462, "grasshopper": 14110879,"grasshopper_2d":14435619, "minisetup_chameleon": 15299245,
+			"minisetup_chameleon_lockcamera": 16316679}
 			
 def getCameraByLabel(label):
 	number = 0
