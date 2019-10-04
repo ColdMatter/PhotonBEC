@@ -128,6 +128,7 @@ class __Camera(object):
 			#self.setup() #why did i put setup() here? isnt it an infinite loop
 			raise exc
 
+	'''
 	def get_image(self, verbose = False):
 		self.__check_is_open()
 		try:
@@ -138,6 +139,7 @@ class __Camera(object):
 			#if verbose: print 'len of image data = ', len(self.imageData)
 			if verbose: print 'calculated length = ', calcedDataLen
 			#if (self.imageData == None) or len(self.imageData) != calcedDataLen:
+			# This try except takes most of the entire running time
 			try:
 				if (self.imageData == None):
 					self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
@@ -146,6 +148,45 @@ class __Camera(object):
 					self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
 					print("rebuilding imageData handle=" + str(self.handle) +
 						", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
+			if verbose: print "_Camera.get_image: calling getflycapdata"
+			pyflycap.getflycapdata(self.handle, self.imageData)
+			if verbose: print "_Camera.get_image: getflycapimage returned"
+			return numpy.reshape(self.imageData, (row, col, 3))
+			#from scipy.misc import imsave
+			#imsave("image.png", im)
+		except Exception as exc:
+			self.close()
+			if verbose: print "get_image(): " + repr(exc)
+			self.error = exc 
+			#raise exc #do not raise exceptions, just record the error and carry on blithely
+			import traceback
+			traceback.print_exc()
+			return None
+	'''
+
+	#### get_image() rewritten by Joao Rodrigues @ 02/10/2019. Try-Except statement was taking too long
+	def get_image(self, verbose = False):
+		self.__check_is_open()
+		try:
+			if verbose: print "_Camera.get_image: calling getflycapimage"
+			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage(self.handle)
+			if verbose: print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
+			calcedDataLen = row*col*bitsPerPixel/8 #for some reason, this does not always equal dataLen
+			#if verbose: print 'len of image data = ', len(self.imageData)
+			if verbose: print 'calculated length = ', calcedDataLen
+			#if (self.imageData == None) or len(self.imageData) != calcedDataLen:
+			# This try except takes most of the entire running time
+			if self.initial_run is True:
+				try:
+					if (self.imageData == None):
+						self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
+				except ValueError:
+					if dataLen != calcedDataLen:
+						self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
+						print("rebuilding imageData handle=" + str(self.handle) +
+							", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
+					self.initial_run = False
+
 			if verbose: print "_Camera.get_image: calling getflycapdata"
 			pyflycap.getflycapdata(self.handle, self.imageData)
 			if verbose: print "_Camera.get_image: getflycapimage returned"
