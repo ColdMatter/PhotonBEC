@@ -40,7 +40,7 @@ if gethostname()=="ph-photonbec3":
 			return
 	def set_AOM_voltage_Fianium(v):
 		try:
-			SingleChannelAO.SetAO1(v,device="Dev2",channel="ao1")
+			SingleChannelAO.SetAO1(v,device="Dev3",channel="ao2")
 		except:
 			print "PROBABLY A DAQ BOARD ERROR"
 		finally:
@@ -93,7 +93,7 @@ if gethostname()=="ph-photonbec3":
 	spectrometer_server_port = pbec_ipc.PORT_NUMBERS["spectrometer_server"]
 	spectrometer_server_host = 'localhost'
 	spectrometer_name = "newbie"
-	spectrometer_numbers = {'newbie':1}
+	spectrometer_numbers = {'newbie':0}
 	spectrometer_number = spectrometer_numbers[spectrometer_name]
 	spectrum_int_time = pbec_ipc.ipc_eval("s.spec_int_times["+str(spectrometer_number)+"]",port=spectrometer_server_port,host=spectrometer_server_host)
 	spectrum_n_averages = pbec_ipc.ipc_eval("s.spec_n_averages["+str(spectrometer_number)+"]",port=spectrometer_server_port,host=spectrometer_server_host)	
@@ -149,6 +149,7 @@ class _SpectrometerPowerStabiliserThread(threading.Thread):
 						if parent.control_gain != 0:
 							parent.Vout = parent.control_gain * parent.pic.control_value() + parent.control_offset
 						set_output(parent.Vout)
+						print parent.Vout
 						
 					#Update spectrometer integration time if need be
 					#HERE BE BUGS: TEST PROPERLY PLEASE

@@ -1,0 +1,7 @@
+﻿  stdafx.cpp
+  FlyCapture2Test.cpp
+     Creating library ..\..\bin\FlyCapture2Test.lib and object ..\..\bin\FlyCapture2Test.exp
+  Generating code
+  Finished generating code
+  FlyCapture2Test_2010.vcxproj -> D:\Control\camera\FlyCapture2\src\FlyCapture2Test\..\..\bin\FlyCapture2Test.dll
+  FlyCapture2Test_2010.vcxproj -> ..\..\bin\FlyCapture2Test.pdb (Full PDB)

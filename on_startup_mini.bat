@@ -1,0 +1,3 @@
+python on_startup_mini.py
+
+start PiezoController\piezo_controller_gui_mini.bat

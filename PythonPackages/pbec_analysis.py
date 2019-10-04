@@ -60,8 +60,8 @@ elif gethostname()=="ph-rnyman2":
 	pbec_prefix = "pbec"
 elif gethostname()=="Potato3":
 	#only works for data that copied to correct part of Temp folder
-        data_root_folder =  "C:\\stuff\\temp\\Imperial_PhotonBEC\\Data\\"
-        control_root_folder = "C:\\stuff\\temp\\Imperial_PhotonBEC\\Control_partial\\"
+	data_root_folder =  "C:\\stuff\\temp\\Imperial_PhotonBEC\\Data\\"
+	control_root_folder = "C:\\stuff\\temp\\Imperial_PhotonBEC\\Control_partial\\"
 	folder_separator="\\"
 	pbec_prefix = "pbec"
 elif gethostname()=="ph-photonbec3":
@@ -72,6 +72,11 @@ elif gethostname()=="ph-photonbec3":
 elif gethostname()=="ph-photonbec4":
 	data_root_folder = "D:\\Data"
 	control_root_folder = "C:\\photonbec\\Control"
+	folder_separator="\\"
+	pbec_prefix = "pbec"
+elif gethostname()=="ph-jrodri10":
+	data_root_folder = "Z:\\Data"
+	control_root_folder = "Z:\\Control"
 	folder_separator="\\"
 	pbec_prefix = "pbec"
 else:
@@ -164,7 +169,7 @@ def make_timestamp(precision=0):
 	ss = str(100+t.tm_sec)[-2:]
 	l=[YYYY,MM,DD,"_",hh,mm,ss]
 	if precision<0:
-		print "For backwards compatibility, the timestamp will include seconds anyway"
+		print("For backwards compatibility, the timestamp will include seconds anyway")
 	elif precision>0:
 		d = time.time()%1
 		d_str=str(d)[2:2+int(round(precision))]
@@ -250,28 +255,28 @@ def data_files_in_range_single_day(first_ts,last_ts,extension = ".json"):
 	return selected_file_list
 
 def data_files_in_range(first_ts,last_ts,extension=".json"):
-    #Untested if data span more than one month, or year
-    if date_from_timestamp(first_ts)==date_from_timestamp(last_ts):
-    	df= data_files_in_range_single_day(first_ts, last_ts, extension=extension)
-    else:
-	df = []
-	[first_date,last_date] = map(date_from_timestamp,[first_ts,last_ts])
-	#detect all days in range, find all possible data files for each date, within range, etc...
-	#explicitly assumes only one month is relevant
-	month = first_date[:6] #date format YYYYMMDD
-	month_folder = datafolder_from_timestamp(first_ts).rsplit(folder_separator,2)[0]+folder_separator
-	all_dates_in_month = os.listdir(month_folder)
-	selected_dates_in_month = [m for m in all_dates_in_month if (m>=first_date)&(m<=last_date)]
-	for date in selected_dates_in_month:
-	    start_ts=date+"_000000"
-	    end_ts =date+"_235959"
-	    if date==first_date: start_ts = first_ts
-	    if date==last_date: end_ts = last_ts
-	    df+=data_files_in_range_single_day(start_ts, end_ts, extension=extension)
-	#===might be useful in future
-	#year_folder = month_folder.rsplit(folder_separator,2)[0]+folder_separator
-	#all_folder = data_root_folder
-    return df
+	#Untested if data span more than one month, or year
+	if date_from_timestamp(first_ts)==date_from_timestamp(last_ts):
+		df= data_files_in_range_single_day(first_ts, last_ts, extension=extension)
+	else:
+		df = []
+		[first_date,last_date] = map(date_from_timestamp,[first_ts,last_ts])
+		#detect all days in range, find all possible data files for each date, within range, etc...
+		#explicitly assumes only one month is relevant
+		month = first_date[:6] #date format YYYYMMDD
+		month_folder = datafolder_from_timestamp(first_ts).rsplit(folder_separator,2)[0]+folder_separator
+		all_dates_in_month = os.listdir(month_folder)
+		selected_dates_in_month = [m for m in all_dates_in_month if (m>=first_date)&(m<=last_date)]
+		for date in selected_dates_in_month:
+		    start_ts=date+"_000000"
+		    end_ts =date+"_235959"
+		    if date==first_date: start_ts = first_ts
+		    if date==last_date: end_ts = last_ts
+		    df+=data_files_in_range_single_day(start_ts, end_ts, extension=extension)
+		#===might be useful in future
+		#year_folder = month_folder.rsplit(folder_separator,2)[0]+folder_separator
+		#all_folder = data_root_folder
+	return df
 
 
 def timestamps_in_range(first_ts, last_ts, extension=".json"):
@@ -283,18 +288,18 @@ def timestamp_to_datetime(ts):
     return datetime.datetime.strptime(ts, "%Y%m%d_%H%M%S")
     
 def exclude_timestamps(ts_list, excluded_range):
-    '''
-    Exclude timestamps in ts_list. Extended_range is a tuple with the first
-    and last timestamp to be excluded, or a list of such tuples.
-    '''
-    if not isinstance(excluded_range, list):
-        excluded_range = [excluded_range]
-    result = ts_list
-    for e in excluded_range:
-        first = timestamp_to_datetime(e[0])
-	last = timestamp_to_datetime(e[1])
-	result = [ts for ts in result if first > timestamp_to_datetime(ts) or timestamp_to_datetime(ts) > last]
-    return result
+	'''
+	Exclude timestamps in ts_list. Extended_range is a tuple with the first
+	and last timestamp to be excluded, or a list of such tuples.
+	'''
+	if not isinstance(excluded_range, list):
+		excluded_range = [excluded_range]
+	result = ts_list
+	for e in excluded_range:
+		first = timestamp_to_datetime(e[0])
+		last = timestamp_to_datetime(e[1])
+		result = [ts for ts in result if first > timestamp_to_datetime(ts) or timestamp_to_datetime(ts) > last]
+	return result
 
 def save_image_set(im_list, ts=None, file_end=''):
 	if ts == None:
@@ -369,6 +374,52 @@ class CameraData(ExperimentalData):
 		d = CameraData(self.ts)
 		d.data = self.data.copy()
 		return d
+
+
+class TektronixScopeData(ExperimentalData):
+
+	'''
+		
+		Written by  : Joao Rodrigues
+		Last Update : Feb 14th 2019
+
+		Data Class for the Tektronix Oscilloscope (TBS1032B)
+
+	'''
+
+	def __init__(self, ts, extension='_tektronix.json'):
+		ExperimentalData.__init__(self, ts, extension=extension)
+		self.data = dict()
+
+
+	def add_scope_reading(self, data, label='None'):
+		data['time'] = list(data['time'])
+		data['voltage'] = list(data['voltage'])
+		self.data[label] = data
+
+
+	def saveData(self):
+		filename = self.getFileName(make_folder=True)
+		js = json.dumps({"data":self.data}, indent=4)
+		fil = open(filename, "w")
+		fil.write(js)
+		fil.close()	
+
+
+	def loadData(self, load_params=None):
+		filename = self.getFileName()
+		fil = open(filename, "r")
+		raw_json = fil.read()
+		fil.close()
+		decoded = json.loads(raw_json)
+		self.__dict__.update(decoded)
+
+
+	def copy(self):
+		raise Exception("Not Coded Yet")
+
+
+
 		
 class JSONData(ExperimentalData):
 	def __init__(self, ts, extension='_json.json', data=None):
@@ -376,7 +427,7 @@ class JSONData(ExperimentalData):
 		if type(data)==type({}):
 			self.data=data
 		else:
-			print "Data must be a dictionary"
+			print("Data must be a dictionary")
 			#break #Throw exception: "data type should be a dictionary"
 	def saveData(self):
 		filename = self.getFileName(make_folder=True)
@@ -442,7 +493,7 @@ class InterferometerFringeData(ExperimentalData):
 		if self.data!=None:
 			save_image_set(self.data, self.ts, self.extension)
 		else:
-			print "pbec_analysis.InterferometerFringeData warning: .data nonexistent, hence not saved"
+			print("pbec_analysis.InterferometerFringeData warning: .data nonexistent, hence not saved")
 	def loadData(self, load_params):
 		self.data = load_image_set(self.ts, self.extension)
 	def copy(self):
@@ -681,17 +732,17 @@ class CorrelatorData_general(ExperimentalData):
 						this_block = list(copy([(ch,ts)]))
 				else:
 					this_block.append(list(copy((ch,ts))))
-                '''
-                for i,(ch,ts) in enumerate(useful_timestamps_and_channels):
-                    ch,ts = useful_timestamps_and_channels[i]
-                    if ch==trigger_channel:
-                        if this_block==[]:
-                            this_block = [(ch,ts)]
-                        else:
-                            trigger_and_signal_blocks.append(this_block)
-                            this_block = [(ch,ts)]
-                    else:
-                        this_block.append([ch,ts])#why can't I use a tuple here?
+		'''
+		for i,(ch,ts) in enumerate(useful_timestamps_and_channels):
+			ch,ts = useful_timestamps_and_channels[i]
+			if ch==trigger_channel:
+				if this_block==[]:
+					this_block = [(ch,ts)]
+				else:
+					trigger_and_signal_blocks.append(this_block)
+					this_block = [(ch,ts)]
+			else:
+				this_block.append([ch,ts])#why can't I use a tuple here?
 
 		#Note: we can ignore all the empty trigger block only if we know how many blocks there were in total
 		non_empty_blocks = [a for a in trigger_and_signal_blocks if len(a)>1]
@@ -703,16 +754,16 @@ class CorrelatorData_general(ExperimentalData):
 		debug=True
 		if debug: t1=time.time()
 		combined_timestamps_and_channels = zip(self.channels, self.raw_timestamps)
-		if debug: t2=time.time(); print "step 2: "+str(t2-t1)
+		if debug: t2=time.time(); print("step 2: "+str(t2-t1))
 		
 		#Loop over the list, splitting is into blocks associated with each trigger
-		if debug: t3=time.time(); print "step 3: "+str(t3-t2)
+		if debug: t3=time.time(); print("step 3: "+str(t3-t2))
 		channel_counts = self.getTotalCounts()
 		trigger_count = channel_counts[trigger_channel]
 		#signal1_count = channel_counts[signal_channel1]
 		#signal2_count = channel_counts[signal_channel2]
 		
-		if debug: t4=time.time(); print "step 4: "+str(t4-t3)
+		if debug: t4=time.time(); print("step 4: "+str(t4-t3))
 		trigger_and_signal_blocks=[]
 		this_block=[]
 		#This loop is the slow step, probably because of dynamic memory allocation
@@ -723,7 +774,7 @@ class CorrelatorData_general(ExperimentalData):
 		trigger_number = 0
 		pair_events, channel1_events, channel2_events = [], [], []
 		
-		if debug: t41=time.time(); print "step 4.1: "+str(t41-t4)
+		if debug: t41=time.time(); print("step 4.1: "+str(t41-t4))
 
 		#Create a map from channel number to a truth value. This is quicker than a boolean operation.
 		#Need to do this as a list, to make sure we stay as integers for speed of if evaluation.
@@ -757,15 +808,15 @@ class CorrelatorData_general(ExperimentalData):
 			last_ts = ts
 			last_parity = parity
 			
-		if debug: t42=time.time(); print "step 4.2: "+str(t42-t41)
+		if debug: t42=time.time(); print("step 4.2: "+str(t42-t41))
 		
 		relative_timestamps1 = (organised_events[signal_channel1]-organised_events[trigger_channel])
 		relative_timestamps2 = (organised_events[signal_channel2]-organised_events[trigger_channel])
-		if debug: t43=time.time(); print "step 4.3: "+str(t43-t42)
+		if debug: t43=time.time(); print("step 4.3: "+str(t43-t42))
 		
 		#print pair_events
 		
-		print "About to filter"
+		print("About to filter")
 		self.relative_timestamps_pairs = [[relative_timestamps1[i],relative_timestamps2[i]] for i in pair_events]
 		self.relative_timestamps1 = [relative_timestamps1[i] for i in channel1_events]
 		self.relative_timestamps2 = [relative_timestamps2[i] for i in channel2_events]
@@ -776,23 +827,23 @@ class CorrelatorData_general(ExperimentalData):
 		
 
 		if debug: t11=time.time();
-		if debug: print "Total time: "+str(t11-t1)
+		if debug: print("Total time: "+str(t11-t1))
 		return 0
 	
 	def getDoubleSignalTimestampsFilteredOpticalTrigger(self, electronic_trigger_channel, optical_trigger_channel, signal_channel1, signal_channel2):
 		debug=True
 		if debug: t1=time.time()
 		combined_timestamps_and_channels = zip(self.channels, self.raw_timestamps)
-		if debug: t2=time.time(); print "step 2: "+str(t2-t1)
+		if debug: t2=time.time(); print("step 2: "+str(t2-t1))
 		
 		#Loop over the list, splitting is into blocks associated with each trigger
-		if debug: t3=time.time(); print "step 3: "+str(t3-t2)
+		if debug: t3=time.time(); print("step 3: "+str(t3-t2))
 		channel_counts = self.getTotalCounts()
 		trigger_count = channel_counts[electronic_trigger_channel]
 		#signal1_count = channel_counts[signal_channel1]
 		#signal2_count = channel_counts[signal_channel2]
 		
-		if debug: t4=time.time(); print "step 4: "+str(t4-t3)
+		if debug: t4=time.time(); print("step 4: "+str(t4-t3))
 		trigger_and_signal_blocks=[]
 		this_block=[]
 		#This loop is the slow step, probably because of dynamic memory allocation
@@ -803,7 +854,7 @@ class CorrelatorData_general(ExperimentalData):
 		trigger_number = 0
 		pair_events, channel1_events, channel2_events = [], [], []
 		
-		if debug: t41=time.time(); print "step 4.1: "+str(t41-t4)
+		if debug: t41=time.time(); print("step 4.1: "+str(t41-t4))
 
 		#Create a map from channel number to a truth value. This is quicker than a boolean operation.
 		#Need to do this as a list, to make sure we stay as integers for speed of if evaluation.
@@ -839,16 +890,16 @@ class CorrelatorData_general(ExperimentalData):
 			last_ts = ts
 			last_parity = parity
 			
-		if debug: t42=time.time(); print "step 4.2: "+str(t42-t41)
+		if debug: t42=time.time(); print("step 4.2: "+str(t42-t41))
 		
 		relative_timestamps1 = (organised_events[signal_channel1]-organised_events[optical_trigger_channel])
 		relative_timestamps2 = (organised_events[signal_channel2]-organised_events[optical_trigger_channel])
 		relative_timestamps_trigger = (organised_events[optical_trigger_channel]-organised_events[electronic_trigger_channel])
-		if debug: t43=time.time(); print "step 4.3: "+str(t43-t42)
+		if debug: t43=time.time(); print("step 4.3: "+str(t43-t42))
 		
 		#print pair_events
 		
-		print "About to filter"
+		print("About to filter")
 		self.relative_timestamps_pairs = [[relative_timestamps1[i],relative_timestamps2[i],relative_timestamps_trigger[i]] for i in pair_events]
 		self.relative_timestamps1 = [relative_timestamps1[i] for i in channel1_events]
 		self.relative_timestamps2 = [relative_timestamps2[i] for i in channel2_events]
@@ -859,7 +910,7 @@ class CorrelatorData_general(ExperimentalData):
 		self.relative_timestamps2_parities = [organised_parities[signal_channel2][i] for i in channel2_events]
 			
 		if debug: t11=time.time();
-		if debug: print "Total time: "+str(t11-t1)
+		if debug: print("Total time: "+str(t11-t1))
 		return 0
 		
 	def plotHistogram(self,bin_width, tmin=1e-9, tmax=10e-9,trigger_channel=0,signal_channel=1,fignum=432,clearfig=True,**kwargs):
@@ -968,7 +1019,7 @@ class CorrelatorData_ID900(CorrelatorData_general):
 		#Reformat timestamp
 		year, month, day, hour, minute, sec = self.ts[0:4], self.ts[4:6], self.ts[6:8], self.ts[9:11], self.ts[11:13], self.ts[13:15]
 		filename_base = year+"-"+month+"-"+day+"T"+hour+"_"+minute+"_"+sec+"_C"
-		datafile_path = "C:\Users\photonbec\Documents\\"
+		datafile_path = "C:\\Users\\photonbec\\Documents\\"
 		filenames = [datafile_path + filename_base + str(ch) +".bin" for ch in channels]
 		
 		ts_size = 8 #Bytes
@@ -984,7 +1035,7 @@ class CorrelatorData_ID900(CorrelatorData_general):
 			still_values = 0
 			n_stamps = 0
 			values = []
-			print filename
+			print(filename)
 			while (still_values == 0):
 				try:
 					values.append(struct.unpack(ts_type,fil.read(ts_size)))
@@ -992,21 +1043,21 @@ class CorrelatorData_ID900(CorrelatorData_general):
 				except:
 					still_values = 1
 			fil.close()
-			print len(values), n_stamps
+			print(len(values), n_stamps)
 			channel_values = [channels[m] for i in range(n_stamps)]
-			print len(channel_values)
+			print(len(channel_values))
 			timestamps += list(values)
-			print len(timestamps)
+			print(len(timestamps))
 			channel_data += list(channel_values)
-			print len(channel_data)
+			print(len(channel_data))
 			
 		combined_timestamps_and_channels = zip(timestamps,channel_data)
 		combined_timestamps_and_channels.sort(key=lambda tup: tup[0])
-		print shape(combined_timestamps_and_channels)
+		print(shape(combined_timestamps_and_channels))
 		self.raw_timestamps = [x[0][0] for x in combined_timestamps_and_channels]
-		print shape(self.raw_timestamps)
+		print(shape(self.raw_timestamps))
 		self.channels = [x[1] for x in combined_timestamps_and_channels]
-		print shape(self.channels)
+		print(shape(self.channels))
 	
 class MetaData():
 	def __init__(self, ts, parameters={}, comments=""):
@@ -1040,10 +1091,10 @@ class MetaData():
 		decoded = json.loads(raw_json)
 		self.__dict__.update(decoded)
 	def printMe(self,prefix="\t"):
-		print prefix + "timestamp: "+self.ts
-		print prefix + "parameters: "+str(self.parameters)
-		print prefix + "comments: "+self.comments
-		print prefix + "errors: " + self.errors
+		print(prefix + "timestamp: "+self.ts)
+		print(prefix + "parameters: "+str(self.parameters))
+		print(prefix + "comments: "+self.comments)
+		print(prefix + "errors: " + self.errors)
 
 class ExperimentalDataSet():
 	'''
@@ -1170,16 +1221,16 @@ def smooth(x,window_len=10,window='hanning'):
     """
     #
     if x.ndim != 1:
-        raise ValueError, "smooth only accepts 1 dimension arrays."
+        raise ValueError("smooth only accepts 1 dimension arrays.")
     #
     if x.size < window_len:
-        raise ValueError, "Input vector needs to be bigger than window size."
+        raise ValueError("Input vector needs to be bigger than window size.")
     #
     if window_len<3:
         return x
     #
     if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+        raise ValueError("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
     #
     s=r_[2*x[0]-x[window_len:1:-1],x,2*x[-1]-x[-1:-window_len:-1]]
     #print(len(s))
@@ -1195,11 +1246,11 @@ def smooth_nD(x,window_len=10,window='hanning',axis=0):
 	#smooths nD data along one axis only.
 	from scipy.ndimage.filters import convolve
 	#axis argument still in testing
-	if x.ndim > 3: raise ValueError, "smooth only accepts 1,2 or 3 dimensional arrays."
-	if x.size < window_len: raise ValueError, "Input vector needs to be bigger than window size."
+	if x.ndim > 3: raise ValueError("smooth only accepts 1,2 or 3 dimensional arrays.")
+	if x.size < window_len: raise ValueError("Input vector needs to be bigger than window size.")
 	if window_len<3: return x
 	if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-		raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+		raise ValueError("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
 
 	if window == 'flat': #moving average
 		w=ones(window_len,'d')
@@ -1265,17 +1316,17 @@ def LaserOptikMirrorTransmission(interpolated_wavelengths,refractive_index = "10
 	Shifts transmission spectrum with calibration still to come, likewise for "rescale_factor"
 	"refractive_index" argument is only for backwards compatibility
 	"""
-        reflectivity_folder = data_root_folder + folder_separator+ "calibration_data" + folder_separator
-        #reflectivity_folder = "./"
-        reflectivity_filename = "LaserOptik20160129_Theorie_T.DAT"
+	reflectivity_folder = data_root_folder + folder_separator+ "calibration_data" + folder_separator
+	#reflectivity_folder = "./"
+	reflectivity_filename = "LaserOptik20160129_Theorie_T.DAT"
 
-        fname = reflectivity_folder+reflectivity_filename
-        res = csv.reader(open(fname), delimiter='\t')
-        refl_text = [x for x in res][1:] #removes column headings
+	fname = reflectivity_folder+reflectivity_filename
+	res = csv.reader(open(fname), delimiter='\t')
+	refl_text = [x for x in res][1:] #removes column headings
 
-        original_wavelengths = array([float(l[0]) for l in refl_text])
-        original_transmissions = array([float(l[1]) for l in refl_text])
-        original_reflectivities = 1-original_transmissions
+	original_wavelengths = array([float(l[0]) for l in refl_text])
+	original_transmissions = array([float(l[1]) for l in refl_text])
+	original_reflectivities = 1-original_transmissions
 	#
 	wavelength_shift = 0
 	if shift_spectrum == "planar": #shift to be measured

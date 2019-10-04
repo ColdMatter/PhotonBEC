@@ -20,9 +20,13 @@ def SingleChannelAI(Npts=1000,rate=1.0e4,device="Dev1",channel="ai0",minval=-10.
 
 	#DAQmx Configure Code
 	devchan=device+"/"+channel
+#	ErrorHandler(\
+#		analog_input.CreateAIVoltageChan(\
+#		devchan,"",DAQmx_Val_RSE,minval,maxval,DAQmx_Val_Volts,None\
+#			))
 	ErrorHandler(\
 		analog_input.CreateAIVoltageChan(\
-		devchan,"",DAQmx_Val_RSE,minval,maxval,DAQmx_Val_Volts,None\
+		devchan,"",DAQmx_Val_Diff,minval,maxval,DAQmx_Val_Volts,None\
 			))
 	ErrorHandler(\
 		analog_input.CfgSampClkTiming(\

@@ -1,0 +1,1 @@
+copy avs-spectro\Release\avs-spectro.dll avs-spectro.dll

@@ -1,0 +1,3 @@
+LIBRARY pyflycap.pyd
+EXPORTS
+initpyflycap

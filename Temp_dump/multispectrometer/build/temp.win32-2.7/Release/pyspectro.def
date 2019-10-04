@@ -1,0 +1,3 @@
+LIBRARY pyspectro.pyd
+EXPORTS
+initpyspectro

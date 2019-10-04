@@ -1,0 +1,7 @@
+﻿  stdafx.cpp
+  avs-spectro.cpp
+  dllmain.cpp
+     Creating library D:\Control\spectrometer\avs-spectro\Release\avs-spectro.lib and object D:\Control\spectrometer\avs-spectro\Release\avs-spectro.exp
+  Generating code
+  Finished generating code
+  avs-spectro.vcxproj -> D:\Control\spectrometer\avs-spectro\Release\avs-spectro.dll

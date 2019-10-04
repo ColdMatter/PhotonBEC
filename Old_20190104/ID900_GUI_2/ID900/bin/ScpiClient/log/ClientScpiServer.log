@@ -1,0 +1,261 @@
+2018-02-01T08:45:11.189 INFO  [6904] [config/ClientScpiServer.log] ******************************************************************
+2018-02-01T08:45:11.190 DEBUG [6904] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_GUI_2\ID900\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-02-01T08:45:11.191 DEBUG [6904] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-02-01T08:45:11.192 INFO  [6904] [config/ClientScpiServer.log] Logger configured successfully.
+2018-02-01T08:45:11.203 INFO  [8760] [config/ClientScpiServer.log] ******************************************************************
+2018-02-01T08:45:11.204 DEBUG [8760] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_GUI_2\ID900\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-02-01T08:45:11.204 DEBUG [8760] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-02-01T08:45:11.204 INFO  [8760] [config/ClientScpiServer.log] Logger configured successfully.
+2018-02-01T08:45:19.489 INFO  [5828] [config/ClientScpiServer.log] ******************************************************************
+2018-02-01T08:45:19.489 DEBUG [5828] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_GUI_2\ID900\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-02-01T08:45:19.489 DEBUG [5828] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-02-01T08:45:19.489 INFO  [5828] [config/ClientScpiServer.log] Logger configured successfully.
+2018-02-01T08:45:19.519 INFO  [8200] [config/ClientScpiServer.log] ******************************************************************
+2018-02-01T08:45:19.520 DEBUG [8200] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_GUI_2\ID900\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-02-01T08:45:19.521 DEBUG [8200] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-02-01T08:45:19.522 INFO  [8200] [config/ClientScpiServer.log] Logger configured successfully.
+2018-02-01T08:45:19.742 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Partner started
+2018-02-01T08:45:19.742 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Listen to commands...
+2018-02-01T08:46:04.414 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:46:04.415 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:46:04.415 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:04.415 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ON
+2018-02-01T08:46:04.415 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:04.415 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:46:04.416 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:04.416 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] INPUt1:ENABle?
+2018-02-01T08:46:04.416 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:11.649 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:46:11.650 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:46:11.652 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:11.653 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ID Quantique, Time Controller version 0.9.0
+2018-02-01T08:46:11.653 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:11.653 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:46:11.654 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:11.654 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] *IDN?
+2018-02-01T08:46:11.654 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:20.818 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:46:20.818 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:46:20.820 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:20.820 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] RAW
+2018-02-01T08:46:20.821 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:20.821 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:46:20.821 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:20.821 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:MODE?
+2018-02-01T08:46:20.821 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:33.034 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:46:33.034 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:46:33.036 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:33.037 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] RAW
+2018-02-01T08:46:33.037 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:33.037 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:46:33.037 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:33.037 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:MODE?
+2018-02-01T08:46:33.037 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:41.363 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:46:41.363 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:46:41.364 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:41.366 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Value set to ON
+2018-02-01T08:46:41.366 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:41.366 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:46:41.366 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:41.366 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:SEND
+2018-02-01T08:46:41.367 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:46.173 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:46:46.173 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:46:46.174 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:46.174 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Value set to OFF
+2018-02-01T08:46:46.175 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:46.177 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:46:46.177 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:46.177 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:SEND off
+2018-02-01T08:46:46.177 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:57.327 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:46:57.327 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:46:57.329 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:57.331 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Value set to ON
+2018-02-01T08:46:57.331 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:46:57.331 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:46:57.331 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:46:57.331 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:SEND
+2018-02-01T08:46:57.331 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:47:04.347 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:47:04.347 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:47:04.349 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:47:04.351 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Value set to RAW
+2018-02-01T08:47:04.351 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:47:04.351 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:47:04.351 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:47:04.351 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:MODE raw
+2018-02-01T08:47:04.351 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:47:10.613 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:47:10.613 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:47:10.615 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:47:10.617 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Value set to ON
+2018-02-01T08:47:10.617 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:47:10.617 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:47:10.617 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:47:10.617 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:SEND
+2018-02-01T08:47:10.617 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:47:31.813 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:47:31.813 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:47:31.814 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:47:31.816 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] 109583
+2018-02-01T08:47:31.816 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:47:31.816 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:47:31.816 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:47:31.816 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:DATA:COUNter?
+2018-02-01T08:47:31.816 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:47:41.266 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:47:41.266 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:47:41.268 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:47:41.269 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] LOWRES
+2018-02-01T08:47:41.269 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:47:41.269 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:47:41.269 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:47:41.270 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] SENSe1:MODE?
+2018-02-01T08:47:41.270 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:48:26.883 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:48:26.883 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:48:26.885 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:48:26.885 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] SENS1
+2018-02-01T08:48:26.885 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:48:26.886 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:48:26.886 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:48:26.886 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:INPOrt:LINK?
+2018-02-01T08:48:26.886 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:49:19.575 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:49:19.575 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:49:19.576 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:49:19.578 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [0,0,1,0,0,0,0,0,0,0]
+2018-02-01T08:49:19.578 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:49:19.578 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:49:19.578 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:49:19.578 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:DATA:HISTOgram?
+2018-02-01T08:49:19.579 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:54:50.755 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:54:50.755 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:54:50.757 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:54:50.759 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] LOWRES
+2018-02-01T08:54:50.759 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:54:50.759 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:54:50.760 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:54:50.760 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] SENSe1:MODE?
+2018-02-01T08:54:50.760 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:02.143 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:56:02.143 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:56:02.144 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:02.146 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [40,59,65,49,47,45,50,62,68,55]
+2018-02-01T08:56:02.146 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:02.146 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:56:02.146 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:02.146 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:DATA:HISTOgram?
+2018-02-01T08:56:02.146 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:15.468 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:56:15.468 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:56:15.469 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:15.471 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Value set to ON
+2018-02-01T08:56:15.471 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:15.471 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:56:15.471 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:15.471 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:SEND
+2018-02-01T08:56:15.471 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:19.972 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:56:19.972 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:56:19.973 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:19.974 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Value set to OFF
+2018-02-01T08:56:19.977 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:19.977 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:56:19.977 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:19.977 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:SEND off
+2018-02-01T08:56:19.977 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:23.248 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:56:23.248 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:56:23.250 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:23.251 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Value set to ON
+2018-02-01T08:56:23.251 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:23.251 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:56:23.251 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:23.251 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:SEND
+2018-02-01T08:56:23.251 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:29.293 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:56:29.293 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:56:29.294 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:29.295 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Value set to OFF
+2018-02-01T08:56:29.297 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:56:29.299 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:56:29.299 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:56:29.299 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:SEND off
+2018-02-01T08:56:29.299 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:11.825 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:58:11.825 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:58:11.827 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:11.828 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [0,0,2,211,3814,1984,210,23,4,2]
+2018-02-01T08:58:11.828 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:11.828 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:58:11.829 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:11.829 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:DATA:HISTOgram?
+2018-02-01T08:58:11.829 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:23.787 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:58:23.787 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:58:23.789 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:23.790 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [1,2,0,338,6157,3264,414,33,10,1]
+2018-02-01T08:58:23.790 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:23.790 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:58:23.790 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:23.790 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:DATA:HISTOgram?
+2018-02-01T08:58:23.790 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:24.983 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:58:24.983 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:58:24.985 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:24.987 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [0,1,0,25,506,280,31,4,1,0]
+2018-02-01T08:58:24.987 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:24.987 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:58:24.987 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:24.987 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:DATA:HISTOgram?
+2018-02-01T08:58:24.988 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:25.831 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:58:25.831 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:58:25.833 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:25.834 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [0,2,1,497,8470,4384,456,53,5,8]
+2018-02-01T08:58:25.834 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:25.835 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:58:25.835 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:25.835 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:DATA:HISTOgram?
+2018-02-01T08:58:25.835 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:26.534 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:58:26.535 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:58:26.536 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:26.538 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [0,4,3,588,10971,5560,626,80,13,6]
+2018-02-01T08:58:26.539 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:26.539 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:58:26.539 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:26.539 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:DATA:HISTOgram?
+2018-02-01T08:58:26.539 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:27.239 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T08:58:27.240 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T08:58:27.242 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:27.244 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [0,3,0,450,8354,4108,517,61,8,7]
+2018-02-01T08:58:27.244 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T08:58:27.244 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T08:58:27.244 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T08:58:27.244 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:DATA:HISTOgram?
+2018-02-01T08:58:27.244 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T09:11:37.698 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T09:11:37.698 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T09:11:37.699 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T09:11:37.701 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] 10
+2018-02-01T09:11:37.701 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T09:11:37.701 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T09:11:37.701 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T09:11:37.701 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:CONFiguration:HISTOgram:BCOUnt?
+2018-02-01T09:11:37.701 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T09:11:50.426 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer]  
+2018-02-01T09:11:50.426 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] Replied
+2018-02-01T09:11:50.428 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T09:11:50.430 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] STAR
+2018-02-01T09:11:50.430 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]
+2018-02-01T09:11:50.430 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] after request
+2018-02-01T09:11:50.430 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] [
+2018-02-01T09:11:50.430 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] TSSTatistic1:CONFiguration:HISTOgram:STARt:LINK?
+2018-02-01T09:11:50.430 DEBUG [5828] [elvis::controlLink::elvisDataModel::ClientScpiServer] ]

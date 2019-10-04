@@ -30,7 +30,7 @@ def get_background(lamb, spectrum, data_lamb_range=(530, 630)):
 	noise_stddev = np.std(spectrum_no_data)
 	return background, noise_stddev
 
-def find_spectrum_cutoff(lamb, spectrum, data_lamb_range=(530, 630), spectrometer_resolution_pixels=3):
+def find_spectrum_cutoff(lamb, spectrum, data_lamb_range=(530, 630), spectrometer_resolution_pixels=3, return_noise_flag=False):
 	####spectrometer_resolution_pixels = 3 #about 0.35nm
 	background, noise_stddev = get_background(lamb, spectrum)
 	spectrum_less_background = spectrum - background
@@ -66,4 +66,8 @@ def find_spectrum_cutoff(lamb, spectrum, data_lamb_range=(530, 630), spectromete
 	#lambda_upper_bound is the low-value after the peak
 	#lambda_0 is the peak
 	#lambda_ground_state_lower_bound is the upper bound if you wanted to integrate over the ground state
-	return lambda_upper_bound, lambda_0
+	if not return_noise_flag:
+		return lambda_upper_bound, lambda_0
+	else:
+		return lambda_upper_bound, lambda_0, very_noisey
+			

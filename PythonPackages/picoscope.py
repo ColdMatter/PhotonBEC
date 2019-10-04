@@ -7,16 +7,16 @@ Some example code:
 import picoscope
 scope = picoscope.Picoscope6407(open_device=True)
 scope.set_active_channels(["B","C"])
-scope.set_trigger("C",0.0) #trigger-channel label and fractional trigger value
-scope.initialise_measurement(samples=int(1e3))
-scope.acquire_and_readout(timebase=2) #see documentation for meaning. Small means short.
+scope.set_trigger("C",-0.01) #trigger-channel label and fractional trigger value
+scope.initialise_measurement(samples=int(1e2))
+scope.acquire_and_readout(timebase=1) #see documentation for meaning. Small means short.
 
 figure(1),clf()
 for c in sorted(scope.active_channels):
 	plot(1e9*scope.time_axis,1e3*scope.data[c],".--",label=c)
 
 xlabel("time (ns)"),ylabel("signal (mV)")
-xlim(0,500),grid(1),legend()
+xlim(0,40),grid(1),legend()
 ---------------------------------------
 '''
 
@@ -181,11 +181,13 @@ class Picoscope6407(_Singleton):
 			if (channel_letters.count("A") & channel_letters.count("B")) or (channel_letters.count("C") & channel_letters.count("D")):
 				print "Picoscope6407 warning: timebase=1 only compatible with two active channels for certain channel pairs. See documentation."
 				
-				
+		print 'A'	
 		interval = time_per_sample(self.timebase) * self.samples * 1e9 #in nanoseconds
+		print 'B'
 		self.status = self.ps.collect_segment(self.segment, interval, timebase=self.timebase)
+		print 'C'
 		self._handle_errors()
-
+		
 		self.data = {}
 		for c,index in self._indices.iteritems():
 			self.status, these_data = self.ps.get_buffer_volts(index)
@@ -203,12 +205,12 @@ class Picoscope6407(_Singleton):
 if __name__ == "__main__":
 	import picoscope
 	scope = picoscope.Picoscope6407(open_device=True)
-	scope.set_active_channels(["C","B"],deactivate_unwanted_channels=True)
+	scope.set_active_channels(["A","B"],deactivate_unwanted_channels=True)
 	#For fastest sampling (timebase 1 or maybe even 0) I may need to explicitly de-activate the unused channels
 	#300 ns trigger delay (offset) seems necessary, and I don't know why
-	scope.set_trigger("B",+0.5,direction=3,delay=300e-9) #trigger-channel label and fractional trigger value
+	scope.set_trigger("A",+0.5,direction=3,delay=300e-9) #trigger-channel label and fractional trigger value
 	scope.initialise_measurement(samples=int(3e4))
-	scope.acquire_and_readout(timebase=1) #see documentation for meaning. Small means short.
+	scope.acquire_and_readout(timebase=2) #see documentation for meaning. Small means short.
 
 	figure(1),clf()
 	for c in sorted(scope.active_channels):

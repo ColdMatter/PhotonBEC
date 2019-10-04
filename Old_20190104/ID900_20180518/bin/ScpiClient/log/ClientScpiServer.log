@@ -1,0 +1,40 @@
+2018-05-18T10:53:43.212 INFO  [2796] [config/ClientScpiServer.log] ******************************************************************
+2018-05-18T10:53:43.213 DEBUG [2796] [config/ClientScpiServer.log] Logger config: C:\Users\photonbec\Desktop\ID900\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-05-18T10:53:43.214 DEBUG [2796] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-05-18T10:53:43.214 INFO  [2796] [config/ClientScpiServer.log] Logger configured successfully.
+2018-05-18T10:56:35.659 INFO  [6040] [config/ClientScpiServer.log] ******************************************************************
+2018-05-18T10:56:35.660 DEBUG [6040] [config/ClientScpiServer.log] Logger config: C:\Users\photonbec\Desktop\ID900\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-05-18T10:56:35.660 DEBUG [6040] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-05-18T10:56:35.661 INFO  [6040] [config/ClientScpiServer.log] Logger configured successfully.
+2018-05-18T10:59:43.094 INFO  [10156] [config/ClientScpiServer.log] ******************************************************************
+2018-05-18T10:59:43.095 DEBUG [10156] [config/ClientScpiServer.log] Logger config: C:\Users\photonbec\Desktop\ID900\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-05-18T10:59:43.096 DEBUG [10156] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-05-18T10:59:43.096 INFO  [10156] [config/ClientScpiServer.log] Logger configured successfully.
+2018-05-18T11:07:36.601 INFO  [7148] [config/ClientScpiServer.log] ******************************************************************
+2018-05-18T11:07:36.602 DEBUG [7148] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_20180518\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-05-18T11:07:36.603 DEBUG [7148] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-05-18T11:07:36.603 INFO  [7148] [config/ClientScpiServer.log] Logger configured successfully.
+2018-05-18T11:10:04.847 INFO  [9316] [config/ClientScpiServer.log] ******************************************************************
+2018-05-18T11:10:04.848 DEBUG [9316] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_20180518\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-05-18T11:10:04.849 DEBUG [9316] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-05-18T11:10:04.849 INFO  [9316] [config/ClientScpiServer.log] Logger configured successfully.
+2018-05-18T11:11:33.671 INFO  [6568] [config/ClientScpiServer.log] ******************************************************************
+2018-05-18T11:11:33.672 DEBUG [6568] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_20180518\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-05-18T11:11:33.673 DEBUG [6568] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-05-18T11:11:33.673 INFO  [6568] [config/ClientScpiServer.log] Logger configured successfully.
+2018-05-18T11:13:19.753 INFO  [4228] [config/ClientScpiServer.log] ******************************************************************
+2018-05-18T11:13:19.754 DEBUG [4228] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_20180518\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-05-18T11:13:19.755 DEBUG [4228] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-05-18T11:13:19.755 INFO  [4228] [config/ClientScpiServer.log] Logger configured successfully.
+2018-05-18T11:16:02.534 INFO  [5580] [config/ClientScpiServer.log] ******************************************************************
+2018-05-18T11:16:02.535 DEBUG [5580] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_20180518\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-05-18T11:16:02.536 DEBUG [5580] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-05-18T11:16:02.536 INFO  [5580] [config/ClientScpiServer.log] Logger configured successfully.
+2018-07-16T12:22:40.866 INFO  [14020] [config/ClientScpiServer.log] ******************************************************************
+2018-07-16T12:22:40.867 DEBUG [14020] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_20180518\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-07-16T12:22:40.867 DEBUG [14020] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-07-16T12:22:40.868 INFO  [14020] [config/ClientScpiServer.log] Logger configured successfully.
+2018-07-16T12:28:24.218 INFO  [5600] [config/ClientScpiServer.log] ******************************************************************
+2018-07-16T12:28:24.219 DEBUG [5600] [config/ClientScpiServer.log] Logger config: D:\Control\ID900_20180518\bin\ScpiClient\config/ClientScpiServer.log.conf
+2018-07-16T12:28:24.220 DEBUG [5600] [config/ClientScpiServer.log] Logger output: log/ClientScpiServer.log
+2018-07-16T12:28:24.220 INFO  [5600] [config/ClientScpiServer.log] Logger configured successfully.

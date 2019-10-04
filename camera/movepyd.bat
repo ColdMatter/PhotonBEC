@@ -1,0 +1,1 @@
+copy build\lib.win32-2.7\pyflycap.pyd pyflycap.pyd

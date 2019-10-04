@@ -1,0 +1,9 @@
+﻿  stdafx.cpp
+  avs-spectro.cpp
+  dllmain.cpp
+     Creating library D:\Control\multispectrometer\avs-spectro\Release\avs-spectro.lib and object D:\Control\multispectrometer\avs-spectro\Release\avs-spectro.exp
+  Generating code
+  All 13 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  avs-spectro.vcxproj -> D:\Control\multispectrometer\avs-spectro\Release\avs-spectro.dll
+  avs-spectro.vcxproj -> D:\Control\multispectrometer\avs-spectro\Release\avs-spectro.pdb (Full PDB)
