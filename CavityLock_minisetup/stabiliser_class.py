@@ -1,7 +1,13 @@
 import sys
-#sys.path.append("D:\\Control\\PythonPackages\\")
-#sys.path.append("Y:\\Control\\PythonPackages\\")
-sys.path.append("C:\photonbec\Control\PythonPackages")
+import socket
+
+if socket.gethostname() == 'ph-photonbec3':
+	sys.path.append("Y:\\Control\\CameraUSB3\\")
+	sys.path.append("Y:\\Control\\PythonPackages\\")
+	sys.path.append("Y:\\Control\CavityLock")
+else:
+	raise Exception("Unknown machine")
+
 
 from hene_utils import *
 import pbec_experiment
@@ -13,8 +19,10 @@ import traceback
 import time
 from sklearn.decomposition import PCA
 from fringes_utils import compute_locking_signal
+from CameraUSB3 import CameraUSB3
 
 potential_divider = True
+number_images_for_PCA = 5
 led_lambda = 630 # in nm
 
 def set_cavity_length_voltage(v):
@@ -22,8 +30,8 @@ def set_cavity_length_voltage(v):
 
 from socket import gethostname
 
-if gethostname()=="ph-photonbec4":
-	camera_label = "minisetup_chameleon_lockcamera"
+if gethostname()=="ph-photonbec3":
+	camera_label = "blackfly_minisetup"
 	hardwidth = 800
 	hardheight = 800 #image size for flea
 	import SingleChannelAO
@@ -44,19 +52,19 @@ if gethostname()=="ph-photonbec4":
 	else:
 		raise Exception("Invalid option for potential divider")
 	def set_cavity_length_voltage(v):
-		SingleChannelAO.SetAO0(v, device="Dev1", minval=default_control_range[0],maxval=default_control_range[1])
+		SingleChannelAO.SetAO0(v, device="Dev2", minval=default_control_range[0],maxval=default_control_range[1])
 		#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
 
 else:
 	raise Exception('Unknown machine')
 	
 # minisetup_chameleon_lockcamera for the mini-setup
-camera_config = {
-	'flea': {"auto_exposure": 0, "shutter": 0.1, "gain": 0, "frame_rate": 150},
-	'chameleon': {"auto_exposure": 0, "shutter": 0.03, "gain": 0, "frame_rate": 18},
-	'minisetup_chameleon': {"auto_exposure": 0, "shutter": 0.04, "gain": 0, "frame_rate": 18},
-	'minisetup_chameleon_lockcamera': {"auto_exposure": 0, "shutter": 5, "gain": 0.986, "frame_rate": 30}
-}
+#camera_config = {
+#	'flea': {"auto_exposure": 0, "shutter": 0.1, "gain": 0, "frame_rate": 150},
+#	'chameleon': {"auto_exposure": 0, "shutter": 0.03, "gain": 0, "frame_rate": 18},
+#	'minisetup_chameleon': {"auto_exposure": 0, "shutter": 0.04, "gain": 0, "frame_rate": 18},
+#	'minisetup_chameleon_lockcamera': {"auto_exposure": 0, "shutter": 5, "gain": 0.986, "frame_rate": 30}
+#}
 
 class _StabiliserThread(threading.Thread):
 	def __init__(self,parent):
@@ -91,7 +99,7 @@ class _StabiliserThread(threading.Thread):
 							parent.set_voltage(trial_voltage)
 							time.sleep(0.2)
 							image_raw = 1.0*parent.cam.get_image()
-							images.append(image_raw[:,:,0])
+							images.append(image_raw)
 							time.sleep(0.2)
 						parent.set_voltage(mean(parent.control_range))
 						images = np.array(images)
@@ -164,6 +172,7 @@ class _StabiliserThread(threading.Thread):
 					#Now output a voltage from PI_controller
 					parent.results.append(r)
 		finally:
+			cam.end_acquisition()
 			cam.close()
 		print("Finished\n")
 
@@ -213,10 +222,11 @@ class Stabiliser():
 		self.ring_rad=0#unknown!!!!
 		self.set_point = set_point
 		self.initial_analysis = False
-		self.number_images_for_PCA = 10
+		self.number_images_for_PCA = number_images_for_PCA
 		self.error_signal_amplitude = 100
 		#
-		self.cam = pbec_experiment.getCameraByLabel(self.cam_label) #the camera object
+		#self.cam = pbec_experiment.getCameraByLabel(self.cam_label) #the camera object
+		self.cam = CameraUSB3(verbose=True, camera_id=self.cam_label, timeout=1000, acquisition_mode='continuous')
 		print "Have got the camera"
 		#print self.cam.get_all_properties()
 		direct_gain_factor=1 #if the gain is too high, reduce this.
@@ -255,7 +265,7 @@ class Stabiliser():
 		#TODO: also infer ring radius, self.ring_rad = ring_radius(....)
 	'''
 	
-
+	''' Called for USB2 cameras
 	def start_acquisition(self,width=hardwidth,height=hardheight):
 		#Hard-coded image size "because reasons" [J. Marelic, 27/10/14]
 		print "Calling setup from start acquisition"
@@ -267,12 +277,27 @@ class Stabiliser():
 			self.cam.set_property(key, set_dict[key], auto=False)
 		#self.cam.set_centered_region_of_interest(width, height)
 		self.thread.paused=False
-		
+	'''
+
+	def start_acquisition(self):
+		print "Startint camera aquisition"
+		self.cam.begin_acquisition()
+		self.thread.paused=False
+	
+	''' Called for USB2 cameras
 	def stop_acquisition(self):
 		self.thread.paused=True
 		time.sleep(0)#avoid race condition. Should really use mutex
 		self.cam.close()
+	'''
+
+	def stop_acquisition(self):
+		self.thread.paused=True
+		time.sleep(0)#avoid race condition. Should really use mutex
+		self.cam.end_acquisition()
+		self.cam.close()
 		
+
 	def close_acquisition(self):
 		self.stop_acquisition()
 		self.thread.running=False

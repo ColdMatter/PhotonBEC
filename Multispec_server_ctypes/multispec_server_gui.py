@@ -22,8 +22,12 @@ elif gethostname()=="ph-photonbec2":
 elif gethostname()=="ph-photonbec3":
 	sys.path.append("D:\\Control\\PythonPackages\\")
 	sys.path.append("D:\\Control\\Multispec_server\\")
+elif gethostname()=="ph-photonbec5":
+	sys.path.append("D:\\Control\\PythonPackages\\")
+	sys.path.append("D:\\Control\\Multispec_server\\")
 	semilogy_scale = False
-
+else:
+	raise Exception('Unknown machine')
 
 from pbec_analysis import slice_data
 from multispec_runner import MultiSpectrometers

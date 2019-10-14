@@ -6,7 +6,7 @@ from time import sleep
 import sys
 
 class LaserQuantum():
-	def __init__(self,port=4,timeout=1):
+	def __init__(self,port=11,timeout=1):
 		self.ser = Serial(port=port,timeout=timeout) #port=0 means COM1, I think
 		self.ser.close()
 	def writeCommand(self,s,dont_close=False):

@@ -1,6 +1,7 @@
 #execfile("ThorlabsMDT69xA.py")
 import serial
 from socket import gethostname
+import time
 #noisy line added 19/4/16
 hostname = gethostname()
 if gethostname()=="ph-photonbec":
@@ -10,8 +11,13 @@ elif gethostname()=="ph-photonbec2":
 	default_Nchannels=1
 	comports={"3chan":4,"1chan":4}
 elif gethostname()=="ph-photonbec3":
-	comports={"3chan":2,"1chan":4}
-	default_Nchannels=3
+    comports={"3chan":2,"1chan":4}
+    default_Nchannels=3
+elif gethostname()=="ph-photonbec5":
+    comports={"3chan":4,"1chan":4}
+    print("\n\n\n\n Note: COM Port for single channel PZT driver not yet specified for ph-photonbec5 \n\n\n\n")
+    time.sleep(5)
+    default_Nchannels=3
 else:
 	print "This is not a control computer! Why do you want to control piezos?\n"
 

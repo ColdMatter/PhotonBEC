@@ -69,6 +69,11 @@ elif gethostname()=="ph-photonbec3":
 	control_root_folder = "D:\\Control"
 	folder_separator="\\"
 	pbec_prefix = "pbec"
+elif gethostname()=="ph-photonbec5":
+	data_root_folder = "D:\\Data"
+	control_root_folder = "D:\\Control"
+	folder_separator="\\"
+	pbec_prefix = "pbec"
 elif gethostname()=="ph-photonbec4":
 	data_root_folder = "D:\\Data"
 	control_root_folder = "C:\\photonbec\\Control"

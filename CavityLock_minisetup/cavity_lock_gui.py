@@ -9,10 +9,15 @@ from matplotlib.figure import Figure
 from socket import gethostname
 from time import sleep
 from scipy.optimize import curve_fit
+import socket
 
-#sys.path.append("D:\\Control\\PythonPackages\\")
-#sys.path.append("Y:\\Control\\PythonPackages\\") #for laptop ph-photonbec2
-sys.path.append("C:\\photonbec\\Control\\PythonPackages\\") #for laptop ph-photonbec2
+
+if socket.gethostname() == 'ph-photonbec3':
+	sys.path.append("Y:\\Control\\PythonPackages\\")
+	sys.path.append("Y:\\Control\CavityLock")
+else:
+	raise Exception("Unknown machine")
+
 import hene_utils
 
 #Default values for stabiliser

@@ -12,4 +12,11 @@ import SingleChannelAO
 #SingleChannelAO.SetAO0(1.14) #Value on 24/7/15
 #SingleChannelAO.SetAO0(0)
 
-SingleChannelAO.SetAO0(0.8)
+import socket
+
+if socket.gethostname() == 'ph-photonbec5':
+	device = 'Dev1'
+else:
+	raise Exception('Unknown machine')
+
+SingleChannelAO.SetAO0(0.8, device=device)

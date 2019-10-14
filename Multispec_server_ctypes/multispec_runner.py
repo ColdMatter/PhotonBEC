@@ -8,7 +8,12 @@ elif gethostname()=="ph-photonbec2":
 	sys.path.append("Y:\\Control\\PythonPackages\\")
 elif gethostname()=="ph-photonbec3":
 	sys.path.append("D:\\Control\\PythonPackages\\")
+elif gethostname()=="ph-photonbec5":
+	sys.path.append("D:\\Control\\PythonPackages\\")
+else:
+	raise Exception('Unknown machine')
 
+	
 from hene_utils import *
 from pbec_experiment_multispec import * #Needed for spectrometer properties
 import pbec_analysis_multispec
@@ -33,7 +38,7 @@ elif gethostname()=="ph-photonbec2":
 	default_spec_int_time = 40
 	default_spec_nAverage = 1
 	default_lamb_range = (555,585) #Restrict range analysed, which might make acquisition faster
-elif gethostname()=="ph-photonbec3":
+elif gethostname()=="ph-photonbec3" or gethostname()=="ph-photonbec5":
 	default_lamb_range = (540,600) #Restrict range analysed, which might make acquisition faster
 	only_one_spec = False
 	if only_one_spec:

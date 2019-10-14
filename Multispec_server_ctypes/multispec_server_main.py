@@ -22,6 +22,10 @@ elif gethostname()=="ph-photonbec3":
 elif gethostname()=="ph-photonbec2":
 	sys.path.append("Y:\\Control\\PythonPackages\\")
 	sys.path.append("Y:\\Control\\Multispec_server\\")
+elif gethostname()=="ph-photonbec5":
+	sys.path.append("D:\\Control\\PythonPackages\\")
+else:
+	raise Exception('Unknown machine')
 
 import multispec_server_gui
 from multispec_runner import MultiSpectrometers

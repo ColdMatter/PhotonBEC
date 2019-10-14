@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 #exit()
-
+import socket
 import sys
-sys.path.append("D:\\Control\\PythonPackages\\")
-sys.path.append("Y:\\Control\\PythonPackages\\")
+
+if socket.gethostname() == 'ph-photonbec5':
+	sys.path.append("D:\\Control\\PythonPackages\\")
+else:
+	raise Exception('Unknown machine')
+
 
 #ipython --gui=qt
 #exec(open("main.py").read())

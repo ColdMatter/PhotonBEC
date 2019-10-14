@@ -3,35 +3,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
 from scipy.optimize import curve_fit
-sys.path.append("C:\photonbec\Control\PythonPackages")
+import socket
+if socket.gethostname() == 'ph-photonbec3':
+	sys.path.append("Y:\\Control\\CameraUSB3\\")
+	sys.path.append("Y:\\Control\\PythonPackages\\")
+	sys.path.append("Y:\\Control\CavityLock")
 from pbec_analysis import *
 import pbec_experiment
+from CameraUSB3 import CameraUSB3
 
 ########## Parameters
 ROI_half_size = 150
-camera_label = "minisetup_chameleon_lockcamera"
+camera_label = "blackfly_minisetup"
 calibration = {'pixel size (um)': 3.75, 'objective focal length (mm)': 35, 'camera focal length (mm)': 200}
-
-
-camera_config = {
-	'flea': {"auto_exposure": 0, "shutter": 0.1, "gain": 0, "frame_rate": 150},
-	'chameleon': {"auto_exposure": 0, "shutter": 0.03, "gain": 0, "frame_rate": 18},
-	'minisetup_chameleon': {"auto_exposure": 0, "shutter": 0.04, "gain": 0, "frame_rate": 18},
-	'minisetup_chameleon_lockcamera': {"auto_exposure": 0, "shutter": 5, "gain": 0.986, "frame_rate": 30}
-}
 
 
 
 ########## Gets camera and configures it
-cam = pbec_experiment.getCameraByLabel(camera_label)
-cam_info = cam.setup()
-set_dict = camera_config[camera_label]
-for key in set_dict:
-	cam.set_property(key, set_dict[key], auto=False)
+cam = CameraUSB3(verbose=True, camera_id=camera_label, timeout=1000, acquisition_mode='single frame')
 # gets frame
 camera_frame = cam.get_image()
-#camera_frame = np.squeeze(camera_frame[:,:,0])
-camera_frame = np.squeeze(camera_frame[:,:,0]*0.2989 + camera_frame[:,:,1]*0.5870 + camera_frame[:,:,2]*0.1140)
 # gets ROI
 x = np.arange(0, camera_frame.shape[1], 1)
 y = np.arange(0, camera_frame.shape[0], 1)
@@ -86,3 +77,5 @@ ax2.set_xlabel('x ($\mu$m)')
 fig.suptitle(r'Pump spot size is: $2\sigma_x=$'+str(int(2*np.abs(popt[3])))+'$\mu$m, $2\sigma_y=$'+str(int(2*np.abs(popt[4])))+'$\mu$m, at '+ts)
 fig.tight_layout()
 plt.show()
+
+cam.close()

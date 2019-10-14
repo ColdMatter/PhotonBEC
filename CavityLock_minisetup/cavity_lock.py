@@ -14,10 +14,14 @@ import sys,__main__
 from PyQt4 import QtGui
 import time
 import numpy as np
+import socket
 #sys.path.append("Y:\\Control\\PythonPackages\\")
 #sys.path.append("Y:\\Control\\CavityLock\\")
-sys.path.append("C:\\photonbec\\Control\\PythonPackages\\")
-sys.path.append("C:\photonbec\Control\CavityLock")
+if socket.gethostname() == 'ph-photonbec3':
+	sys.path.append("Y:\\Control\\PythonPackages\\")
+	sys.path.append("Y:\\Control\CavityLock")
+else:
+	raise Exception("Unknown machine")
 
 import cavity_lock_gui
 from stabiliser_class import Stabiliser
