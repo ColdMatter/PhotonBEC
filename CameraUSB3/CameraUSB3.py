@@ -19,7 +19,7 @@ import time
 
 class CameraUSB3():
 
-	lab_cameras = {'blackfly_minisetup': '19128822'}
+	lab_cameras = {'blackfly_minisetup': '19128822', 'blackfly_semiconductor_cavity': '17458446'}
 
 	def __init__(self, verbose=True, camera_id=None, timeout=1000, acquisition_mode='single frame'):
 
