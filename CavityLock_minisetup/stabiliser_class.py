@@ -22,8 +22,8 @@ from fringes_utils import compute_locking_signal
 from CameraUSB3 import CameraUSB3
 
 potential_divider = True
-number_images_for_PCA = 5
-led_lambda = 630 # in nm
+number_images_for_PCA = 8
+led_lambda = 650 # in nm
 
 def set_cavity_length_voltage(v):
 	pass
@@ -48,7 +48,7 @@ if gethostname()=="ph-photonbec3":
 		default_I_const = 10
 		default_II_gain = 10 #note sign is always positive: square of sign of I gain
 		default_II_const=1000
-		default_control_range = (0, 0.09)
+		default_control_range = (0, 4.0)
 	else:
 		raise Exception("Invalid option for potential divider")
 	def set_cavity_length_voltage(v):
@@ -97,10 +97,10 @@ class _StabiliserThread(threading.Thread):
 						parent.trial_voltages = np.linspace(parent.control_range[0], parent.control_range[1], parent.number_images_for_PCA)
 						for trial_voltage in parent.trial_voltages:
 							parent.set_voltage(trial_voltage)
-							time.sleep(0.2)
+							time.sleep(0.5)
 							image_raw = 1.0*parent.cam.get_image()
 							images.append(image_raw)
-							time.sleep(0.2)
+							time.sleep(0.5)
 						parent.set_voltage(mean(parent.control_range))
 						images = np.array(images)
 						images_shape = images.shape
@@ -112,7 +112,9 @@ class _StabiliserThread(threading.Thread):
 						images_centered = np.array(images_centered)
 						# Calculates main pca component
 						pca = PCA(n_components=5)
+						print("Fitting PCA")
 						pca.fit(images_centered)
+						print("PCA successfully fitted")
 						pca_explained_variance_ratio = pca.explained_variance_ratio_
 						pca_components_flattened = pca.components_
 						main_pca_component = np.squeeze(pca_components_flattened[0,:])

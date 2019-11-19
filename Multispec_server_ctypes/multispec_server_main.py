@@ -122,6 +122,8 @@ def _change_spec_settings():
 	s.stop_acquisition()
 	print "Stopped"
 	s.start_acquisition()
+	sleep(1)
+	#s.start_acquisition()
 	print "Started"
 	
 for int_time in aw.int_times+aw.n_averages:
@@ -151,8 +153,10 @@ def setSpectrometerIntegrationTime(newValue,spec_number,pause_lock=True):
 	if newValue > s.min_spec_int_times[spec_number]:
 		aw.int_times[spec_number].setText(str(newValue))
 	else:
+		print("Trying to set invalid acquisition time")
 		aw.int_times[spec_number].setText(str(s.min_spec_int_times[spec_number]))
 	_change_spec_settings()
+
 	
 	return None
 

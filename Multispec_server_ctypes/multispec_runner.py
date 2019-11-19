@@ -155,6 +155,7 @@ class ctype_Spectrometer():
 		self.measureConfig.m_IntegrationTime = intTime
 		self.measureConfig.m_IntegrationDelay = 1
 		self.measureConfig.m_NrAverages = nAverages
+		self.measureConfig.m_CorDynDark.m_Enable = "0"
 		n_measure = c_short(-1) #Number of measurements to make. -1 means infintity.
 
 		self.err_prepare = dll.AVS_PrepareMeasure(self.handle, pointer(self.measureConfig))
@@ -173,6 +174,7 @@ class ctype_Spectrometer():
 		
 	def stop_measure(self,dll):
 		dll.AVS_StopMeasure(self.handle)
+
 	
 	def close(self, dll):
 		try:
