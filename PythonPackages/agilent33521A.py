@@ -19,6 +19,10 @@ elif hostname.lower()=="ph-photonbec3":
 	AFG_name = default_AFG_name
 	backend = ""
 	line_end=""
+elif hostname.lower()=="ph-photonbec5":
+	AFG_name = default_AFG_name
+	backend = ""
+	line_end=""
 
 ###for manual, look in D:\Docs\Manuals\Agilent\
 
@@ -37,7 +41,7 @@ class AgilentFunctionGenerator():
 	def __init__(self,USB_name=AFG_name):
 		#USB_name = USB_name
 		#self.agilent = visa.instrument(USB_name)
-		if hostname.lower() in ["ph-rnyman2","ph-photonbec2","ph-photonbec3"]:
+		if hostname.lower() in ["ph-rnyman2","ph-photonbec2","ph-photonbec3","ph-photonbec5"]:
                     #For installations with pyvisa version >=? 1.5
                     rm = visa.ResourceManager(backend) #Use pyvisa-py backend
                     self.agilent = rm.open_resource(AFG_name)

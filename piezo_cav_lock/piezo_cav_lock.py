@@ -1,4 +1,9 @@
-#Automate human process of updating piezo to keep in voltage range of lock
+'''
+Automate human process of updating piezo to keep in voltage range of lock:
+Steps:
+1) Initiate this script
+2) Initiate lock as soon as possible (maybe not necessary to be as soon as possible)
+'''
 
 from time import sleep
 import sys
@@ -69,7 +74,7 @@ while True:
 			number_fatal_errors += 1
 		print("Applying Piezo Correction")
 		number_voltage_corrections += 1
-		while lock_volts < mid_range_voltage:
+		while lock_volts < (mid_range_voltage - 0.25*full_control_range):
 			set_piezo_voltage(v=internal_piezo_volts)
 			internal_piezo_volts += -0.01
 			sleep(0.1)
@@ -80,7 +85,7 @@ while True:
 			number_fatal_errors += 1
 		print("Applying Piezo Correction")
 		number_voltage_corrections += 1
-		while lock_volts > mid_range_voltage:
+		while lock_volts > (mid_range_voltage + 0.25*full_control_range):
 			set_piezo_voltage(v=internal_piezo_volts)
 			internal_piezo_volts += 0.01
 			sleep(0.1)

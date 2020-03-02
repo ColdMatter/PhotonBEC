@@ -22,7 +22,7 @@ from fringes_utils import compute_locking_signal
 from CameraUSB3 import CameraUSB3
 
 potential_divider = True
-number_images_for_PCA = 8
+number_images_for_PCA = 10
 led_lambda = 650 # in nm
 
 def set_cavity_length_voltage(v):
@@ -39,16 +39,16 @@ if gethostname()=="ph-photonbec3":
 		default_P_gain = 0.01
 		default_I_gain = 0.035
 		default_I_const = 10
-		default_II_gain = 10 #note sign is always positive: square of sign of I gain
+		default_II_gain = 400 #note sign is always positive: square of sign of I gain
 		default_II_const=1000
 		default_control_range = (0,5)
 	elif potential_divider is True:
 		default_P_gain = 0.01
 		default_I_gain = 0.035
 		default_I_const = 10
-		default_II_gain = 10 #note sign is always positive: square of sign of I gain
+		default_II_gain = 400 #note sign is always positive: square of sign of I gain
 		default_II_const=1000
-		default_control_range = (0, 4.0)
+		default_control_range = (0, 4.5)
 	else:
 		raise Exception("Invalid option for potential divider")
 	def set_cavity_length_voltage(v):
@@ -99,6 +99,7 @@ class _StabiliserThread(threading.Thread):
 							parent.set_voltage(trial_voltage)
 							time.sleep(0.5)
 							image_raw = 1.0*parent.cam.get_image()
+							image_raw = image_raw[::2,::2]
 							images.append(image_raw)
 							time.sleep(0.5)
 						parent.set_voltage(mean(parent.control_range))
@@ -111,7 +112,7 @@ class _StabiliserThread(threading.Thread):
 							images_centered.append(images_flattened[i,:] - images_mean)
 						images_centered = np.array(images_centered)
 						# Calculates main pca component
-						pca = PCA(n_components=5)
+						pca = PCA(n_components=1)
 						print("Fitting PCA")
 						pca.fit(images_centered)
 						print("PCA successfully fitted")
@@ -139,7 +140,7 @@ class _StabiliserThread(threading.Thread):
 
 					try:
 						time1 = 1000*time.time()
-						parent.im_raw = parent.cam.get_image()
+						parent.im_raw = parent.cam.get_image()[::2,::2]
 						time2 = 1000*time.time()
 						parent.ring_rad = compute_locking_signal(
 							images_mean=images_mean,
@@ -172,7 +173,10 @@ class _StabiliserThread(threading.Thread):
 						if len(parent.results) % parent.print_frequency == 0: 
 							print r["ts"], r["Vout"], r["ring_rad"], r["pic value"]
 					#Now output a voltage from PI_controller
+					if len(parent.results)>5000:
+						parent.results = parent.results[-5000:]
 					parent.results.append(r)
+
 		finally:
 			cam.end_acquisition()
 			cam.close()
@@ -225,7 +229,7 @@ class Stabiliser():
 		self.set_point = set_point
 		self.initial_analysis = False
 		self.number_images_for_PCA = number_images_for_PCA
-		self.error_signal_amplitude = 100
+		self.error_signal_amplitude = 10
 		#
 		#self.cam = pbec_experiment.getCameraByLabel(self.cam_label) #the camera object
 		self.cam = CameraUSB3(verbose=True, camera_id=self.cam_label, timeout=1000, acquisition_mode='continuous')

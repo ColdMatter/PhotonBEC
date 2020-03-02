@@ -73,6 +73,7 @@ class _MultiSpectrometerThread(threading.Thread):
 		while self.running:
 			#why the double loop? so it can be paused and unpaused
 			time.sleep(0.1) #when paused, while loop not going mental
+			self.acquiring_flag = False
 			while not self.paused:
 				#insert the controller actions here
 				try:
@@ -88,6 +89,8 @@ class _MultiSpectrometerThread(threading.Thread):
 					#------------------
 					parent.ts = pbec_analysis.make_timestamp(3) #Don't update the ts if acquisition fails!
 					fail_num = 0
+
+					self.acquiring_flag = True
 				
 				#except IOError:
 				#	if fail_num < 4:
@@ -228,15 +231,19 @@ class MultiSpectrometers():
 		
 	def start_acquisition(self):
 		#self.spectro.setup() #This step is really slow
-		try:
-			for i,spectro in enumerate(self.spectros):
-				spectro.start_measure(self.dll, self.spec_int_times[i], self.spec_n_averages[i])
-				spectro.get_data(self.dll)
-		except IOError:
-			self.stop_acquisition()
-			self.start_acquisition()
-		#self.lamb = copy(self.spectros[0].lamb)
-		self.thread.paused=False
+		while not self.thread.acquiring_flag:
+			print('Trying to restart acquisition...')
+			try:
+				for i,spectro in enumerate(self.spectros):
+					spectro.start_measure(self.dll, self.spec_int_times[i], self.spec_n_averages[i])
+					spectro.get_data(self.dll)
+			except IOError:
+				self.stop_acquisition()
+				self.start_acquisition()
+			#self.lamb = copy(self.spectros[0].lamb)
+			self.thread.paused=False
+			sleep(1)
+		print('Acquisition restarted')
 		
 	def stop_acquisition(self):
 		self.thread.paused=True

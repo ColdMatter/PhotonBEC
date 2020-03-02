@@ -122,8 +122,6 @@ def _change_spec_settings():
 	s.stop_acquisition()
 	print "Stopped"
 	s.start_acquisition()
-	sleep(1)
-	#s.start_acquisition()
 	print "Started"
 	
 for int_time in aw.int_times+aw.n_averages:

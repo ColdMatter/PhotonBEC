@@ -59,7 +59,7 @@ class TektronixScope():
 		
 		# Scope Address
 		if scope_number == 1:
-			scope_name = "USB::0x0699::0x0368::C010521"
+			scope_name = "USB::0x0699::0x0368::C010521::INSTR"
 		elif scope_number is None:
 			pass
 		else:
