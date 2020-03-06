@@ -148,6 +148,7 @@ aw.show()
 
 
 ##### Functions to be called as a package or via IPC
+
 def set_spectrometer_mode(mode='continuous'):
 	if mode == 'continuous':
 		if aw.continuous_mode_flag is True:
@@ -163,6 +164,10 @@ def set_spectrometer_mode(mode='continuous'):
 		raise Exception("\n\n***Invalid spectrometer mode ***\n\n")
 
 
+def getSpectrometerIntegrationTime():
+	return float(aw.int_time.text())
+
+
 def setSpectrometerIntegrationTime(newValue):
 	if not newValue == float(aw.int_time.text()):
 		if newValue >= s.min_spec_int_time:
@@ -174,6 +179,10 @@ def setSpectrometerIntegrationTime(newValue):
 	return None
 
 
+def getSpectrometerNAverages():
+	return int(aw.n_averages.text())
+
+
 def setSpectrometerNAverages(newValue):
 	newValue = int(newValue)
 	if not newValue == int(aw.n_averages.text()):
@@ -181,6 +190,19 @@ def setSpectrometerNAverages(newValue):
 		_change_spec_settings()
 	return None
 		
+
+
+def setSpectrometerExternalTrigger(external_trigger_flag):
+	if (external_trigger_flag is True and aw.ext_trigger.isChecked() is False):
+		aw.ext_trigger.setChecked(True)
+		_change_external_trigger()
+	elif (external_trigger_flag is False and aw.ext_trigger.isChecked() is True):
+		aw.ext_trigger.setChecked(False)
+		_change_external_trigger()
+	else:
+		pass
+		
+
 
 def get_single_spectrum(int_time, n_averages, n_measures):
 	if aw.continuous_mode_flag == True:

@@ -17,6 +17,7 @@ else:
 from pbec_experiment_multispec import * #Needed for spectrometer properties
 import pbec_analysis_multispec
 import threading
+from tqdm import tqdm
 import traceback
 import copy
 
@@ -104,7 +105,7 @@ class ctype_Spectrometer():
 		self.measureConfig.m_IntegrationTime = c_float(int_time)
 		self.measureConfig.m_IntegrationDelay = c_uint(0)
 		self.measureConfig.m_NrAverages = c_uint(n_averages)
-		self.measureConfig.m_CorDynDark.m_Enable = c_ubyte(1)            # (0) means disable dark count correction, (1) enables it
+		self.measureConfig.m_CorDynDark.m_Enable = c_ubyte(0)            # (0) means disable dark count correction, (1) enables it
 		self.measureConfig.m_CorDynDark.m_ForgetPercentage = c_ubyte(50)  # (0-100) percentage of the new dark value pixels to use
 		self.measureConfig.m_Smoothing.m_SmoothPix = c_ushort(1)
 		self.measureConfig.m_Smoothing.m_SmoothModel = c_ubyte(0)
@@ -133,8 +134,13 @@ class ctype_Spectrometer():
 
 		##### Performs the measure
 		if self.continuous_mode_flag is True:
-			self.err_measure = self.parent_dll.AVS_Measure(self.handle, None, c_short(-1)) # last parameter is number of measures; -1 means infinity
-			print("     -> MESSAGE for measure output                      = "+spectrometer_return_codes[self.err_measure])
+			control_flag_aux = True
+			while control_flag_aux:
+				self.err_measure = self.parent_dll.AVS_Measure(self.handle, None, c_short(-1)) # last parameter is number of measures; -1 means infinity
+				if self.err_measure == 0:
+					print("     -> MESSAGE for measure output                      = "+spectrometer_return_codes[self.err_measure])
+					control_flag_aux = False
+				sleep(0.001)
 			control_flag = True
 			while control_flag:
 				self.err_poll = self.parent_dll.AVS_PollScan(self.handle)
@@ -154,10 +160,15 @@ class ctype_Spectrometer():
 		elif self.continuous_mode_flag is False:
 			if n_measures is None:
 				n_measures = 1
-			for i in range(0, n_measures):
-				self.err_measure = self.parent_dll.AVS_Measure(self.handle, None, c_short(1)) # last parameter is number of measures; -1 means infinity
-				if n_measures == 1:
-						print("     -> MESSAGE for measure output                      = "+spectrometer_return_codes[self.err_measure])
+			for i in tqdm(range(0, n_measures)):
+				control_flag_aux = True
+				while control_flag_aux:
+					self.err_measure = self.parent_dll.AVS_Measure(self.handle, None, c_short(1)) # last parameter is number of measures; -1 means infinity
+					if self.err_measure == 0:
+						#if n_measures == 1:
+						#	print("     -> MESSAGE for measure output                      = "+spectrometer_return_codes[self.err_measure])
+						control_flag_aux = False
+					sleep(0.001)
 				control_flag = True
 				while control_flag:
 					self.err_poll = self.parent_dll.AVS_PollScan(self.handle)
@@ -170,8 +181,8 @@ class ctype_Spectrometer():
 					else:
 						message = spectrometer_return_codes[self.err_poll]
 						sleep(0.001)
-					if n_measures == 1:
-							print("     -> MESSAGE for spectrometer scan                   = "+message)
+				#	if n_measures == 1:
+				#			print("     -> MESSAGE for spectrometer scan                   = "+message)
 				self.get_data(internal_calling=True)
 				self.stop_measure(verbose=False)	
 				if i == 0:

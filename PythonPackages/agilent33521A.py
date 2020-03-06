@@ -70,6 +70,8 @@ class AgilentFunctionGenerator():
 		self.writeCommand("SOUR:VOLT:LOW 0")
 	def setHighV(self, V):
 		self.writeCommand("SOUR:VOLT:HIGH "+str(V))
+	def setPhase(self, phase):
+		self.writeCommand("PHAS "+str(phase))
 	def setLowV(self, V):
 		self.writeCommand("SOUR:VOLT:LOW "+str(V))
 	def setDefaultParams(self):

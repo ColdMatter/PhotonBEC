@@ -10,6 +10,14 @@ import matplotlib.pyplot as plt
 
 
 
+def get_spectrometer_integration_time(port, host):
+	return float(pbec_ipc.ipc_eval("getSpectrometerIntegrationTime()", port=port, host=host))
+
+
+
+def get_spectrometer_n_averages(port, host):
+	return float(pbec_ipc.ipc_eval("getSpectrometerNAverages()", port=port, host=host))
+
 
 def set_spectrometer_mode(port, host, mode='continuous'):
 	if mode == 'continuous' or mode == 'internal':
@@ -29,6 +37,11 @@ def set_spectrometer_integration_time(port, host, int_time=100):
 def set_spectrometer_n_averages(port, host, n_averages=25):
 	pbec_ipc.ipc_exec("setSpectrometerNAverages("+str(n_averages)+")", port=port, host=host)
 
+
+
+def set_spectrometer_external_trigger(port, host, external_trigger):
+	pbec_ipc.ipc_exec("setSpectrometerExternalTrigger("+str(external_trigger)+")", port=port, host=host)
+	
 
 
 def get_spectrum_measure(port, host, int_time=10, n_averages=1, n_measures=1):
