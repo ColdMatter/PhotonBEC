@@ -28,6 +28,7 @@ PORT_NUMBERS.update({'spectrometer_cavity_lock':DEFAULT_PORT+3})
 PORT_NUMBERS.update({'fianium_controller':DEFAULT_PORT+4})
 PORT_NUMBERS.update({'spectrometer_server':DEFAULT_PORT+5})
 PORT_NUMBERS.update({'spectrometer_server V2':DEFAULT_PORT+6})
+PORT_NUMBERS.update({'cavity lock second loop':DEFAULT_PORT+8})
 
 HOST_ADDRESSES = {'ph-photonbec':'ph-photonbec.ph.ic.ac.uk'} #Renamed with .qols on 20170522
 #HOST_ADDRESSES = {'ph-photonbec':'ph-photonbec.qols.ph.ic.ac.uk'} #other hosts to be added later as need be

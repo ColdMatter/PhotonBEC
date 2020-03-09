@@ -20,6 +20,7 @@ import threading
 from tqdm import tqdm
 import traceback
 import copy
+import time
 
 import ctypes
 from ctypes import pointer, c_char, sizeof, c_ushort, c_ubyte
@@ -75,6 +76,7 @@ spectrometer_return_codes.update({-122: 'NOT_SUPPORTED_BY_FPGA_VER'})
 class ctype_Spectrometer():
 	
 	def __init__(self, parent, index=0):
+		self.external_trigger_timeout = 1.0 # in seconds
 		self.parent_dll = parent.dll
 		self.serial = parent.serials[index]
 		self.handle = self.parent_dll.AVS_Activate(pointer(parent.avs_id_list[index]))
@@ -170,19 +172,25 @@ class ctype_Spectrometer():
 						control_flag_aux = False
 					sleep(0.001)
 				control_flag = True
+				time_begin = time.time()
 				while control_flag:
-					self.err_poll = self.parent_dll.AVS_PollScan(self.handle)
-					if self.err_poll == 0:
-						message = 'SUCCESS_DO_DATA_AVAILABLE'
-						sleep(0.001)
-					elif self.err_poll == 1:
-						message = 'SUCCESS_DATA_AVAILABLE'
-						control_flag = False
+					if ((time.time()-time_begin) < self.external_trigger_timeout) or self.external_trigger_flag == False:
+						self.err_poll = self.parent_dll.AVS_PollScan(self.handle)
+						if self.err_poll == 0:
+							message = 'SUCCESS_DO_DATA_AVAILABLE'
+							sleep(0.001)
+						elif self.err_poll == 1:
+							message = 'SUCCESS_DATA_AVAILABLE'
+							control_flag = False
+						else:
+							message = spectrometer_return_codes[self.err_poll]
+							sleep(0.001)
+						#if n_measures == 1 or True:
+						#		print("     -> MESSAGE for spectrometer scan                   = "+message)
 					else:
-						message = spectrometer_return_codes[self.err_poll]
-						sleep(0.001)
-				#	if n_measures == 1:
-				#			print("     -> MESSAGE for spectrometer scan                   = "+message)
+						print("-> Warning: External trigger timeout... Ignoring this measure")
+						control_flag = False
+
 				self.get_data(internal_calling=True)
 				self.stop_measure(verbose=False)	
 				if i == 0:
