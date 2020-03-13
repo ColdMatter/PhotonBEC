@@ -81,7 +81,7 @@ class CavityLockSecondLoop():
 			self.applying_correction_flag = False
 			lock_volts = self.read_lock_voltage()
 
-			if lock_volts < (self.mid_range_voltage - 0.25*self.full_control_range):
+			if lock_volts < (self.mid_range_voltage - 0.35*self.full_control_range):
 				self.applying_correction_flag = True
 				if lock_volts < self.control_range_voltage[0] + 0.1*self.full_control_range:
 					self.number_fatal_errors += 1
@@ -93,7 +93,7 @@ class CavityLockSecondLoop():
 					sleep(0.1)
 					lock_volts = self.read_lock_voltage()
 
-			elif lock_volts > (self.mid_range_voltage + 0.25*self.full_control_range):
+			elif lock_volts > (self.mid_range_voltage + 0.35*self.full_control_range):
 				self.applying_correction_flag = True
 				if lock_volts > self.control_range_voltage[1] - 0.1*self.full_control_range:
 					self.number_fatal_errors += 1
