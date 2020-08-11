@@ -35,6 +35,7 @@ HOST_ADDRESSES = {'ph-photonbec':'ph-photonbec.ph.ic.ac.uk'} #Renamed with .qols
 #HOST_ADDRESSES.update({'ph-photonbec2':'ph-photonbec2.qols.ph.ic.ac.uk'})
 HOST_ADDRESSES.update({'ph-photonbec2':'ph-photonbec2'})
 HOST_ADDRESSES.update({'ph-photonbec3':'ph-photonbec3.ph.ic.ac.uk'})
+HOST_ADDRESSES.update({'ph-photonbec3':'ph-photonbec5.ph.ic.ac.uk'})
 
 
 IPC_BIN_CLIENT_GREETING = 'pbecipcbin\r\n'

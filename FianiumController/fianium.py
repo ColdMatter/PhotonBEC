@@ -12,6 +12,8 @@ elif socket.gethostname().lower()=="ph-photonbec":
     fianium_comport=4
 elif socket.gethostname().lower()=="ph-photonbec3":
     fianium_comport=6
+elif socket.gethostname().lower()=="ph-photonbec5":
+    fianium_comport=14
 
 line_end="\r\n"
 #ser = serial.Serial(comport-1,baudrate=19200,timeout=1)

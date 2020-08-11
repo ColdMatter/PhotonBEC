@@ -101,6 +101,17 @@ def guiSetPowerAndWait(p, tolerance=0.01):
 	with lq_lock:
 		lq = LaserQuantum()
 		lq.setPowerAndWait(p, tolerance=0.01, callback_power=power_gui_update)
+
+
+def guiSetPowerAndNoWait(p):
+	updateSetPowerGUI(p)
+	def power_gui_update(p):
+		ui.currentLCD.display(p)
+	with lq_lock:
+		lq = LaserQuantum()
+		lq.setPower(p)
+
+
 	
 #ui.currentLCD.connect(getCurrentPower)
 ui.getPowerPushButton.clicked.connect(getCurrentPower)

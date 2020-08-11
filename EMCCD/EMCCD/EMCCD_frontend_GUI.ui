@@ -1,0 +1,1003 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1234</width>
+    <height>761</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>pbec lab EMCCD</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBox_CameraAcquisition">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>431</width>
+      <height>541</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Camera Acquisition</string>
+    </property>
+    <widget class="QWidget" name="horizontalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>450</y>
+       <width>411</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_AcquisitionButtons">
+      <item>
+       <widget class="QPushButton" name="pushButton_StartAcquisition">
+        <property name="text">
+         <string>Start Acquisition</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_StopAcquisition">
+        <property name="text">
+         <string>Stop Acquisition</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>411</width>
+       <height>411</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_CameraAcquisition"/>
+    </widget>
+    <widget class="QLabel" name="label_LostFrames">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>510</y>
+       <width>91</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Lost frames:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_LostFrames">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>504</y>
+       <width>113</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_CameraMessage">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>560</y>
+      <width>431</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Camera Message</string>
+    </property>
+    <widget class="QTextBrowser" name="textBrowser_CameraMessage">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>411</width>
+       <height>111</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_Temperature">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>10</y>
+      <width>251</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Temperature</string>
+    </property>
+    <widget class="QLabel" name="label_TemperatureSetpoint">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>67</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Setpoint:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_TemperatureSetPoint">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_TemperatureReal">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>30</y>
+       <width>67</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Real:</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="textBrowser_TemperatureReal">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>50</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_UpdateTemperature">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>110</y>
+       <width>201</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Update Temperature</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_Shutter">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>10</y>
+      <width>391</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Shutter</string>
+    </property>
+    <widget class="QLabel" name="label_ClosingTime">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Closing Time (ms)</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_OpeningTime">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Opening Time (ms)</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_OutputTTLSignal">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Output TTL Signal </string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_ClosingTime">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>60</y>
+       <width>113</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_OpeningTime">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>90</y>
+       <width>113</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_OutputTTLSignal">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>120</y>
+       <width>111</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_UpdateShutter">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>120</y>
+       <width>113</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_ShutterType">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>131</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Shutter Mode</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_ShutterMode">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>30</y>
+       <width>231</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_ImageFormat">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>170</y>
+      <width>251</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Image Format</string>
+    </property>
+    <widget class="QLabel" name="label_HorizontalBinning">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Horizontal Binning:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_VerticalBinning">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Vertical Binning:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_HorizontalStart">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Horozontal Start:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_HorizontalEnd">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Horizontal End:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_VerticalStart">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Vertical Start:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_VerticalEnd">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>180</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Vertical End:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_HorizontalBinning">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>30</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_VerticalBinning">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>60</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_HorizontalStart">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>90</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_HorizontalEnd">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>120</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_VerticalStart">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>150</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_VerticalEnd">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>180</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_SetImageFormat">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>210</y>
+       <width>211</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set Image Format</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_Acquisition">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>170</y>
+      <width>291</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Acquisition</string>
+    </property>
+    <widget class="QLabel" name="label_ExposureTime">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>201</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Exposure Time (s):</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_AccumulationCycleTime">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>201</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Accumulation Cycle Time (s):</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_NumberAccumulations">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>201</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Number of Accumulations:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_NumberKinetics">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>201</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Number of Kinetics (Scans):</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_KineticCycleTime">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>201</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Kinetic Cycle Time (s):</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_ExposureTime">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>30</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_AccumulationCycleTime">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>60</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_NumberAccumulations">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>90</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_NumberKinetics">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>120</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_KineticCycleTime">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>150</y>
+       <width>71</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_SetAcquisitionProperties">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>210</y>
+       <width>231</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set Acquisition Properties</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_ReadOut">
+    <property name="geometry">
+     <rect>
+      <x>1010</x>
+      <y>170</y>
+      <width>201</width>
+      <height>241</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Read Out</string>
+    </property>
+    <widget class="QLabel" name="label_HorizontalShiftSpeed">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>161</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Horizontal Shift Speed:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_HorizontalShiftSpeed">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>181</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_VerticalShiftSpeed">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>161</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Vertical Shift Speed:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_VerticalShiftSpeed">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>181</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_SetReadOut">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>181</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_FrameTransferMode">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>210</y>
+       <width>181</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Frame Transfer Mode</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_Gain">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>430</y>
+      <width>251</width>
+      <height>281</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Gain</string>
+    </property>
+    <widget class="QLabel" name="label_PreAmpGain">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>101</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pre-Amp gain:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_PreAmpGain">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>30</y>
+       <width>121</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_SetGain">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>240</y>
+       <width>211</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_AllowHighEMGain">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>211</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Allow High EM Gain</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_EMCCDGainRange">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>EMCCD Gain Range:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_EMCCDGainRange">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>100</y>
+       <width>91</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_EMCCDGain">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>140</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>EMCCD Gain:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_EMCCDGain">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>140</y>
+       <width>91</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1234</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionExit_Camera"/>
+   </widget>
+   <widget class="QMenu" name="menuCamera_Set_up">
+    <property name="title">
+     <string>Camera Set-up</string>
+    </property>
+    <widget class="QMenu" name="menuAcquisition_Mode">
+     <property name="title">
+      <string>Acquisition Mode</string>
+     </property>
+     <addaction name="actionSingle_Scan"/>
+     <addaction name="actionAccumulate"/>
+     <addaction name="actionKinetics"/>
+     <addaction name="actionFast_Kinetics"/>
+     <addaction name="actionRun_Till_Abort"/>
+    </widget>
+    <widget class="QMenu" name="menuOutput_Amplifier">
+     <property name="title">
+      <string>Output Amplifier</string>
+     </property>
+     <addaction name="actionEMCCD"/>
+     <addaction name="actionCCD"/>
+    </widget>
+    <widget class="QMenu" name="menuReadout_Mode">
+     <property name="title">
+      <string>Readout Mode</string>
+     </property>
+     <addaction name="actionFull_Vertical_Binning"/>
+     <addaction name="actionMulti_Track"/>
+     <addaction name="actionRandom_Track"/>
+     <addaction name="actionSingle_Track"/>
+     <addaction name="actionImage"/>
+    </widget>
+    <widget class="QMenu" name="menuTrigger_Mode">
+     <property name="title">
+      <string>Trigger Mode</string>
+     </property>
+     <addaction name="actionInternal"/>
+     <addaction name="actionExternal"/>
+     <addaction name="actionExternal_Start"/>
+     <addaction name="actionExternal_Exposure_bulb"/>
+     <addaction name="actionExternal_FVB_EM"/>
+     <addaction name="actionSoftware_Trigger"/>
+     <addaction name="actionExternal_Charge_Shifting"/>
+    </widget>
+    <addaction name="menuAcquisition_Mode"/>
+    <addaction name="menuOutput_Amplifier"/>
+    <addaction name="menuReadout_Mode"/>
+    <addaction name="menuTrigger_Mode"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuCamera_Set_up"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionExit_Camera">
+   <property name="text">
+    <string>Exit Camera</string>
+   </property>
+  </action>
+  <action name="actionSingle_Scan">
+   <property name="text">
+    <string>Single Scan</string>
+   </property>
+  </action>
+  <action name="actionAccumulate">
+   <property name="text">
+    <string>Accumulate</string>
+   </property>
+  </action>
+  <action name="actionKinetics">
+   <property name="text">
+    <string>Kinetics</string>
+   </property>
+  </action>
+  <action name="actionFast_Kinetics">
+   <property name="text">
+    <string>Fast Kinetics</string>
+   </property>
+  </action>
+  <action name="actionRun_Till_Abort">
+   <property name="text">
+    <string>Run Till Abort</string>
+   </property>
+  </action>
+  <action name="actionEMCCD">
+   <property name="text">
+    <string>EMCCD</string>
+   </property>
+  </action>
+  <action name="actionCCD">
+   <property name="text">
+    <string>CCD</string>
+   </property>
+  </action>
+  <action name="actionFull_Vertical_Binning">
+   <property name="text">
+    <string>Full Vertical Binning</string>
+   </property>
+  </action>
+  <action name="actionMulti_Track">
+   <property name="text">
+    <string>Multi-Track</string>
+   </property>
+  </action>
+  <action name="actionRandom_Track">
+   <property name="text">
+    <string>Random-Track</string>
+   </property>
+  </action>
+  <action name="actionSingle_Track">
+   <property name="text">
+    <string>Single-Track</string>
+   </property>
+  </action>
+  <action name="actionImage">
+   <property name="text">
+    <string>Image</string>
+   </property>
+  </action>
+  <action name="actionFully_Auto">
+   <property name="text">
+    <string>Fully Auto</string>
+   </property>
+  </action>
+  <action name="actionPermanently_Open">
+   <property name="text">
+    <string>Permanently Open</string>
+   </property>
+  </action>
+  <action name="actionPermanently_Closed">
+   <property name="text">
+    <string>Permanently Closed</string>
+   </property>
+  </action>
+  <action name="actionOpen_for_FVB_Series">
+   <property name="text">
+    <string>Open for FVB Series</string>
+   </property>
+  </action>
+  <action name="actionOpen_for_any_Series">
+   <property name="text">
+    <string>Open for any Series</string>
+   </property>
+  </action>
+  <action name="actionInternal">
+   <property name="text">
+    <string>Internal</string>
+   </property>
+  </action>
+  <action name="actionExternal">
+   <property name="text">
+    <string>External</string>
+   </property>
+  </action>
+  <action name="actionExternal_Start">
+   <property name="text">
+    <string>External Start</string>
+   </property>
+  </action>
+  <action name="actionExternal_Exposure_bulb">
+   <property name="text">
+    <string>External Exposure (bulb)</string>
+   </property>
+  </action>
+  <action name="actionExternal_FVB_EM">
+   <property name="text">
+    <string>External FVB EM</string>
+   </property>
+  </action>
+  <action name="actionSoftware_Trigger">
+   <property name="text">
+    <string>Software Trigger</string>
+   </property>
+  </action>
+  <action name="actionExternal_Charge_Shifting">
+   <property name="text">
+    <string>External Charge Shifting</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

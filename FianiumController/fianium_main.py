@@ -9,6 +9,10 @@ elif socket.gethostname().lower()=="ph-photonbec3":
 	fianium_comport=6
 	sys.path.append("D:\\Control\\PythonPackages\\")
 	sys.path.append("D:\\Control\\FianiumController\\")
+elif socket.gethostname().lower()=="ph-photonbec5":
+	fianium_comport=14
+	sys.path.append("D:\\Control\\PythonPackages\\")
+	sys.path.append("D:\\Control\\FianiumController\\")
 
 import __main__
 from serial import *

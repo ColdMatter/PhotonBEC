@@ -107,7 +107,7 @@ class ctype_Spectrometer():
 		self.measureConfig.m_IntegrationTime = c_float(int_time)
 		self.measureConfig.m_IntegrationDelay = c_uint(0)
 		self.measureConfig.m_NrAverages = c_uint(n_averages)
-		self.measureConfig.m_CorDynDark.m_Enable = c_ubyte(0)            # (0) means disable dark count correction, (1) enables it
+		self.measureConfig.m_CorDynDark.m_Enable = c_ubyte(1)            # (0) means disable dark count correction, (1) enables it
 		self.measureConfig.m_CorDynDark.m_ForgetPercentage = c_ubyte(50)  # (0-100) percentage of the new dark value pixels to use
 		self.measureConfig.m_Smoothing.m_SmoothPix = c_ushort(1)
 		self.measureConfig.m_Smoothing.m_SmoothModel = c_ubyte(0)

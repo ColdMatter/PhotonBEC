@@ -345,10 +345,13 @@ class ExperimentalData(object):
 	def __init__(self, ts, extension,data=None):
 		self.ts = ts
 		self.extension = extension
-		if data!=None:
+		try:
+			if data!=None:
+				self.setData(data)
+			else:
+				self.setData(None)
+		except ValueError:#Exception added by BTW 20200624 because of Boolean operation on array error.
 			self.setData(data)
-		else:
-			self.setData(None)
 	def getFileName(self, make_folder = False):
 		return timestamp_to_filename(self.ts, file_end = self.extension,
 			make_folder = make_folder)

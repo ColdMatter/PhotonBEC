@@ -22,7 +22,7 @@ from fringes_utils import compute_locking_signal
 from CameraUSB3 import CameraUSB3
 
 potential_divider = True
-number_images_for_PCA = 10
+number_images_for_PCA = 20
 led_lambda = 650 # in nm
 
 def set_cavity_length_voltage(v):
@@ -99,7 +99,7 @@ class _StabiliserThread(threading.Thread):
 							parent.set_voltage(trial_voltage)
 							time.sleep(0.5)
 							image_raw = 1.0*parent.cam.get_image()
-							image_raw = image_raw[::2,::2]
+							image_raw = image_raw[::4,::4]
 							images.append(image_raw)
 							time.sleep(0.5)
 						parent.set_voltage(mean(parent.control_range))
@@ -118,9 +118,11 @@ class _StabiliserThread(threading.Thread):
 						print("PCA successfully fitted")
 						pca_explained_variance_ratio = pca.explained_variance_ratio_
 						pca_components_flattened = pca.components_
+						print("Squeezing variables")
 						main_pca_component = np.squeeze(pca_components_flattened[0,:])
 						pca_components_2D = np.reshape(pca_components_flattened, [pca_components_flattened.shape[0], images_shape[1], images_shape[2]])
 						# Checks monotomy of the pca projections
+						print("Renormaling projections")
 						projections = list()
 						for i in range(0, images_centered.shape[0]):
 							projections.append(np.dot(images_centered[i,:], main_pca_component))
@@ -129,6 +131,7 @@ class _StabiliserThread(threading.Thread):
 						projections = projections / normalization_factor
 						parent.projections = projections
 						# Saves some useful plots
+						print("Saving some images")
 						imsave('lock_image_first_fringe.jpg', images[0,:,:])
 						imsave('lock_image_last_fringe.jpg', images[-1,:,:])
 						imsave('lock_image_mean.jpg', np.squeeze(np.mean(images[:,:,:], 0)))
@@ -137,10 +140,11 @@ class _StabiliserThread(threading.Thread):
 						print(pca_explained_variance_ratio)
 						print("PCA Components successfully calculated")
 						parent.initial_analysis = True
+						raw_input("Press Enter to continue...")
 
 					try:
 						time1 = 1000*time.time()
-						parent.im_raw = parent.cam.get_image()[::2,::2]
+						parent.im_raw = parent.cam.get_image()[::4,::4]
 						time2 = 1000*time.time()
 						parent.ring_rad = compute_locking_signal(
 							images_mean=images_mean,

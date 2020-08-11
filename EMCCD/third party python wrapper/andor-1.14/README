@@ -1,0 +1,73 @@
+Object-oriented, high-level interface for Andor cameras (SDK2), written in Cython. 
+
+.. Note::
+   
+   - This is not a stand-alone driver. Andor's proprietary drivers must be installed.
+     The setup script expects to find ``libandor.so`` in ``/usr/local/lib/``
+     (the driver's default installation directory).
+   
+   - Andor provides a low-level, `ctypes` wrapper on their SDK, called ``atcmd``.
+     If available, it will be imported as `Andor._sdk`.
+     
+   - This documentation should be read along Andor's Software Development Kit manual.
+   
+   - **To build the extension**::
+   
+     $ python2.7 setup_extension.py build_ext --inplace
+
+.. Warning::
+   This module is not thread-safe. If `AcqMode.wait` is blocking a
+   background thread, and another function call is made from the main thread,
+   the main thread will block too.
+
+-------
+
+Usage
+-----
+
+The camera is controlled via the top-level class `Andor`:
+
+    >>> from andor2 import Andor
+    >>> cam = Andor()
+
+The `Andor` instance is just a container for other objects
+that control various aspect of the camera:
+
+* `Info` : camera information and available features
+* `Temperature` : cooler control
+* `Shutter` : shutter control
+* `EM`: electron-multiplying gain control
+* `Detector`: CCD control, including:
+
+  - `VSS`: vertical shift speed
+  - `HSS`: horizontal shift speed
+  - `ADC`: analog-to-digital converter
+  - `OutputAmp`: the output amplifier
+  - `PreAmp`: pre-amplifier control
+
+* `ReadMode`: select the CCD read-out mode (full frame, vertical binning, tracks, etc.)
+* `Acquire <AcqMode>`: control the acquisition mode (single shot, video, accumulate, kinetic)
+
+Examples
+--------
+
+    >>> from andor2 import Andor
+    >>> cam = Andor()
+    >>> cam.Temperature.setpoint = -74  # start cooling
+    >>> cam.Temperature.cooler = True  
+    >>> cam.Detector.OutputAmp(1)       # use conventional CCD amplifier instead of electron multiplying
+    >>> cam.PreAmp(2)                   # set pre-amplifier gain to 4.9
+    >>> cam.exposure = 10               # set exposure time to 10 ms
+    >>> cam.ReadMode.SingleTrack(590,5) # set readout mode: single track, 5 pixels wide, centered at 590 pixels
+
+    >>> cam.Acquire.Video()             # set acquisition mode to video (continuous)
+    >>> data = cam.Acquire.Newest(10)   # collect latest 10 images as numpy array
+    >>> cam.Acquire.stop()
+
+    >>> cam.Acquire.Kinetic(10, 0.1, 5, 0.01)    # set up kinetic sequence of 10 images every 100ms
+                                             # with each image being an accumulation of 5 images
+                                             # taken 10ms apart
+    >>> cam.Acquire.start()                      # start acquiring
+    >>> cam.Acquire.wait()                       # block until acquisition terminates
+    >>> data = cam.Acquire.GetAcquiredData()     # collect all data
+
