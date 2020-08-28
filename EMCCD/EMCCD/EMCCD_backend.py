@@ -869,13 +869,17 @@ class EMCCD():
 				SUCCESS = True
 				array = np.array([value for value in array])
 				image = np.reshape(array, (self.image_format["x"], self.image_format["y"]))
+				image = np.flip(np.flip(image,0),1)
 			else:
 				SUCCESS = False
 				image = None
+			message = copy.deepcopy(self.emccd_return_codes[out])
 		else:
 			self.printout(message="Cannot acquire data before setting image format. Use SetImage() method")
-		
-		return SUCCESS, copy.deepcopy(self.emccd_return_codes[out]), image
+			SUCCESS = False
+			message = None
+			image = None
+		return SUCCESS, message, image
 
 
 
@@ -943,5 +947,212 @@ class EMCCD():
 		return SUCCESS, copy.deepcopy(self.emccd_return_codes[out])		
 
 
+
+class OpAcquire(EMCCD):
+	""" 
+		Wraps the OpAcquire functionality
+	"""
+
+	param_type = dict()
+	param_type.update({"mode_description": "str"})
+	param_type.update({"output_amplifier": "str"})
+	param_type.update({"frame_transfer": "str"})
+	param_type.update({"readout_rate": "float"})
+	param_type.update({"electron_multiplying_gain": "int"})
+	param_type.update({"vertical_clock_amplitude": "int"})
+	param_type.update({"preamplifier_gain": "int"})
+	param_type.update({"shift_speed": "float"})
+
+
+	def __init__(self, VERBOSE=True):
+		super().__init__(VERBOSE=VERBOSE)
+
+
+	def OA_Initialize(self, file=None):
+		"""
+			This function will initialise the OptAcquire settings from a Preset file and a User defined file if it exists.
+
+		"""
+		self.printout(message="OA: Initialing OpAcquire")
+		if file == None:
+			file = "MyFile.xml"
+		cfile = (ctypes.c_char*len(file))()
+		out = self.dll.OA_Initialize(ctypes.pointer(cfile), ctypes.c_ulong(len(file)))
+		self.printout(code=out)
+		if out == 20002:
+			SUCCESS = True
+		else:
+			SUCCESS = False
+		info = None
+
+		return SUCCESS, copy.deepcopy(self.emccd_return_codes[out]), info
+
+
+
+	def OA_GetNumberOfPreSetModes(self):
+		"""
+			This function will return the number of modes defined in the Preset file. The Preset file must exist.
+
+		"""
+		self.printout(message="OA: Getting number of OpAcquire modes.")
+		n_modes = ctypes.c_int()
+		out = self.dll.OA_GetNumberOfPreSetModes(ctypes.pointer(n_modes))
+		self.printout(code=out)
+		if out == 20002:
+			SUCCESS = True
+			info = n_modes.value
+		else:
+			SUCCESS = False
+			info = None
+
+		return SUCCESS, copy.deepcopy(self.emccd_return_codes[out]), info
+
+
+
+	def OA_GetPreSetModeNames(self):
+		"""
+			This function will return the available mode names from the Preset file. The mode and the Preset file must exist.
+			The user must allocate enough memory for all of the acquisition parameters.
+
+		"""
+		self.printout(message="OA: Getting OpAcquire modes names")
+		SUCCESS, message, n_modes = self.OA_GetNumberOfPreSetModes()
+		if SUCCESS:
+			array = (ctypes.c_char*(255*n_modes))()
+			out = self.dll.OA_GetPreSetModeNames(ctypes.pointer(array))
+			self.printout(code=out)
+			if out == 20002:
+				SUCCESS = True
+				info = array.value.decode()
+				info = info.split(",")[:-1]
+			else:
+				SUCCESS = False
+				info = None
+			message = self.emccd_return_codes[out]
+		else:
+			SUCCESS = False
+
+		return SUCCESS, message, info
+
+
+
+	def OA_GetNumberOfAcqParams(self, mode_name):
+		"""
+			This function will return the parameters associated with a specified mode. The mode must be present in either the Preset file or the User defined file.
+
+			Parameters:
+				mode_name (str):	Mode name
+
+		"""
+		self.printout(message="OA: Getting number of parameters associated with mode: "+mode_name)
+		mode = ctypes.c_char_p(mode_name.encode())
+		n = ctypes.c_int()
+		out = self.dll.OA_GetNumberOfAcqParams(mode, ctypes.pointer(n))
+		self.printout(code=out)
+		if out == 20002:
+			SUCCESS = True
+			info = n.value
+		else:
+			SUCCESS = False
+			info = None
+
+		return SUCCESS, copy.deepcopy(self.emccd_return_codes[out]), info
+
+
+
+	def OA_GetModeAcqParams(self, mode_name):
+		"""
+			This function will return all acquisition parameters associated with the specified mode. 
+			The mode specified by the user must be in either the Preset file or the User defined file.
+
+			Parameters:
+				mode_name (str):	Mode name
+
+		"""
+		self.printout(message="OA: Getting parameters for mode: "+mode_name)
+		SUCCESS, message, n_params = self.OA_GetNumberOfAcqParams(mode_name=mode_name)
+		if SUCCESS is True:
+			mode = ctypes.c_char_p(mode_name.encode())
+			params = (ctypes.c_char*(255*n_params))()
+			out = self.dll.OA_GetModeAcqParams(mode, ctypes.pointer(params))
+			self.printout(code=out)
+			message = copy.deepcopy(self.emccd_return_codes[out])
+			if out == 20002:
+				SUCCESS = True
+				info = params.value.decode()
+				info = info.split(",")[:-1]
+			else:
+				SUCCESS = False
+				info = None
+
+			return SUCCESS, message, info
+
+
+
+	def GetParamValue(self, mode_name, param_name):
+		"""
+			Grabs the value of the parameter "param_name", in the mode "mode_name"
+
+			Parameters:
+				mode_name (str)
+				param_name (str)
+		
+		"""
+		self.printout(message="OA: Getting parameter value")
+		SUCCESS, message, params_list = self.OA_GetModeAcqParams(mode_name=mode_name)
+		if SUCCESS:
+			if not param_name in params_list:
+				raise Exception("Invalid parameter name")
+			else:
+				mode = ctypes.c_char_p(mode_name.encode())
+				param = ctypes.c_char_p(param_name.encode())
+				param_type = self.param_type[param_name]
+				if param_type == "str":
+					value = (ctypes.c_char*255)()
+					out = self.dll.OA_GetString(mode, param, ctypes.pointer(value), ctypes.c_ulong(255))
+				elif param_type == "int":
+					value = ctypes.c_ulong()
+					out = self.dll.OA_GetInt(mode, param, ctypes.pointer(value))
+				elif param_type == "float":
+					value = ctypes.c_float()
+					out = self.dll.OA_GetFloat(mode, param, ctypes.pointer(value))
+				else:
+					raise Exception("Coding error")
+				self.printout(code=out)
+				message = copy.deepcopy(self.emccd_return_codes[out])
+				if out == 20002:
+					SUCCESS = True
+					if param_type == "str":
+						info = value.value.decode()
+					else:
+						info = value.value
+				else:
+					SUCCESS = False
+					info = None
+		else:
+			info = None
+		return SUCCESS, message, info
+
+
+
+	def OA_EnableMode(self, mode_name):
+		"""
+			This function will set all the parameters associated with the specified mode to be used for all subsequent acquisitions. 
+			The mode specified by the user must be in either the Preset file or the User defined file.
+
+			Parameters:
+				mode_name (str)
+
+		"""
+		self.printout(message="OA: Setting mode to: "+mode_name)
+		mode = ctypes.c_char_p(mode_name.encode())
+
+		out = self.dll.OA_EnableMode(mode)
+		self.printout(code=out)
+		if out == 20002:
+			SUCCESS = True
+		else:
+			SUCCESS = False
+		return SUCCESS, copy.deepcopy(self.emccd_return_codes[out])
 
 

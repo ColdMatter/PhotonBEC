@@ -8,7 +8,7 @@ from PyDAQmx.DAQmxConstants import *
 def ErrorHandler(error_number):
 	#Needs improving: out-of-range errors break everything.
 	if error_number not in [0,None]:
-		print "Error number "+str(error_number)+" encountered"
+		print("Error number "+str(error_number)+" encountered")
 
 def SingleChannelAO(value,device="Dev3",channel="ao0",minval=0,maxval=5,timeout=1):
 	analog_output = Task()

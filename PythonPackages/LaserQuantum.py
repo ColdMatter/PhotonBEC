@@ -1,17 +1,19 @@
 #A class for controlling the LaserQuantum laser via serial port
 #Created earlier than 20/09/2013 by Rob Nyman
-from serial import *
+import serial
 
 from time import sleep
 import sys
 
 class LaserQuantum():
 	def __init__(self,port=6,timeout=1):
-		self.ser = Serial(port=port,timeout=timeout) #port=0 means COM1, I think
+		#self.ser = serial.Serial('COM7', 38400, timeout=timeout, parity=serial.PARITY_EVEN, rtscts=1)
+		self.ser = serial.Serial(port='COM'+str(1+port), timeout=timeout)
 		self.ser.close()
 	def writeCommand(self,s,dont_close=False):
 		if not(self.ser.isOpen()):self.ser.open()
-		self.ser.write(s+"\r\n")
+		command = s+"\r\n"
+		self.ser.write(command.encode())
 		if not(dont_close):self.ser.close()
 	def readSerial(self,bytes=None,dont_close=False):
 		if not(self.ser.isOpen()):self.ser.open()
@@ -27,6 +29,7 @@ class LaserQuantum():
 	def getPower(self):
 		self.writeCommand("POWER?",dont_close=1)
 		s=self.readSerial(12)
+		s=s.decode()
 		try:
 			p = int(s.split("mW")[-2].split(" ")[-1]) #still needs testing
 		except:
@@ -35,10 +38,12 @@ class LaserQuantum():
 	def isEnabled(self):
 		self.writeCommand("STATUS?",dont_close=1)
 		s = self.readSerial()
+		s = s.decode()
 		ssplit = s.split("\r\n")
 		if len(ssplit)==1:
 			val=False
-			print "ERROR: Laser controller probably switched off"
+			print("ERROR: Laser controller probably switched off: ")
+			print(ssplit)
 		else:
 			s2=s.split("\r\n")[-2]
 			if s2=="ENABLED":

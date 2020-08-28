@@ -17,8 +17,15 @@ import time, threading
 import pbec_ipc
 from InterfaceGUI import *
 
-app = QtGui.QApplication(sys.argv)
-mw = QtGui.QMainWindow()
+########## app = QtGui.QApplication(sys.argv)
+from PyQt5 import QtCore, QtWidgets
+app = QtWidgets.QApplication(sys.argv)
+
+
+########## mw = QtGui.QMainWindow()
+mw = QtWidgets.QMainWindow()
+
+
 ui = Ui_MainWindow()
 ui.setupUi(mw)
 
@@ -32,8 +39,8 @@ from LaserQuantum import *
 lq_lock = threading.Lock()
 
 def updateSetPowerGUI(newSetValue):
-    ui.setLCD.display(newSetValue)
-    ui.setText.setText(str(newSetValue))
+	ui.setLCD.display(newSetValue)
+	ui.setText.setText(str(newSetValue))
     
 #---------------------------------
 #ADDITIONAL SETUP
@@ -62,22 +69,22 @@ ui.enable_checkBox.clicked.connect(enableUpdate)
 
 #---Slider control for power------
 def setValueChangedBySlider():
-    newSetValue = ui.powerSlider.value()
-    setValueUpdate(newSetValue)
+	newSetValue = ui.powerSlider.value()
+	setValueUpdate(newSetValue)
 
 ui.powerSlider.sliderReleased.connect(setValueChangedBySlider)
 
 #---Text control for power------
 def setValueChangedByText():
     try:
-		newValue = float(ui.setText.text())
+        newValue = float(ui.setText.text())
     except:
-		pass
+        pass
     else:
-		ui.setLCD.display(newValue)
-		ui.powerSlider.setValue(newValue)
-		setValueUpdate(newValue)
-	#
+        ui.setLCD.display(newValue)
+        ui.powerSlider.setValue(newValue)
+        setValueUpdate(newValue)
+    #
 
 ui.setTextButton.clicked.connect(setValueChangedByText)
 ui.setText.returnPressed.connect(setValueChangedByText)
@@ -89,7 +96,7 @@ def getCurrentPower():
 		p = lq.getPower()
 	if p==None:
 		p="ERR"
-	print 'got current power = ' + str(p)
+	print('got current power = ' + str(p))
 	ui.currentLCD.display(p)
 	#ui.powerSlider.setValue(p)
 	return p
@@ -142,7 +149,7 @@ def isInteractive():
 if ~isInteractive():
 	bind_success = pbec_ipc.start_server(globals(), port = 47903)
 	if not bind_success:
-		print 'Laser Controller already running, quitting...'
+		print('Laser Controller already running, quitting...')
 	ppt = PollPowerThread()
 	ppt.daemon = True
 	ppt.start()

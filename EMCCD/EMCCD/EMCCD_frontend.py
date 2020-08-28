@@ -13,6 +13,7 @@ from queue import Queue
 
 from EMCCD_frontend_GUI import Ui_MainWindow
 from EMCCD_backend import EMCCD
+from EMCCD_frontend_CameraWindow_GUI import Ui_CameraWindow
 
 
 class MplCanvas(FigureCanvasQTAgg):
@@ -38,7 +39,7 @@ class AcquisitionThread(QtCore.QThread):
 				self.acquisition()
 				time.sleep(0.01)
 			time.sleep(0.1)
-
+			
 	def acquisition(self):
 		FLAG, message, info = self.camera.GetStatus(VERBOSE=False)
 		if info == "DRV_IDLE" or info == "DRV_ACQUIRING":
@@ -46,10 +47,9 @@ class AcquisitionThread(QtCore.QThread):
 				self.ACQUIRING = False
 			FLAG, message, image = self.camera.GetAcquiredData(VERBOSE=False)
 			if type(image)==np.ndarray:
+				image = image - np.min(image)
+				image = image / np.max(image)
 				self.data_queue.put(image)
-
-
-				
 			
 
 
@@ -58,6 +58,7 @@ class AcquisitionThread(QtCore.QThread):
 class PlottingThread(QtCore.QThread):
 	def __init__(self, canvas, data_queue, lineEdit_LostFrames):
 		super(PlottingThread, self).__init__()
+		self.canvas_big = None
 		self.RUNNING = True
 		self.data_queue = data_queue
 		self.canvas = canvas
@@ -67,11 +68,16 @@ class PlottingThread(QtCore.QThread):
 		self.canvas.show()
 		self.lost_frames = 0
 
+	def load_canvas_big(self, canvas_big):
+		self.canvas_big = canvas_big
+		self.canvas_big.axes.set_xticks([])
+		self.canvas_big.axes.set_yticks([])
+
 	def run(self):
 		self.lineEdit_LostFrames.setText(str(self.lost_frames))
 		while self.RUNNING:
 			self.plot()
-			time.sleep(0.01)
+			time.sleep(0.001)
 		self.quit()
 
 	def plot(self):
@@ -83,9 +89,15 @@ class PlottingThread(QtCore.QThread):
 				self.lineEdit_LostFrames.setText(str(self.lost_frames))
 			if not hasattr(self, "image"):
 				self.image = self.canvas.axes.imshow(data, cmap='gray')
+				if not self.canvas_big is None:
+					self.image_big = self.canvas_big.axes.imshow(data, cmap='gray')
 			else:
 				self.image.set_data(data)
+				if not self.canvas_big is None:
+					self.image_big.set_data(data)
 			self.canvas.draw()
+			if not self.canvas_big is None:
+				self.canvas_big.draw()
 
 
 
@@ -190,6 +202,7 @@ class EMCCD_frontend(Ui_MainWindow):
 		self.acquisition_thread.start()
 		self.pushButton_StartAcquisition.clicked.connect(self._StartAcquisition)
 		self.pushButton_StopAcquisition.clicked.connect(self._StopAcquisition)
+		self.pushButton_Undock.clicked.connect(self._Undock)
 
 		# GroupBox: Gain
 		self.comboBox_PreAmpGainModes = dict()
@@ -296,6 +309,18 @@ class EMCCD_frontend(Ui_MainWindow):
 	def _StopAcquisition(self):
 		self.acquisition_thread.ACQUIRING = False
 		FLAG, message = self.camera.AbortAcquisition()
+
+	def _Undock(self):
+		self.SecondWindow = QtWidgets.QMainWindow()
+		self.camerawindown = Ui_CameraWindow()
+		self.camerawindown.setupUi(self.SecondWindow)
+
+		self.canvas_big = MplCanvas(self, width=8, height=8, dpi=200)
+		self.camerawindown.gridLayout.addWidget(self.canvas_big)
+		self.plotting_thread.load_canvas_big(canvas_big=self.canvas_big)
+
+
+		self.SecondWindow.show()
 
 
 	
