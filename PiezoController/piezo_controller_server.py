@@ -16,7 +16,7 @@ class PiezoControllerServer(object):
 		try:
 			self.setEnabled(True)
 		except Exception as e:
-			print 'setEnabled ' + repr(e)
+			print('setEnabled ' + repr(e))
 		if not glob:
 			glob = globals()
 		ipc = pbec_ipc.IPCServer('localhost', pbec_ipc.PORT_NUMBERS['piezo_controller'], glob)
@@ -53,7 +53,7 @@ class PiezoControllerServer(object):
 					self.piezo_driver = ThorlabsMDT69xA()
 					self.piezo_driver.keep_open = True
 			except (ValueError, SerialException) as e:
-				print 'piezo driver not switched on'
+				print('piezo driver not switched on')
 				raise Exception(repr(e))
 		else:
 			with self.piezo_driver_lock:
