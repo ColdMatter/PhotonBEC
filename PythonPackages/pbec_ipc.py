@@ -58,7 +58,7 @@ SOCK_RECV_BUFFER_SIZE = 4096
 	
 def sock_ipc_send(using_bin, sock, sock_fd, msg):
 	if using_bin:
-		buf = struct.pack('>I', len(msg)) + msg
+		buf = struct.pack('>I', len(msg)) + msg.encode()
 		verbose('sending bin line ' + str(buf))
 		sock.sendall(buf)
 	else:
@@ -67,10 +67,20 @@ def sock_ipc_send(using_bin, sock, sock_fd, msg):
 def sock_ipc_recv(using_bin, sock, sock_fd):
 	if using_bin:
 		data = sock.recv(SOCK_RECV_BUFFER_SIZE)
+		verbose("just received socket data")
+		#
+		#
+		#
+		#
+		data = data.decode()
+
+
+
 		if data == None or data == '':
+			verbose("raising EOF exception")
 			raise EOFError()
 		assert len(data) >= 4 #TODO recover from this case instead of bailing out
-		length = struct.unpack(">I", data[:4])[0]
+		length = struct.unpack(">I", data[:4].encode())[0]
 		verbose('len(data)=%d length=%d' % (len(data), length))
 		if len(data) - 4 == length:
 			verbose('ipc_recv returned immediately')
@@ -94,6 +104,7 @@ def sock_ipc_recv(using_bin, sock, sock_fd):
 class IPCServer(threading.Thread):
 	def __init__(self, host, port, evalGlobals, threading_cond=None, threading_return=None):
 		threading.Thread.__init__(self)
+		verbose("Initiating ipc server")
 		self.daemon = True #die if other threads have ended too
 		self.address = (host, port)
 		self.closed = False
@@ -127,8 +138,8 @@ class IPCServer(threading.Thread):
 			verbose('accepted')
 
 			try:
-				client_sock.sendall(IPC_SERVER_HANDSHAKE)
-				handshake = client_sock.recv(len(IPC_BIN_CLIENT_GREETING))
+				client_sock.sendall(IPC_SERVER_HANDSHAKE.encode())
+				handshake = client_sock.recv(len(IPC_BIN_CLIENT_GREETING)).decode()
 				if handshake == None or handshake == '':
 					raise EOFError()
 				if handshake.rstrip() == IPC_BIN_CLIENT_GREETING.rstrip():
@@ -139,19 +150,24 @@ class IPCServer(threading.Thread):
 					self.using_bin = False
 					client_fd = client_sock.makefile()
 				else:
+					verbose("bad handshake")
 					client_sock.sendall('bad handshake, try ' + IPC_CLIENT_PUTTY_GREETING)
 				verbose('sending ack')
 				sock_ipc_send(self.using_bin, client_sock, client_fd, IPC_SERVER_HANDSHAKE_ACK)
 				
-				verbose('entering repl loop')
+				verbose('entering repl loop:')
 				while 1:
 					line = sock_ipc_recv(self.using_bin, client_sock, client_fd)
+					verbose('---------')
 					if line == 'close':
+						verbose("    close")
 						raise IOError()
 					elif line == 'shutdown':
+						verbose("    shutdown")
 						self.closed = True
 						raise IOError()
 					elif line.startswith('eval '):
+						verbose("    eval")
 						ec = line[5:]
 						try:
 							ret = eval(ec, self.evalGlobals)
@@ -167,7 +183,7 @@ class IPCServer(threading.Thread):
 							sock_ipc_send(self.using_bin, client_sock, client_fd, repr(e))
 					verbose('=> ' + line)
 			except Exception as e:
-				#print repr(e)
+				verbose("Exception: "+str(e))
 				pass
 			finally:
 				client_sock.close()
@@ -192,7 +208,7 @@ def socket_connect(port = DEFAULT_PORT, host = 'localhost'):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((host, port))
 	sock.recv(len(IPC_SERVER_HANDSHAKE)) #throw away the handshake
-	sock.sendall(IPC_BIN_CLIENT_GREETING)
+	sock.sendall(IPC_BIN_CLIENT_GREETING.encode())
 	ack = sock_ipc_recv(True, sock, None)
 	if ack != IPC_SERVER_HANDSHAKE_ACK:
 		sock.close()

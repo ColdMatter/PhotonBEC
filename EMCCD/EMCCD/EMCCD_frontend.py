@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import copy
 import numpy as np
+from matplotlib.ticker import NullFormatter
 from functools import partial
 import time
 import matplotlib
@@ -17,10 +18,11 @@ from EMCCD_frontend_CameraWindow_GUI import Ui_CameraWindow
 
 
 class MplCanvas(FigureCanvasQTAgg):
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
+    def __init__(self, parent=None, width=5, height=4, dpi=100, initiate_axis=True):
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        if initiate_axis:
+            self.axes = self.fig.add_subplot(111)
+        super(MplCanvas, self).__init__(self.fig)
 
 
 
@@ -47,8 +49,9 @@ class AcquisitionThread(QtCore.QThread):
 				self.ACQUIRING = False
 			FLAG, message, image = self.camera.GetAcquiredData(VERBOSE=False)
 			if type(image)==np.ndarray:
-				image = image - np.min(image)
-				image = image / np.max(image)
+				#image = image - np.min(image)
+				#image = image / np.max(image)
+				image = np.flip(np.transpose(image), axis=0)
 				self.data_queue.put(image)
 			
 
@@ -56,22 +59,59 @@ class AcquisitionThread(QtCore.QThread):
 
 
 class PlottingThread(QtCore.QThread):
-	def __init__(self, canvas, data_queue, lineEdit_LostFrames):
+	def __init__(self, canvas, data_queue, lineEdit_LostFrames, signal_min, signal_max):
 		super(PlottingThread, self).__init__()
 		self.canvas_big = None
+		self.canvas_hist = None
 		self.RUNNING = True
 		self.data_queue = data_queue
 		self.canvas = canvas
 		self.lineEdit_LostFrames = lineEdit_LostFrames
+		self.signal_min = signal_min 
+		self.signal_max = signal_max
 		self.canvas.axes.set_xticks([])
 		self.canvas.axes.set_yticks([])
 		self.canvas.show()
 		self.lost_frames = 0
 
+	def set_cmap_lim(self, cmin, cmax):
+		self.cmin = cmin
+		self.cmax = cmax
+
 	def load_canvas_big(self, canvas_big):
 		self.canvas_big = canvas_big
 		self.canvas_big.axes.set_xticks([])
 		self.canvas_big.axes.set_yticks([])
+
+	def load_canvas_hist(self, canvas_hist):
+		self.canvas_hist = canvas_hist
+
+
+		# Define the locations for the axes
+		left, width = 0.12, 0.55
+		bottom, height = 0.12, 0.55
+		bottom_h = left_h = left+width+0.02
+		 
+		# Set up the geometry of the three plots
+		rect_temperature = [left, bottom, width, height] # dimensions of temp plot
+		rect_histx = [left, bottom_h, width, 0.25] # dimensions of x-histogram
+		rect_histy = [left_h, bottom, 0.25, height] # dimensions of y-histogram
+
+		self.hist_image = self.canvas_hist.fig.add_axes(rect_temperature) # temperature plot
+		self.hist_hx = self.canvas_hist.fig.add_axes(rect_histx) # x histogram
+		self.hist_hy = self.canvas_hist.fig.add_axes(rect_histy) # y histogram
+
+		nullfmt = NullFormatter()
+		self.hist_hx.xaxis.set_major_formatter(nullfmt)
+		self.hist_hy.yaxis.set_major_formatter(nullfmt)
+
+		aux_all_axes = [self.hist_image, self.hist_hx, self.hist_hy]
+		[axis.set_xticks([]) for axis in aux_all_axes]
+		[axis.set_yticks([]) for axis in aux_all_axes]
+
+
+
+
 
 	def run(self):
 		self.lineEdit_LostFrames.setText(str(self.lost_frames))
@@ -82,22 +122,53 @@ class PlottingThread(QtCore.QThread):
 
 	def plot(self):
 		if not self.data_queue.empty():
+			# Gets data
 			data = self.data_queue.get()
+			self.signal_min.setText(str(np.min(data)))
+			self.signal_max.setText(str(np.max(data)))
 			while not self.data_queue.empty():
 				dummy = self.data_queue.get()
 				self.lost_frames += 1
 				self.lineEdit_LostFrames.setText(str(self.lost_frames))
+
+			# Plots in the main app window
 			if not hasattr(self, "image"):
 				self.image = self.canvas.axes.imshow(data, cmap='gray')
-				if not self.canvas_big is None:
-					self.image_big = self.canvas_big.axes.imshow(data, cmap='gray')
 			else:
 				self.image.set_data(data)
-				if not self.canvas_big is None:
+				self.image.set_clim([self.cmin, self.cmax])			
+
+			# plots in the big undocked window
+			if not self.canvas_big is None:
+				if not hasattr(self, "image_big"):
+					self.image_big = self.canvas_big.axes.imshow(data, cmap='gray')
+				else:
 					self.image_big.set_data(data)
+					self.image_big.set_clim([self.cmin, self.cmax])
+			
+			# plots in the histogram undocked window
+			if not self.canvas_hist is None:
+				if not hasattr(self, "image_hist_main"):
+					self.image_hist_main = self.hist_image.imshow(data, cmap='gray')
+					self.image_hist_x, = self.hist_hx.plot(np.sum(data, 0), color=(1.0,0.50,0.50), linewidth=0.5)
+					self.image_hist_y, = self.hist_hy.plot(np.flip(np.sum(data, 1)), np.arange(data.shape[0]), color=(1.0,0.50,0.50), linewidth=0.5)
+				else:
+					self.image_hist_main.set_data(data)
+					self.image_hist_main.set_clim([self.cmin, self.cmax])
+					self.image_hist_x.set_ydata(np.sum(data, 0))
+					self.hist_hx.relim()
+					self.hist_hx.autoscale_view()
+					self.image_hist_y.set_xdata(np.flip(np.sum(data, 1)))
+					self.hist_hy.relim()
+					self.hist_hy.autoscale_view()
+
+
+			# Updates all plots
 			self.canvas.draw()
 			if not self.canvas_big is None:
 				self.canvas_big.draw()
+			if not self.canvas_hist is None:
+				self.canvas_hist.draw()
 
 
 
@@ -196,7 +267,12 @@ class EMCCD_frontend(Ui_MainWindow):
 		self.canvas = MplCanvas(self, width=8, height=8, dpi=200)
 		self.verticalLayout_CameraAcquisition.addWidget(self.canvas)
 		self.data_queue = Queue()
-		self.plotting_thread = PlottingThread(canvas=self.canvas, data_queue=self.data_queue, lineEdit_LostFrames=self.lineEdit_LostFrames)
+		self.plotting_thread = PlottingThread(
+			canvas=self.canvas, 
+			data_queue=self.data_queue, 
+			lineEdit_LostFrames=self.lineEdit_LostFrames,
+			signal_min=self.lineEdit_signal_min,
+			signal_max=self.lineEdit_signal_max)
 		self.plotting_thread.start()
 		self.acquisition_thread = AcquisitionThread(data_queue=self.data_queue, camera=self.camera)
 		self.acquisition_thread.start()
@@ -215,8 +291,11 @@ class EMCCD_frontend(Ui_MainWindow):
 		self.lineEdit_EMCCDGainRange.setText(str(gain_info["lowest gain setting"])+"-"+str(gain_info["highest gain setting"]))
 		self.lineEdit_EMCCDGain.setText(str(1))
 
-
-
+		# GroupBox Plotting
+		self.lineEdit_cmap_min.setText(str(0))
+		self.lineEdit_cmap_max.setText(str(1))
+		self.pushButton_PlottingSet.clicked.connect(self._PlottingSet)
+		self.pushButton_Hist.clicked.connect(self._Hist)
 
 
 	def _Exit_Camera(self):
@@ -318,16 +397,22 @@ class EMCCD_frontend(Ui_MainWindow):
 		self.canvas_big = MplCanvas(self, width=8, height=8, dpi=200)
 		self.camerawindown.gridLayout.addWidget(self.canvas_big)
 		self.plotting_thread.load_canvas_big(canvas_big=self.canvas_big)
-
-
 		self.SecondWindow.show()
 
+	def _PlottingSet(self):
+		cmin = float(self.lineEdit_cmap_min.text())
+		cmax = float(self.lineEdit_cmap_max.text())
+		self.plotting_thread.set_cmap_lim(cmin, cmax)
 
-	
+	def _Hist(self):
+		self.ThirdWindow = QtWidgets.QMainWindow()
+		self.histwindown = Ui_CameraWindow()
+		self.histwindown.setupUi(self.ThirdWindow)
 
-
-
-
+		self.canvas_hist = MplCanvas(self, width=8, height=8, dpi=200, initiate_axis=False)
+		self.histwindown.gridLayout.addWidget(self.canvas_hist)
+		self.plotting_thread.load_canvas_hist(canvas_hist=self.canvas_hist)
+		self.ThirdWindow.show()		
 
 
 
@@ -341,6 +426,7 @@ class EMCCD_frontend(Ui_MainWindow):
 		#self._Temperature()
 		self._Image_Format()
 		self._ReadOut()
+		self._PlottingSet()
 
 
 
