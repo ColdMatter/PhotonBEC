@@ -59,8 +59,8 @@ elif gethostname()=="ph-rnyman2":
 	pbec_prefix = "pbec"
 elif gethostname()=="Potato3":
 	#only works for data that copied to correct part of Temp folder
-        data_root_folder =  "C:\\stuff\\temp\\Imperial_PhotonBEC\\Data\\"
-        control_root_folder = "C:\\stuff\\temp\\Imperial_PhotonBEC\\Control_partial\\"
+	data_root_folder =  "C:\\stuff\\temp\\Imperial_PhotonBEC\\Data\\"
+	control_root_folder = "C:\\stuff\\temp\\Imperial_PhotonBEC\\Control_partial\\"
 	folder_separator="\\"
 	pbec_prefix = "pbec"
 elif gethostname()=="ph-photonbec3":
@@ -163,7 +163,7 @@ def make_timestamp(precision=0):
 	ss = str(100+t.tm_sec)[-2:]
 	l=[YYYY,MM,DD,"_",hh,mm,ss]
 	if precision<0:
-		print "For backwards compatibility, the timestamp will include seconds anyway"
+		print("For backwards compatibility, the timestamp will include seconds anyway")
 	elif precision>0:
 		d = time.time()%1
 		d_str=str(d)[2:2+int(round(precision))]
@@ -249,28 +249,28 @@ def data_files_in_range_single_day(first_ts,last_ts,extension = ".json"):
 	return selected_file_list
 
 def data_files_in_range(first_ts,last_ts,extension=".json"):
-    #Untested if data span more than one month, or year
-    if date_from_timestamp(first_ts)==date_from_timestamp(last_ts):
-    	df= data_files_in_range_single_day(first_ts, last_ts, extension=extension)
-    else:
-	df = []
-	[first_date,last_date] = map(date_from_timestamp,[first_ts,last_ts])
-	#detect all days in range, find all possible data files for each date, within range, etc...
-	#explicitly assumes only one month is relevant
-	month = first_date[:6] #date format YYYYMMDD
-	month_folder = datafolder_from_timestamp(first_ts).rsplit(folder_separator,2)[0]+folder_separator
-	all_dates_in_month = os.listdir(month_folder)
-	selected_dates_in_month = [m for m in all_dates_in_month if (m>=first_date)&(m<=last_date)]
-	for date in selected_dates_in_month:
-	    start_ts=date+"_000000"
-	    end_ts =date+"_235959"
-	    if date==first_date: start_ts = first_ts
-	    if date==last_date: end_ts = last_ts
-	    df+=data_files_in_range_single_day(start_ts, end_ts, extension=extension)
-	#===might be useful in future
-	#year_folder = month_folder.rsplit(folder_separator,2)[0]+folder_separator
-	#all_folder = data_root_folder
-    return df
+	#Untested if data span more than one month, or year
+	if date_from_timestamp(first_ts)==date_from_timestamp(last_ts):
+		df= data_files_in_range_single_day(first_ts, last_ts, extension=extension)
+	else:
+		df = []
+		[first_date,last_date] = map(date_from_timestamp,[first_ts,last_ts])
+		#detect all days in range, find all possible data files for each date, within range, etc...
+		#explicitly assumes only one month is relevant
+		month = first_date[:6] #date format YYYYMMDD
+		month_folder = datafolder_from_timestamp(first_ts).rsplit(folder_separator,2)[0]+folder_separator
+		all_dates_in_month = os.listdir(month_folder)
+		selected_dates_in_month = [m for m in all_dates_in_month if (m>=first_date)&(m<=last_date)]
+		for date in selected_dates_in_month:
+			start_ts=date+"_000000"
+			end_ts =date+"_235959"
+			if date==first_date: start_ts = first_ts
+			if date==last_date: end_ts = last_ts
+			df+=data_files_in_range_single_day(start_ts, end_ts, extension=extension)
+		#===might be useful in future
+		#year_folder = month_folder.rsplit(folder_separator,2)[0]+folder_separator
+		#all_folder = data_root_folder
+	return df
 
 
 def timestamps_in_range(first_ts, last_ts, extension=".json"):
@@ -282,18 +282,18 @@ def timestamp_to_datetime(ts):
     return datetime.datetime.strptime(ts, "%Y%m%d_%H%M%S")
     
 def exclude_timestamps(ts_list, excluded_range):
-    '''
-    Exclude timestamps in ts_list. Extended_range is a tuple with the first
-    and last timestamp to be excluded, or a list of such tuples.
-    '''
-    if not isinstance(excluded_range, list):
-        excluded_range = [excluded_range]
-    result = ts_list
-    for e in excluded_range:
-        first = timestamp_to_datetime(e[0])
-	last = timestamp_to_datetime(e[1])
-	result = [ts for ts in result if first > timestamp_to_datetime(ts) or timestamp_to_datetime(ts) > last]
-    return result
+	'''
+	Exclude timestamps in ts_list. Extended_range is a tuple with the first
+	and last timestamp to be excluded, or a list of such tuples.
+	'''
+	if not isinstance(excluded_range, list):
+		excluded_range = [excluded_range]
+	result = ts_list
+	for e in excluded_range:
+		first = timestamp_to_datetime(e[0])
+		last = timestamp_to_datetime(e[1])
+		result = [ts for ts in result if first > timestamp_to_datetime(ts) or timestamp_to_datetime(ts) > last]
+	return result
 
 def save_image_set(im_list, ts=None, file_end=''):
 	if ts == None:
@@ -409,7 +409,7 @@ class InterferometerFringeData(ExperimentalData):
 		if self.data!=None:
 			save_image_set(self.data, self.ts, self.extension)
 		else:
-			print "pbec_analysis.InterferometerFringeData warning: .data nonexistent, hence not saved"
+			print("pbec_analysis.InterferometerFringeData warning: .data nonexistent, hence not saved")
 	def loadData(self, load_params):
 		self.data = load_image_set(self.ts, self.extension)
 	def copy(self):
@@ -519,10 +519,10 @@ class MetaData():
 		decoded = json.loads(raw_json)
 		self.__dict__.update(decoded)
 	def printMe(self,prefix="\t"):
-		print prefix + "timestamp: "+self.ts
-		print prefix + "parameters: "+str(self.parameters)
-		print prefix + "comments: "+self.comments
-		print prefix + "errors: " + self.errors
+		print(prefix + "timestamp: "+self.ts)
+		print(prefix + "parameters: "+str(self.parameters))
+		print(prefix + "comments: "+self.comments)
+		print(prefix + "errors: " + self.errors)
 
 class ExperimentalDataSet():
 	'''
@@ -618,67 +618,76 @@ def slice_data(xdata, ydata, x_range):
 	return array(zip(*sliced_data))
 
 def smooth(x,window_len=10,window='hanning'):
-    """smooth the data using a window with requested size.
-    
-    This method is based on the convolution of a scaled window with the signal.
-    The signal is prepared by introducing reflected copies of the signal 
-    (with the window size) in both ends so that transient parts are minimized
-    in the begining and end part of the output signal.
-    
-    input:
-        x: the input signal 
-        window_len: the dimension of the smoothing window
-        window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
-            flat window will produce a moving average smoothing.
+	"""smooth the data using a window with requested size.
+	
+	This method is based on the convolution of a scaled window with the signal.
+	The signal is prepared by introducing reflected copies of the signal 
+	(with the window size) in both ends so that transient parts are minimized
+	in the begining and end part of the output signal.
+	
+	input:
+		x: the input signal 
+		window_len: the dimension of the smoothing window
+		window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
+		flat window will produce a moving average smoothing.
 
-    output:
-        the smoothed signal
-        
-    example:
+	output:
+		the smoothed signal
 
-    t=linspace(-2,2,0.1)
-    x=sin(t)+randn(len(t))*0.1
-    y=smooth(x)
-    
-    see also: 
-    
-    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
-    scipy.signal.lfilter
- 
-    TODO: the window parameter could be the window itself if an array instead of a string   
-    """
-    #
-    if x.ndim != 1:
-        raise ValueError, "smooth only accepts 1 dimension arrays."
-    #
-    if x.size < window_len:
-        raise ValueError, "Input vector needs to be bigger than window size."
-    #
-    if window_len<3:
-        return x
-    #
-    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
-    #
-    s=r_[2*x[0]-x[window_len:1:-1],x,2*x[-1]-x[-1:-window_len:-1]]
-    #print(len(s))
-    if window == 'flat': #moving average
-        w=ones(window_len,'d')
-    else:
-        w=eval(window+'(window_len)')
-    #
-    y=convolve(w/w.sum(),s,mode='same')
-    return y[window_len-1:-window_len+1]
+	example:
+
+	t=linspace(-2,2,0.1)
+	x=sin(t)+randn(len(t))*0.1
+
+	see also: 
+
+	numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
+	scipy.signal.lfilter
+
+	TODO: the window parameter could be the window itself if an array instead of a string   
+ 	"""
+
+	#
+	if x.ndim != 1:
+		print("smooth only accepts 1 dimension arrays.")
+		raise ValueError
+	#
+	if x.size < window_len:
+		print("Input vector needs to be bigger than window size.")
+		raise ValueError
+	#
+	if window_len<3:
+		return x
+	#
+	if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+		print("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
+		raise ValueError
+	#
+	s=r_[2*x[0]-x[window_len:1:-1],x,2*x[-1]-x[-1:-window_len:-1]]
+	#print(len(s))
+	if window == 'flat': #moving average
+		w=ones(window_len,'d')
+	else:
+		w=eval(window+'(window_len)')
+	#
+	y=convolve(w/w.sum(),s,mode='same')
+	return y[window_len-1:-window_len+1]
 
 def smooth_nD(x,window_len=10,window='hanning',axis=0):
 	#smooths nD data along one axis only.
 	from scipy.ndimage.filters import convolve
 	#axis argument still in testing
-	if x.ndim > 3: raise ValueError, "smooth only accepts 1,2 or 3 dimensional arrays."
-	if x.size < window_len: raise ValueError, "Input vector needs to be bigger than window size."
-	if window_len<3: return x
+	if x.ndim > 3: 
+		print("smooth only accepts 1,2 or 3 dimensional arrays.")
+		raise ValueError
+	if x.size < window_len:
+		print("Input vector needs to be bigger than window size.")
+		raise ValueError
+	if window_len<3: 
+		return x
 	if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-		raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+		print("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
+		raise ValueError
 
 	if window == 'flat': #moving average
 		w=ones(window_len,'d')
@@ -744,17 +753,17 @@ def LaserOptikMirrorTransmission(interpolated_wavelengths,refractive_index = "10
 	Shifts transmission spectrum with calibration still to come, likewise for "rescale_factor"
 	"refractive_index" argument is only for backwards compatibility
 	"""
-        reflectivity_folder = data_root_folder + folder_separator+ "calibration_data" + folder_separator
-        #reflectivity_folder = "./"
-        reflectivity_filename = "LaserOptik20160129_Theorie_T.DAT"
+	reflectivity_folder = data_root_folder + folder_separator+ "calibration_data" + folder_separator
+	#reflectivity_folder = "./"
+	reflectivity_filename = "LaserOptik20160129_Theorie_T.DAT"
 
-        fname = reflectivity_folder+reflectivity_filename
-        res = csv.reader(open(fname), delimiter='\t')
-        refl_text = [x for x in res][1:] #removes column headings
+	fname = reflectivity_folder+reflectivity_filename
+	res = csv.reader(open(fname), delimiter='\t')
+	refl_text = [x for x in res][1:] #removes column headings
 
-        original_wavelengths = array([float(l[0]) for l in refl_text])
-        original_transmissions = array([float(l[1]) for l in refl_text])
-        original_reflectivities = 1-original_transmissions 
+	original_wavelengths = array([float(l[0]) for l in refl_text])
+	original_transmissions = array([float(l[1]) for l in refl_text])
+	original_reflectivities = 1-original_transmissions 
 	#
 	wavelength_shift = 0
 	if shift_spectrum == "planar": #shift to be measured

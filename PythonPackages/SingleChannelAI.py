@@ -10,7 +10,7 @@ from PyDAQmx.DAQmxTypes import *
 def ErrorHandler(error_number):
 	#Needs improving: out-of-range errors break everything.
 	if error_number not in [0,None]:
-		print "Error number "+str(error_number)+" encountered"
+		print("Error number "+str(error_number)+" encountered")
 
 
 def SingleChannelAI(Npts=1000,rate=1.0e4,device="Dev1",channel="ai0",minval=-10.0,maxval=10.0,terminalConfig="DAQmx_Val_RSE"):

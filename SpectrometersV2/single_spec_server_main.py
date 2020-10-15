@@ -8,7 +8,7 @@
 #>>>cutoff_wavelength = spectrometer_cavity_lock.s.cutoff_wavelength
 
 import sys,__main__
-from PyQt4 import QtGui
+from PyQt5 import QtCore, QtWidgets
 import time
 import numpy as np
 from time import sleep
@@ -34,7 +34,7 @@ import pbec_ipc
 
 
 if __name__=="__main__":
-	qApp = QtGui.QApplication(sys.argv)
+	qApp = QtWidgets.QApplication(sys.argv)
 s = SingleSpectrometer(int_time=10, n_averages=1, continuous_mode_flag=False, external_trigger_flag=False)
 aw = single_spec_server_gui.ApplicationWindow(s)
 # Fills the GUI entries

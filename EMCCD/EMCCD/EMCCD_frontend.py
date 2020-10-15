@@ -100,6 +100,7 @@ class PlottingThread(QtCore.QThread):
 		self.hist_image = self.canvas_hist.fig.add_axes(rect_temperature) # temperature plot
 		self.hist_hx = self.canvas_hist.fig.add_axes(rect_histx) # x histogram
 		self.hist_hy = self.canvas_hist.fig.add_axes(rect_histy) # y histogram
+		self.hist_hy.set_xscale("log")
 
 		nullfmt = NullFormatter()
 		self.hist_hx.xaxis.set_major_formatter(nullfmt)

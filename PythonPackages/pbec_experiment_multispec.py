@@ -6,15 +6,15 @@ from pylab import *
 import pbec_analysis
 import sys, time, traceback
 import numpy
-from scipy.misc import imsave
+#from scipy.misc import imsave
 
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"camera")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"multispectrometer")
 #sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"spectrometer")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"PythonPackages")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"thorlabsapt")
-import pyflycap
-import pyspectro
+#import pyflycap
+#import pyspectro
 dllDirectory = pbec_analysis.control_root_folder + "\\multispectrometer\\"
 #pyspectro.setupdll(dllDirectory,0)
 import SingleChannelAO, SingleChannelAI, LaserQuantum
@@ -58,7 +58,7 @@ class Spectrometer(object):
 		#dllDirectory = "Y:\\Control\\spectrometer_Ben_Learning_20170330\\"
 		#print "dllDirectory is" + str(dllDirectory)
 		if self.open:
-			print "already open"
+			print("already open")
 			pass #ADDED 28/8/14 by RAN
 			#raise IOError("spectrometer is already setup")
 		
@@ -86,7 +86,7 @@ class Spectrometer(object):
 			pRange = (0, self.pixelCount - 1)
 			if lamb_range != None:
 				pRange = getLambdaRange(self.lamb, lamb_range[0], lamb_range[1])
-			print "Parameters for setupavs2 are: ",pRange, intTime, nAverage, nMeasure, self.handle
+			print("Parameters for setupavs2 are: ",pRange, intTime, nAverage, nMeasure, self.handle)
 			pyspectro.setupavs2(pRange, intTime, nAverage, nMeasure, self.handle)
 			self.spectrum = numpy.array([0.1] * (pRange[1] - pRange[0]+1))
 		except Exception as e:
@@ -127,6 +127,8 @@ CAMERA_PROPERTY_TYPE_MAPPING = {"brightness": 0, "auto_exposure": 1, "sharpness"
 	"hue": 4, "saturation": 5, "gamma": 6, "iris": 7, "focus": 8, "zoom": 9, "pan": 10, "tilt": 11,
 	"shutter": 12, "gain": 13, "trigger_mode": 14, "trigger_delay": 15, "frame_rate": 16, "temperature": 17}
 
+
+
 class __Camera(object):
 
 	open = False
@@ -162,23 +164,23 @@ class __Camera(object):
 	def get_image(self, verbose = False):
 		self.__check_is_open()
 		try:
-			if verbose: print "_Camera.get_image: calling getflycapimage"
+			if verbose: print("_Camera.get_image: calling getflycapimage")
 			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage(self.handle)
-			if verbose: print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
+			if verbose: print('cam getimage = ' + str((dataLen, row, col, bitsPerPixel)))
 			calcedDataLen = row*col*bitsPerPixel/8 #for some reason, this does not always equal dataLen
 			if (self.imageData == None) or len(self.imageData) != calcedDataLen:
 				self.imageData = numpy.arange(calcedDataLen, dtype=numpy.uint8)
 				#print("rebuilding imageData handle=" + str(self.handle) +
 				#	", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
-			if verbose: print "_Camera.get_image: calling getflycapdata"
+			if verbose: print("_Camera.get_image: calling getflycapdata")
 			pyflycap.getflycapdata(self.handle, self.imageData)
-			if verbose: print "_Camera.get_image: getflycapimage returned"
+			if verbose: print("_Camera.get_image: getflycapimage returned")
 			return numpy.reshape(self.imageData, (row, col, 3))
 			#from scipy.misc import imsave
 			#imsave("image.png", im)
 		except Exception as exc:
 			self.close()
-			if verbose: print "get_image(): " + repr(exc)
+			if verbose: print("get_image(): " + repr(exc))
 			self.error = exc 
 			#raise exc #do not raise exceptions, just record the error and carry on blithely
 			import traceback
@@ -195,21 +197,21 @@ class __Camera(object):
 		pyflycap.firesoftwaretrigger(self.handle)
 	
 	def get_image_now(self, verbose=False):
-		'''
-		use the software trigger to get an image right now
-		for repeated calls its best to use settriggermode() at the start, call get_image() many times
-		and then use settriggermode() again to get it back to the same state
-		'''
-		if verbose: print "setting trigger mode...",
+		
+		#use the software trigger to get an image right now
+		#for repeated calls its best to use settriggermode() at the start, call get_image() many times
+		#and then use settriggermode() again to get it back to the same state
+		
+		if verbose: print("setting trigger mode..."),
 		self.set_trigger_mode(True, True)
-		if verbose: print "waiting for trigger ready...",
+		if verbose: print("waiting for trigger ready..."),
 		self.wait_for_trigger_ready()
-		if verbose: print "setting trigger mode...",
+		if verbose: print("setting trigger mode..."),
 		self.fire_software_trigger()
-		if verbose: print "getting image...",
+		if verbose: print("getting image..."),
 		#self.wait_for_trigger_ready() #11/5/2015: returns when camera is ready for a new trigger, i.e. has data in buffer.
 		im = self.get_image(verbose = verbose)
-		if verbose: print "re-setting trigger mode"
+		if verbose: print("re-setting trigger mode")
 		self.set_trigger_mode(False, True)#reset trigger back to normal
 		return im
 
@@ -336,6 +338,10 @@ def getCameraByLabel(label):
 	if label != None:
 		number = serialNumber_cameraLabel_map[label.lower()]
 	return __Camera(number)
+
+
+
+
 		
 #---------------------------------
 #SOME USEFUL FUNCTIONS
@@ -375,7 +381,7 @@ def get_multiple_images(cameraLabel, nImage=1):
 	c = getCameraByLabel(cameraLabel)
 	c.setup()
 	im_list = []
-	if nImage>3: print "Strongly advised against: too many images in memory"
+	if nImage>3: print("Strongly advised against: too many images in memory")
 	for i in range(nImage):
 		im_list.append(c.get_image())
 	c.close()

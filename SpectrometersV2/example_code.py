@@ -23,7 +23,7 @@ set_spectrometer_mode(mode='internal', port=spectrometer_server_port, host=spect
 
 
 ##### Sets the external trigger
-set_spectrometer_external_trigger(external_trigger=True, port=spectrometer_server_port, host=spectrometer_server_host)
+set_spectrometer_external_trigger(external_trigger=False, port=spectrometer_server_port, host=spectrometer_server_host)
 
 
 '''
@@ -37,16 +37,16 @@ print("Number of averages set to {0}".format(grabbed_n_averages))
 '''
 
 
-'''
+
 ##### Grabs some data
-spectrum_time_label, spectrum_new_data_flag, lamb, spectrum = get_spectrum_measure(int_time=0.2, n_averages=1, n_measures=1000, port=spectrometer_server_port, host=spectrometer_server_host)
+spectrum_time_label, spectrum_new_data_flag, lamb, spectrum = get_spectrum_measure(int_time=1.2, n_averages=1, n_measures=10, port=spectrometer_server_port, host=spectrometer_server_host)
 plt.plot(lamb, spectrum)
 plt.yscale('log')
 plt.xlabel("Wavelength (nm)", fontsize=9)
 plt.ylabel("Spectrum", fontsize=9)
-plt.xlim(540, 600)
+#plt.xlim(540, 600)
 #plt.ylim(1, 40000)
 plt.show()
-'''
+
 
 

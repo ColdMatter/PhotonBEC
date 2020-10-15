@@ -47,6 +47,8 @@ IPC_SERVER_HANDSHAKE_ACK = 'starting'
 assert len(IPC_BIN_CLIENT_GREETING) == len(IPC_TEXT_CLIENT_GREETING)
 	
 SOCK_RECV_BUFFER_SIZE = 4096
+
+encoding = 'latin-1'
 	
 #SOME NOTES ON THE PROTOCOL
 #the binary protocol works by first sending four bytes which make up an integer
@@ -58,7 +60,7 @@ SOCK_RECV_BUFFER_SIZE = 4096
 	
 def sock_ipc_send(using_bin, sock, sock_fd, msg):
 	if using_bin:
-		buf = struct.pack('>I', len(msg)) + msg.encode()
+		buf = struct.pack('>I', len(msg)) + msg.encode(encoding=encoding)
 		verbose('sending bin line ' + str(buf))
 		sock.sendall(buf)
 	else:
@@ -68,19 +70,14 @@ def sock_ipc_recv(using_bin, sock, sock_fd):
 	if using_bin:
 		data = sock.recv(SOCK_RECV_BUFFER_SIZE)
 		verbose("just received socket data")
-		#
-		#
-		#
-		#
-		data = data.decode()
-
-
+		length = struct.unpack(">I", data[:4])[0]	
+		data = data.decode(encoding=encoding)
 
 		if data == None or data == '':
 			verbose("raising EOF exception")
 			raise EOFError()
 		assert len(data) >= 4 #TODO recover from this case instead of bailing out
-		length = struct.unpack(">I", data[:4].encode())[0]
+		
 		verbose('len(data)=%d length=%d' % (len(data), length))
 		if len(data) - 4 == length:
 			verbose('ipc_recv returned immediately')
@@ -92,7 +89,7 @@ def sock_ipc_recv(using_bin, sock, sock_fd):
 			if dd == None or dd == '':
 				raise EOFError()
 			i += len(dd)
-			result.append(dd)
+			result.append(dd.decode(encoding=encoding))
 		verbose('returning = ' + repr(result))
 		return "".join(result)[4:]
 	else:
@@ -138,8 +135,8 @@ class IPCServer(threading.Thread):
 			verbose('accepted')
 
 			try:
-				client_sock.sendall(IPC_SERVER_HANDSHAKE.encode())
-				handshake = client_sock.recv(len(IPC_BIN_CLIENT_GREETING)).decode()
+				client_sock.sendall(IPC_SERVER_HANDSHAKE.encode(encoding=encoding))
+				handshake = client_sock.recv(len(IPC_BIN_CLIENT_GREETING)).decode(encoding=encoding)
 				if handshake == None or handshake == '':
 					raise EOFError()
 				if handshake.rstrip() == IPC_BIN_CLIENT_GREETING.rstrip():
@@ -208,7 +205,7 @@ def socket_connect(port = DEFAULT_PORT, host = 'localhost'):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((host, port))
 	sock.recv(len(IPC_SERVER_HANDSHAKE)) #throw away the handshake
-	sock.sendall(IPC_BIN_CLIENT_GREETING.encode())
+	sock.sendall(IPC_BIN_CLIENT_GREETING.encode(encoding=encoding))
 	ack = sock_ipc_recv(True, sock, None)
 	if ack != IPC_SERVER_HANDSHAKE_ACK:
 		sock.close()
@@ -275,8 +272,12 @@ def ipc_get_array(arr_name,port = 'cavity_lock',host='localhost'):
 	import pickle
 	ipc_exec('import pickle',port=port,host=host)
 	arr_local_p = ipc_eval('pickle.dumps('+arr_name+')',port=port,host=host)
-	arr_local_p = arr_local_p.decode('string_escape')
-	arr_local_p = arr_local_p[1:-1]
+
+	#arr_local_p = arr_local_p.decode('string_escape') # python2 ??
+	#arr_local_p = arr_local_p[1:-1]
+	import ast
+	arr_local_p = ast.literal_eval(arr_local_p)
+
 	return pickle.loads(arr_local_p)
 
 '''
