@@ -1,3 +1,10 @@
+'''
+	Written by:		Joao Rodrigues
+	Last Update: 	October 16th 2020
+
+'''
+
+
 import sys
 from socket import gethostname
 if gethostname()=="ph-rnyman-01":

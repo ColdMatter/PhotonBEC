@@ -1,4 +1,8 @@
-#ipython --matplotlib=qt
+'''
+	Written by:		Joao Rodrigues
+	Last Update: 	October 16th 2020
+
+'''
 
 import sys, os, random
 from PyQt5 import QtCore, QtWidgets

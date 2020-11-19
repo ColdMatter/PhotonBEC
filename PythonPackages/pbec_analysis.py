@@ -384,8 +384,39 @@ class CameraData(ExperimentalData):
 		return d
 
 
-class TektronixScopeData(ExperimentalData):
+class EMCCDAndorData(ExperimentalData):
+	'''
+		Written by:		Joao Rodrigues
+		Last Update:	October 16th 2020
 
+		Data Class for Andor EMCCD camera
+	'''
+	
+	def __init__(self, ts, extension='_EMCCD.json'):
+		ExperimentalData.__init__(self, ts, extension=extension)
+		self.data = list()
+		self.n = 0
+
+	def add_image_data(self, image):
+		self.data.append(image)
+		self.n += 1
+
+	def saveData(self):
+		filename = self.getFileName(make_folder=True)
+		js = json.dumps({"data": np.array(self.data).tolist()}, indent=4)
+		fil = open(filename, "w")
+		fil.write(js)
+		fil.close()	
+
+	def loadData(self, load_params=None):
+		filename = self.getFileName()
+		fil = open(filename, "r")
+		raw_json = fil.read()
+		fil.close()
+		self.data = np.array(json.loads(raw_json)['data'])
+
+
+class TektronixScopeData(ExperimentalData):
 	'''
 		
 		Written by  : Joao Rodrigues
@@ -1131,12 +1162,12 @@ class ExperimentalDataSet():
 		for data in self.dataset.values():
 			data.saveData()
 		#
-		self.meta.dataset=dict([(k,(v.__class__.__name__,v.extension)) for k,v in self.dataset.iteritems()])
+		self.meta.dataset=dict([(k,(v.__class__.__name__,v.extension)) for k,v in iter(self.dataset.items())])
 		self.meta.save()
 	def constructDataSet(self):
 		#does not load actual data, only contructs ExperimentalData objects, ready for loading
 		self.meta.load()
-		for (data_name,(data_class, extension)) in self.meta.dataset.iteritems():
+		for (data_name,(data_class, extension)) in iter(self.meta.dataset.items()):
 			self.dataset[data_name]=eval(data_class+"('"+self.ts+"', extension ='"+extension+"')")
 	def loadAllData(self, load_params=None):
 		#Should really try...except...finally

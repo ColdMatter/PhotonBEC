@@ -1,3 +1,9 @@
+'''
+	Written by:		Joao Rodrigues
+	Last Update: 	October 16th 2020
+
+'''
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import copy
@@ -5,6 +11,7 @@ import numpy as np
 from matplotlib.ticker import NullFormatter
 from functools import partial
 import time
+from datetime import datetime
 import matplotlib
 matplotlib.use('Qt5Agg')
 from PyQt5 import QtCore, QtWidgets
@@ -39,8 +46,8 @@ class AcquisitionThread(QtCore.QThread):
 		while self.RUNNING:
 			while self.ACQUIRING:
 				self.acquisition()
-				time.sleep(0.01)
-			time.sleep(0.1)
+				time.sleep(0.001)
+			time.sleep(0.01)
 			
 	def acquisition(self):
 		FLAG, message, info = self.camera.GetStatus(VERBOSE=False)
@@ -51,7 +58,7 @@ class AcquisitionThread(QtCore.QThread):
 			if type(image)==np.ndarray:
 				#image = image - np.min(image)
 				#image = image / np.max(image)
-				image = np.flip(np.transpose(image), axis=0)
+				image = np.flip(image, axis=0)
 				self.data_queue.put(image)
 			
 
@@ -72,7 +79,17 @@ class PlottingThread(QtCore.QThread):
 		self.canvas.axes.set_xticks([])
 		self.canvas.axes.set_yticks([])
 		self.canvas.show()
+		self.image = self.canvas.axes.imshow(np.zeros([512,512]), cmap='gray')
 		self.lost_frames = 0
+
+	def get_timestamp(self):
+		now = datetime.now()
+		timestamp = ''.join([str(element) for element in [now.year, now.month, now.day, '_', now.hour, now.minute, now.second]]) 
+		return timestamp
+
+	def save_plot(self):
+		filename = 'EMCCD'+self.get_timestamp()+'.png'
+		self.canvas.fig.savefig(filename)
 
 	def set_cmap_lim(self, cmin, cmax):
 		self.cmin = cmin
@@ -82,6 +99,7 @@ class PlottingThread(QtCore.QThread):
 		self.canvas_big = canvas_big
 		self.canvas_big.axes.set_xticks([])
 		self.canvas_big.axes.set_yticks([])
+		self.image_big = self.canvas_big.axes.imshow(np.zeros([512,512]), cmap='gray')
 
 	def load_canvas_hist(self, canvas_hist):
 		self.canvas_hist = canvas_hist
@@ -111,9 +129,6 @@ class PlottingThread(QtCore.QThread):
 		[axis.set_yticks([]) for axis in aux_all_axes]
 
 
-
-
-
 	def run(self):
 		self.lineEdit_LostFrames.setText(str(self.lost_frames))
 		while self.RUNNING:
@@ -133,19 +148,13 @@ class PlottingThread(QtCore.QThread):
 				self.lineEdit_LostFrames.setText(str(self.lost_frames))
 
 			# Plots in the main app window
-			if not hasattr(self, "image"):
-				self.image = self.canvas.axes.imshow(data, cmap='gray')
-			else:
-				self.image.set_data(data)
-				self.image.set_clim([self.cmin, self.cmax])			
+			self.image.set_data(data)
+			self.image.set_clim([self.cmin, self.cmax])			
 
 			# plots in the big undocked window
 			if not self.canvas_big is None:
-				if not hasattr(self, "image_big"):
-					self.image_big = self.canvas_big.axes.imshow(data, cmap='gray')
-				else:
-					self.image_big.set_data(data)
-					self.image_big.set_clim([self.cmin, self.cmax])
+				self.image_big.set_data(data)
+				self.image_big.set_clim([self.cmin, self.cmax])
 			
 			# plots in the histogram undocked window
 			if not self.canvas_hist is None:
@@ -162,7 +171,6 @@ class PlottingThread(QtCore.QThread):
 					self.image_hist_y.set_xdata(np.flip(np.sum(data, 1)))
 					self.hist_hy.relim()
 					self.hist_hy.autoscale_view()
-
 
 			# Updates all plots
 			self.canvas.draw()
@@ -297,6 +305,7 @@ class EMCCD_frontend(Ui_MainWindow):
 		self.lineEdit_cmap_max.setText(str(1))
 		self.pushButton_PlottingSet.clicked.connect(self._PlottingSet)
 		self.pushButton_Hist.clicked.connect(self._Hist)
+		self.pushButton_SavePlot.clicked.connect(self._SavePlot)
 
 
 	def _Exit_Camera(self):
@@ -413,7 +422,11 @@ class EMCCD_frontend(Ui_MainWindow):
 		self.canvas_hist = MplCanvas(self, width=8, height=8, dpi=200, initiate_axis=False)
 		self.histwindown.gridLayout.addWidget(self.canvas_hist)
 		self.plotting_thread.load_canvas_hist(canvas_hist=self.canvas_hist)
-		self.ThirdWindow.show()		
+		self.ThirdWindow.show()	
+
+	def _SavePlot(self):
+		self.plotting_thread.save_plot()
+
 
 
 

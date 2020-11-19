@@ -2,7 +2,7 @@
 
 #ipython
 #exec(open("agilent33521A.py").read())
-import visa
+import pyvisa as visa
 import socket
 hostname = socket.gethostname()
 default_AFG_name="USB0::0x0957::0x1607::MY50003870"
@@ -42,12 +42,12 @@ class AgilentFunctionGenerator():
 		#USB_name = USB_name
 		#self.agilent = visa.instrument(USB_name)
 		if hostname.lower() in ["ph-rnyman2","ph-photonbec2","ph-photonbec3","ph-photonbec5"]:
-                    #For installations with pyvisa version >=? 1.5
-                    rm = visa.ResourceManager(backend) #Use pyvisa-py backend
-                    self.agilent = rm.open_resource(AFG_name)
-                else:
-                    #For installations with pyvisa versionn <1.5
-                    self.agilent = visa.instrument(AFG_name)
+			#For installations with pyvisa version >=? 1.5
+			rm = visa.ResourceManager(backend) #Use pyvisa-py backend
+			self.agilent = rm.open_resource(AFG_name)
+		else:
+			#For installations with pyvisa versionn <1.5
+			self.agilent = visa.instrument(AFG_name)
 
 	def writeCommand(self,s):
 		self.agilent.write(s+line_end)

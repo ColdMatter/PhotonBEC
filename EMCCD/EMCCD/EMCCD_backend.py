@@ -1,3 +1,10 @@
+'''
+	Written by:		Joao Rodrigues
+	Last Update: 	October 16th 2020
+
+'''
+
+
 import numpy as np
 import copy
 import ctypes
@@ -869,7 +876,7 @@ class EMCCD():
 				SUCCESS = True
 				array = np.array([value for value in array])
 				image = np.reshape(array, (self.image_format["x"], self.image_format["y"]))
-				image = np.flip(np.flip(image,0),1)
+				image = np.transpose(np.flip(image,1))
 			else:
 				SUCCESS = False
 				image = None

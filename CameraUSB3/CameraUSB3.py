@@ -19,7 +19,7 @@ import time
 
 class CameraUSB3():
 
-	lab_cameras = {'blackfly_minisetup': '19128822', 'blackfly_semiconductor_cavity': '17458446'}
+	lab_cameras = {'blackfly_minisetup': '19128822', 'blackfly_semiconductor_cavity': '17458446', 'blackfly_semiconductor_cavity_lock': '19441065'}
 
 	def __init__(self, verbose=True, camera_id=None, timeout=1000, acquisition_mode='single frame'):
 
@@ -36,6 +36,7 @@ class CameraUSB3():
 		self.timeout = timeout
 		self.cam_system = PySpin.System.GetInstance()
 		self.cam_list = self.cam_system.GetCameras()
+
 		num_cameras = self.cam_list.GetSize()
 		self.acquisition_mode = acquisition_mode
 		self.camera_running = None

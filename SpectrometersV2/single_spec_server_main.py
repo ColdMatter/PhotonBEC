@@ -1,11 +1,8 @@
-#Commands to run:
-#ipython --gui=qt4
-#>>>import sys
-#>>>sys.path.append("D:\Control\learning\SpectrometerCavityLock")
-#>>>import spectrometer_cavity_lock
-#>>>spectrometer_cavity_lock.setSetPoint(<value>)
-#>>>spectrometer_cavity_lock.s.start_acquisition()
-#>>>cutoff_wavelength = spectrometer_cavity_lock.s.cutoff_wavelength
+'''
+	Written by:		Joao Rodrigues
+	Last Update: 	October 16th 2020
+
+'''
 
 import sys,__main__
 from PyQt5 import QtCore, QtWidgets

@@ -1,3 +1,9 @@
+'''
+	Written by:		Joao Rodrigues
+	Last Update: 	October 16th 2020
+
+'''
+
 import time
 import matplotlib.pyplot as plt
 
@@ -16,7 +22,7 @@ FLAG, message = camera.SetOutputAmplifier(mode="CCD")
 FLAG, message = camera.SetReadMode(mode="image")
 FLAG, message = camera.SetShutter(typ=1, mode='permanently open', closingtime=0, openingtime=0)
 FLAG, message = camera.SetTriggerMode(mode="internal")
-FLAG, message = camera.SetImage(hbin=1, vbin=1, hstart=1, hend=camera.xpixels, vstart=1, vend=camera.ypixels)
+FLAG, message = camera.SetImage(hbin=1, vbin=1, hstart=400, hend=camera.xpixels, vstart=1, vend=camera.ypixels)
 
 
 FLAG, message = camera.SetEMAdvanced(True)
