@@ -14,7 +14,7 @@ import numpy as np
 
 sys.path.append("D:\\Control\\PythonPackages\\")
 import pbec_ipc
-from pbec_analysis import make_timestamp
+
 
 ######### Parameters
 piezo_port = pbec_ipc.PORT_NUMBERS["piezo_controller"]

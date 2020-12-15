@@ -20,3 +20,4 @@ else:
 	raise Exception('Unknown machine')
 
 SingleChannelAO.SetAO0(0.8, device=device)
+

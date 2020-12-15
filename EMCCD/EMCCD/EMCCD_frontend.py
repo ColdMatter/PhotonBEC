@@ -432,7 +432,12 @@ class EMCCD_frontend(Ui_MainWindow):
 
 	def load_defaults(self):
 		
-		self._Acquisition_Mode(mode="single scan")
+		self._Acquisition_Mode(mode="run till abort")
+		# Vertical read speed
+		#self.comboBox_VerticalShiftSpeed.setText(self.comboBox_VerticalShiftSpeedModes.keys()[1])
+		self.comboBox_VerticalShiftSpeed.setCurrentIndex(3)
+		self._Shutter_Mode()
+		# Other defaults
 		self._Output_Amplifier_Mode(mode="CCD")
 		self._Readout_Mode(mode="image")
 		self._Trigger_Mode(mode="internal")

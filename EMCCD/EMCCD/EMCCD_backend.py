@@ -940,6 +940,8 @@ class EMCCD():
 
 		"""
 
+		self.printout(message="Closing shutter")
+		self.SetShutter(typ=0, mode="permanently closed", closingtime=0, openingtime=0)
 		self.printout(message="Starting shut down procedure")
 		self.SetTemperature(temperature=temperature)
 		self.StabilizeTemperature()

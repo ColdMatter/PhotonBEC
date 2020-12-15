@@ -22,7 +22,7 @@ from fringes_utils import compute_locking_signal
 from CameraUSB3 import CameraUSB3
 
 potential_divider = True
-number_images_for_PCA = 20
+number_images_for_PCA = 10
 led_lambda = 650 # in nm
 
 def set_cavity_length_voltage(v):
@@ -51,8 +51,9 @@ if gethostname()=="ph-photonbec3":
 		default_control_range = (0, 4.5)
 	else:
 		raise Exception("Invalid option for potential divider")
+	
 	def set_cavity_length_voltage(v):
-		SingleChannelAO.SetAO0(v, device="Dev2", minval=default_control_range[0],maxval=default_control_range[1])
+		SingleChannelAO.SetAO1(v, device="Dev2", minval=default_control_range[0],maxval=default_control_range[1])
 		#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
 
 else:
@@ -112,7 +113,7 @@ class _StabiliserThread(threading.Thread):
 							images_centered.append(images_flattened[i,:] - images_mean)
 						images_centered = np.array(images_centered)
 						# Calculates main pca component
-						pca = PCA(n_components=1)
+						pca = PCA(n_components=1, tol=1e-3)
 						print("Fitting PCA")
 						pca.fit(images_centered)
 						print("PCA successfully fitted")
@@ -122,7 +123,7 @@ class _StabiliserThread(threading.Thread):
 						main_pca_component = np.squeeze(pca_components_flattened[0,:])
 						pca_components_2D = np.reshape(pca_components_flattened, [pca_components_flattened.shape[0], images_shape[1], images_shape[2]])
 						# Checks monotomy of the pca projections
-						print("Renormaling projections")
+						print("Renormalizing projections")
 						projections = list()
 						for i in range(0, images_centered.shape[0]):
 							projections.append(np.dot(images_centered[i,:], main_pca_component))
