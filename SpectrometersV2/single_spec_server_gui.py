@@ -61,9 +61,6 @@ class EmbeddedLatestSpectrumGraph(FigureCanvas):
 		self.compute_initial_figure()
 		
 		self.timer = QtCore.QTimer(self)
-		#
-		# this line would work on pyqt4
-		#QtCore.QObject.connect(self.timer, QtCore.SIGNAL("timeout()"), self.update_figure)
 		self.timer.timeout.connect(self.update_figure)
 		self.timer.start(self.update_time) # in ms
 

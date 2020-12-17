@@ -10,16 +10,15 @@
 #Lock fails when blocking calls are run, although time.sleep() seems not to cause too many problems.
 
 
-import sys,__main__
-from PyQt4 import QtGui
+import sys
+from PyQt5 import QtCore, QtWidgets
 import time
 import numpy as np
 import socket
-#sys.path.append("Y:\\Control\\PythonPackages\\")
-#sys.path.append("Y:\\Control\\CavityLock\\")
+
 if socket.gethostname() == 'ph-photonbec3':
-	sys.path.append("Y:\\Control\\PythonPackages\\")
-	sys.path.append("Y:\\Control\CavityLock")
+	sys.path.append(r"Y:\\Control\\PythonPackages\\")
+	sys.path.append(r"Y:\\Control\CavityLock_minisetup")
 else:
 	raise Exception("Unknown machine")
 
@@ -28,17 +27,17 @@ from stabiliser_class import Stabiliser
 import pbec_ipc
 
 if __name__=="__main__":
-	qApp = QtGui.QApplication(sys.argv)
+	qApp = QtWidgets.QApplication(sys.argv)
 
 s = Stabiliser() #The object that does the control
 aw = cavity_lock_gui.ApplicationWindow(s) #The main application GUI window. Knows about the stabiliser object.
 
 def _setValueChangedByText():
-    try:
+	try:
 		newValue = float((aw.setText.text()))
-    except:
+	except:
 		pass
-    else:
+	else:
 		aw.setLCD.display(newValue)
 		s.set_point = newValue
 		s.pic.set_point = newValue
@@ -103,55 +102,55 @@ aw.save_buffer_button.pressed.connect(_save_buffer_button_pressed)
 
 
 def _setPGainChangedByText():
-    try:
+	try:
 		newValue = float(aw.set_Pgain.text())
-    except:
+	except:
 		pass
-    else:
+	else:
 		s.pic.P_gain = newValue #not working...
 		aw.Pgain_text.setText(str(s.pic.P_gain))
 aw.set_Pgain.returnPressed.connect(_setPGainChangedByText)
 
 
 def _setIGainChangedByText():
-    try:
+	try:
 		newValue = float(aw.set_Igain.text())
-    except:
+	except:
 		pass
-    else:
+	else:
 		s.pic.I_gain = newValue #not working...
 		aw.Igain_text.setText(str(s.pic.I_gain))
 aw.set_Igain.returnPressed.connect(_setIGainChangedByText)
 
 
 def _setIIGainChangedByText():
-    try:
+	try:
 		newValue = float(aw.set_IIgain.text())
-    except:
+	except:
 		pass
-    else:
+	else:
 		s.pic.II_gain = newValue #not working...
 		aw.IIgain_text.setText(str(s.pic.II_gain))
 aw.set_IIgain.returnPressed.connect(_setIIGainChangedByText)
 
 
 def _setIConstChangedByText():
-    try:
+	try:
 		newValue = float(aw.set_Iconst.text())
-    except:
+	except:
 		pass
-    else:
+	else:
 		s.pic.I_const = newValue #not working...
 		aw.Iconst_text.setText(str(s.pic.I_const))
 aw.set_Iconst.returnPressed.connect(_setIConstChangedByText)
 
 
 def _setIIConstChangedByText():
-    try:
+	try:
 		newValue = float(aw.set_IIconst.text())
-    except:
+	except:
 		pass
-    else:
+	else:
 		s.pic.II_const = newValue #not working...
 		aw.IIconst_text.setText(str(s.pic.II_const))
 aw.set_IIconst.returnPressed.connect(_setIIConstChangedByText)

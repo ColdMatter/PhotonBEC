@@ -166,5 +166,3 @@ class CameraUSB3():
 		del self.cam
 		self.cam_list.Clear(); 
 		self.cam_system.ReleaseInstance()
-
-

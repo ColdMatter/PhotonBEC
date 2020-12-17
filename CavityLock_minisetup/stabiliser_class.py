@@ -4,7 +4,7 @@ import socket
 if socket.gethostname() == 'ph-photonbec3':
 	sys.path.append("Y:\\Control\\CameraUSB3\\")
 	sys.path.append("Y:\\Control\\PythonPackages\\")
-	sys.path.append("Y:\\Control\CavityLock")
+	sys.path.append("Y:\\Control\CavityLock_minisetup")
 else:
 	raise Exception("Unknown machine")
 
@@ -14,8 +14,8 @@ import pbec_experiment
 import pbec_analysis
 from pi_controller import PI_control
 import threading
-from scipy.misc import imsave
 import traceback
+import matplotlib
 import time
 from sklearn.decomposition import PCA
 from fringes_utils import compute_locking_signal
@@ -133,15 +133,15 @@ class _StabiliserThread(threading.Thread):
 						parent.projections = projections
 						# Saves some useful plots
 						print("Saving some images")
-						imsave('lock_image_first_fringe.jpg', images[0,:,:])
-						imsave('lock_image_last_fringe.jpg', images[-1,:,:])
-						imsave('lock_image_mean.jpg', np.squeeze(np.mean(images[:,:,:], 0)))
-						imsave('lock_image_main_PCA_component.jpg', np.squeeze(pca_components_2D[0,:,:]))
+						matplotlib.image.imsave('lock_image_first_fringe.jpg', images[0,:,:])
+						matplotlib.image.imsave('lock_image_last_fringe.jpg', images[-1,:,:])
+						matplotlib.image.imsave('lock_image_mean.jpg', np.squeeze(np.mean(images[:,:,:], 0)))
+						matplotlib.image.imsave('lock_image_main_PCA_component.jpg',  np.squeeze(pca_components_2D[0,:,:]))
 						print('    Explained variance ratio of first 5 components:')
 						print(pca_explained_variance_ratio)
 						print("PCA Components successfully calculated")
 						parent.initial_analysis = True
-						raw_input("Press Enter to continue...")
+						input("Press Enter to continue...")
 
 					try:
 						time1 = 1000*time.time()
@@ -153,7 +153,7 @@ class _StabiliserThread(threading.Thread):
 							normalization_factor=normalization_factor,
 							current_image=parent.im_raw)
 						time3 = 1000*time.time()
-						locking_rate = int(1000.0/(time3-time1))
+						locking_rate = np.round((1000.0/(time3-time1)),0)
 						print('Current projection value = {}'.format(parent.ring_rad))
 						print('Frame time = {0} ms / Analysis time = {1} ms / Lock rate = {2} Hz'.format(int(time2-time1), int(time3-time2), locking_rate))
 
@@ -161,7 +161,7 @@ class _StabiliserThread(threading.Thread):
 					except Exception as e:
 						traceback.print_exc()
 						self.parent.error_message = e
-						print "Image acquisition error. Re-using previous image"
+						print("Image acquisition error. Re-using previous image")
 						#
 					time.sleep(parent.bandwidth_throttle)
 					#Now update the PI Controller
@@ -176,7 +176,7 @@ class _StabiliserThread(threading.Thread):
 						"Vout":round(parent.Vout,6), "pic value":parent.pic.control_value()}
 					if parent.print_frequency > 0:
 						if len(parent.results) % parent.print_frequency == 0: 
-							print r["ts"], r["Vout"], r["ring_rad"], r["pic value"]
+							print(r["ts"], r["Vout"], r["ring_rad"], r["pic value"])
 					#Now output a voltage from PI_controller
 					if len(parent.results)>5000:
 						parent.results = parent.results[-5000:]
@@ -199,7 +199,7 @@ class Stabiliser():
 		self.channel=0 #red data only
 		self.cam_label = camera_label
 		self.led_lambda = led_lambda
-		print "Cam label = ", self.cam_label
+		print("Cam label = ", self.cam_label)
 		#if gethostname()=="ph-rnyman-01": #altered by Walker 6/5/16 to include mini_setup
 		#	self.control_range = (0,1.0)
 		#elif gethostname()=="ph-photonbec2": #laptop
@@ -238,7 +238,7 @@ class Stabiliser():
 		#
 		#self.cam = pbec_experiment.getCameraByLabel(self.cam_label) #the camera object
 		self.cam = CameraUSB3(verbose=True, camera_id=self.cam_label, timeout=1000, acquisition_mode='continuous')
-		print "Have got the camera"
+		print("Have got the camera")
 		#print self.cam.get_all_properties()
 		direct_gain_factor=1 #if the gain is too high, reduce this.
 		buffer_length=10 #was 200 a while ago...now mostly irrelevant
@@ -291,7 +291,7 @@ class Stabiliser():
 	'''
 
 	def start_acquisition(self):
-		print "Startint camera aquisition"
+		print("Startint camera aquisition")
 		self.cam.begin_acquisition()
 		self.thread.paused=False
 	

@@ -1,6 +1,0 @@
->>>import cProfile
->>>cProfile.run('execfile("spectrometer_cavity_lock.py")',"profile_stats.txt")
-[Now run the acquisition for about 20 seconds]
->>>import pstats
->>>p = pstats.Stats('profile_stats.txt')
->>>p.strip_dirs().sort_stats('cumulative').print_stats(10)

@@ -7,7 +7,7 @@ import socket
 if socket.gethostname() == 'ph-photonbec3':
 	sys.path.append("Y:\\Control\\CameraUSB3\\")
 	sys.path.append("Y:\\Control\\PythonPackages\\")
-	sys.path.append("Y:\\Control\CavityLock")
+	sys.path.append("Y:\\Control\\CavityLock_minisetup")
 from pbec_analysis import *
 import pbec_experiment
 from CameraUSB3 import CameraUSB3
@@ -15,7 +15,8 @@ from CameraUSB3 import CameraUSB3
 ########## Parameters
 ROI_half_size = 150
 camera_label = "blackfly_minisetup"
-calibration = {'pixel size (um)': 3.75, 'objective focal length (mm)': 35, 'camera focal length (mm)': 200}
+calibration = {'pixel size (um)': 3.75, 'objective focal length (mm)': 2, 'camera focal length (mm)': 10}
+print("\n\n***WARING: Please confirm camera calibration is correct ***\n\n")
 
 
 
@@ -30,18 +31,15 @@ centroid_x = np.where(camera_frame == np.amax(camera_frame))[1][0]
 centroid_y = np.where(camera_frame == np.amax(camera_frame))[0][0]
 camera_frame = camera_frame[centroid_y-ROI_half_size:centroid_y+ROI_half_size, centroid_x-ROI_half_size:centroid_x+ROI_half_size]
 camera_frame = camera_frame / np.max(camera_frame)
-#
-#
-#
-#
-#
 pixel_calibration = calibration['pixel size (um)'] / (calibration['camera focal length (mm)'] / calibration['objective focal length (mm)'])
 
 
 
 ########## Fits Gaussian
 
-def twoD_Gaussian((x, y), amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
+def twoD_Gaussian(xy, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
+	x = xy[0]
+	y = xy[1]
 	a = (np.cos(theta)**2)/(2*sigma_x**2) + (np.sin(theta)**2)/(2*sigma_y**2)
 	b = -(np.sin(2*theta))/(4*sigma_x**2) + (np.sin(2*theta))/(4*sigma_y**2)
 	c = (np.sin(theta)**2)/(2*sigma_x**2) + (np.cos(theta)**2)/(2*sigma_y**2)
@@ -69,10 +67,10 @@ ts = make_timestamp()
 ts = ts.split('_')[0]+'\_'+ts.split('_')[1]
 rc('text', usetex=True)
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7, 4))
-ax1.imshow(camera_frame, cmap=plt.cm.jet, origin='bottom', extent=(x.min(), x.max(), y.min(), y.max()))
+ax1.imshow(camera_frame, cmap=plt.cm.jet, origin='lower', extent=(x.min(), x.max(), y.min(), y.max()))
 ax1.set_xlabel('x ($\mu$m)')
 ax1.set_ylabel('y ($\mu$m)')
-ax2.imshow(camera_frame_fitted, cmap=plt.cm.jet, origin='bottom', extent=(x.min(), x.max(), y.min(), y.max()))
+ax2.imshow(camera_frame_fitted, cmap=plt.cm.jet, origin='lower', extent=(x.min(), x.max(), y.min(), y.max()))
 ax2.set_xlabel('x ($\mu$m)')
 fig.suptitle(r'Pump spot size is: $2\sigma_x=$'+str(int(2*np.abs(popt[3])))+'$\mu$m, $2\sigma_y=$'+str(int(2*np.abs(popt[4])))+'$\mu$m, at '+ts)
 fig.tight_layout()

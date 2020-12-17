@@ -4,16 +4,17 @@ from pylab import *
 import pbec_analysis
 import sys, time, traceback
 import numpy
-from scipy.misc import imsave
 
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"camera")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"spectrometer")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"PythonPackages")
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"thorlabsapt")
-import pyflycap
+#import pyflycap
+pyflycap = None # In principle, we won't need pyflycap anymore, but I want to keep the code
 import socket
 if not socket.gethostname() == 'ph-photonbec4':
-	import pyspectro
+	#import pyspectro
+	pyspectro = None # In principle, we won't need pyspectro anymore, but I want to keep the code
 import SingleChannelAO, SingleChannelAI, LaserQuantum
 
 import spectrometer_utils
@@ -45,7 +46,7 @@ class Spectrometer(object):
 		dllDirectory = pbec_analysis.control_root_folder + "\\spectrometer\\"
 		#print "dllDirectory is" + str(dllDirectory)
 		if self.open:
-			print "already open"
+			print("already open")
 			pass #ADDED 28/8/14 by RAN
 			#raise IOError("spectrometer is already setup")
 		try:
@@ -110,10 +111,10 @@ class __Camera(object):
 		self.initial_run = True
 		
 	def setup(self):
-		print "Entering camera setup"
+		print("Entering camera setup")
 		self.error = None
 		dllDirectory = pbec_analysis.control_root_folder + "\\camera\\"
-		print dllDirectory
+		print(dllDirectory)
 		if self.open:
 			#raise IOError("camera is already setup")
 			return self.cam_info
@@ -123,7 +124,7 @@ class __Camera(object):
 			keys = ("handle", "modelName", "vendorName", "sensorInfo",
 				"sensorResolution", "firmwareVersion", "firmwareBuildTime")
 			self.handle = cam_info[0]
-			print "handle = ", self.handle
+			print("handle = ", self.handle)
 			self.cam_info = dict(zip(keys, cam_info))
 			return self.cam_info
 		except Exception as exc:
@@ -171,12 +172,12 @@ class __Camera(object):
 	def get_image(self, verbose = False):
 		self.__check_is_open()
 		try:
-			if verbose: print "_Camera.get_image: calling getflycapimage"
+			if verbose: print("_Camera.get_image: calling getflycapimage")
 			(dataLen, row, col, bitsPerPixel) = pyflycap.getflycapimage(self.handle)
-			if verbose: print 'cam getimage = ' + str((dataLen, row, col, bitsPerPixel))
+			if verbose: print('cam getimage = ' + str((dataLen, row, col, bitsPerPixel)))
 			calcedDataLen = row*col*bitsPerPixel/8 #for some reason, this does not always equal dataLen
 			#if verbose: print 'len of image data = ', len(self.imageData)
-			if verbose: print 'calculated length = ', calcedDataLen
+			if verbose: print('calculated length = ', calcedDataLen)
 			#if (self.imageData == None) or len(self.imageData) != calcedDataLen:
 			# This try except takes most of the entire running time
 			if self.initial_run is True:
@@ -190,15 +191,14 @@ class __Camera(object):
 							", dataLen, row, col, BPP = " + str((dataLen, row, col, bitsPerPixel)))
 					self.initial_run = False
 
-			if verbose: print "_Camera.get_image: calling getflycapdata"
+			if verbose: print("_Camera.get_image: calling getflycapdata")
 			pyflycap.getflycapdata(self.handle, self.imageData)
-			if verbose: print "_Camera.get_image: getflycapimage returned"
+			if verbose: print("_Camera.get_image: getflycapimage returned")
 			return numpy.reshape(self.imageData, (row, col, 3))
-			#from scipy.misc import imsave
-			#imsave("image.png", im)
+
 		except Exception as exc:
 			self.close()
-			if verbose: print "get_image(): " + repr(exc)
+			if verbose: print("get_image(): " + repr(exc))
 			self.error = exc 
 			#raise exc #do not raise exceptions, just record the error and carry on blithely
 			import traceback
@@ -220,16 +220,20 @@ class __Camera(object):
 		for repeated calls its best to use settriggermode() at the start, call get_image() many times
 		and then use settriggermode() again to get it back to the same state
 		'''
-		if verbose: print "setting trigger mode...",
+		if verbose: 
+			print("setting trigger mode...")
 		self.set_trigger_mode(True, True)
-		if verbose: print "waiting for trigger ready...",
+		if verbose: 
+			print("waiting for trigger ready...")
 		self.wait_for_trigger_ready()
-		if verbose: print "setting trigger mode...",
+		if verbose: 
+			print("setting trigger mode...")
 		self.fire_software_trigger()
-		if verbose: print "getting image...",
+		if verbose: print("getting image...")
 		#self.wait_for_trigger_ready() #11/5/2015: returns when camera is ready for a new trigger, i.e. has data in buffer.
 		im = self.get_image(verbose = verbose)
-		if verbose: print "re-setting trigger mode"
+		if verbose: 
+			print("re-setting trigger mode")
 		self.set_trigger_mode(False, True)#reset trigger back to normal
 		return im
 
@@ -399,7 +403,7 @@ def get_multiple_images(cameraLabel, nImage=1):
 	c = getCameraByLabel(cameraLabel)
 	c.setup()
 	im_list = []
-	if nImage>3: print "Strongly advised against: too many images in memory"
+	if nImage>3: print("Strongly advised against: too many images in memory")
 	for i in range(nImage):
 		im_list.append(c.get_image())
 	c.close()

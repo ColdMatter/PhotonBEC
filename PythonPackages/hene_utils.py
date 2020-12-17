@@ -8,7 +8,7 @@ from scipy import optimize
 import operator
 
 #Grabbed from http://stackoverflow.com/questions/21242011/most-efficient-way-to-calculate-radial-profile
-def radial_profile(data, (x0,y0),window_len=1):
+def radial_profile(data, x0, y0, window_len=1):
 	y, x = indices((data.shape)) #make a meshgrid of y and x indices
 	r = sqrt((x - x0)**2 + (y - y0)**2) #find distance from centre for all pixels
 	r = r.astype(int) #convert to integers
@@ -16,13 +16,13 @@ def radial_profile(data, (x0,y0),window_len=1):
 	nr = bincount(r.ravel()) #used for normalisation: otherwise larger radii are overcounted
 	radialprofile = tbin / nr
 	if window_len==1:
-	    rp_smoothed = radialprofile
+		rp_smoothed = radialprofile
 	else:
-	    rp_smoothed = smooth(radialprofile,window_len=window_len)
+		rp_smoothed = smooth(radialprofile,window_len=window_len)
 	return rp_smoothed
 
 #Ring radius is at maximum of smoothed radial profile
-def ring_radius(im,(x0,y0),(dx,dy),channel=0,window_len=1,min_acceptable_radius=11, mean_window=40):
+def ring_radius(im, x0, y0, dx, dy, channel=0, window_len=1, min_acceptable_radius=11, mean_window=40):
 	#Large "mean_window" helps overcome discreteness.
 	subim = im[x0-dx:x0+dx,y0-dy:y0+dy,channel]
 	rp = radial_profile(subim,(dx,dy),window_len=window_len)
@@ -47,7 +47,7 @@ def ring_radius(im,(x0,y0),(dx,dy),channel=0,window_len=1,min_acceptable_radius=
 	#return ring_rad,peak_value,rp
 	return mean_posn,peak_value,rp
 
-def ring_width(im,(x0,y0),(dx,dy),channel=0,window_len=1,peak_window=20):
+def ring_width(im,x0,y0,dx,dy,channel=0,window_len=1,peak_window=20):
 	ring_rad,peak_value,rp = ring_radius(im,(x0,y0),(dx,dy),channel=0,window_len=window_len)
 	max_rad = int(sqrt(dx**2 + dy**2))-1 - peak_window
 	min_rad = peak_window+1
@@ -59,12 +59,12 @@ def ring_width(im,(x0,y0),(dx,dy),channel=0,window_len=1,peak_window=20):
 	width = sum((array(window_indices)-ring_rad)**2 * rp_windowed ) / (len(window_indices)*sum(rp_windowed))
 	return width
 
-def search_for_ring_centre(im,(x0_estimated,y0_estimated), (dx_search,dy_search), (dx_im,dy_im), radial_profile_smooth_len=1,peak_radial_width_window=20):
+def search_for_ring_centre(im,x0_estimated,y0_estimated, dx_search,dy_search, dx_im,dy_im, radial_profile_smooth_len=1,peak_radial_width_window=20):
 	"""
 	Requires a reasonable guess for centre, and a window (2D) in which it is allowed to search
 	"""
-	def cost_function((x0,y0)):
-		val= ring_width(im,(x0,y0),(dx_im,dy_im),channel=0,window_len=radial_profile_smooth_len,peak_window=peak_radial_width_window)
+	def cost_function(x0,y0):
+		val= ring_width(im,x0,y0,dx_im,dy_im,channel=0,window_len=radial_profile_smooth_len,peak_window=peak_radial_width_window)
 		#print x0,y0,val
 		return val
 	#
