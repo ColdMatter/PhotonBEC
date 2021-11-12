@@ -10,7 +10,10 @@ Date: October 2019
 
 '''
 
-import PySpin
+#try:
+#    import PySpin
+#except:
+from pyspin import PySpin #Added 5/11/21 by RN/MF: pyspin is a weird wrapper for PySpin
 import numpy as np 
 import time
 
@@ -19,7 +22,11 @@ import time
 
 class CameraUSB3():
 
-	lab_cameras = {'blackfly_minisetup': '19128822', 'blackfly_semiconductor_cavity': '17458446', 'blackfly_semiconductor_cavity_lock': '19441065'}
+	lab_cameras = {\
+		'blackfly_minisetup': '19128822',\
+		'blackfly_semiconductor_cavity': '17458446',\
+		'blackfly_semiconductor_cavity_lock': '19441065',\
+		'bonus_chameleon': '14110699'} #BEWARE: bonus_chameleon is broken, it seems
 
 	def __init__(self, verbose=True, camera_id=None, timeout=1000, acquisition_mode='single frame'):
 

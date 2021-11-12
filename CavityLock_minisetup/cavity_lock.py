@@ -19,6 +19,9 @@ import socket
 if socket.gethostname() == 'ph-photonbec3':
 	sys.path.append(r"Y:\\Control\\PythonPackages\\")
 	sys.path.append(r"Y:\\Control\CavityLock_minisetup")
+elif socket.gethostname() == 'ph-photonbec5':
+	sys.path.append(r"D:\\Control\\PythonPackages\\")
+	sys.path.append(r"D:\\Control\CavityLock_minisetup")
 else:
 	raise Exception("Unknown machine")
 
@@ -36,7 +39,7 @@ def _setValueChangedByText():
 	try:
 		newValue = float((aw.setText.text()))
 	except:
-		pass
+	     pass
 	else:
 		aw.setLCD.display(newValue)
 		s.set_point = newValue
@@ -192,7 +195,7 @@ def exit_func():
 """
 
 if __name__=="__main__":
-	pbec_ipc.start_server(globals(), port = 47902)
+	pbec_ipc.start_server(globals(), port = 47902) #Better choice: port=pbec_ipc.DEFAULT_PORT
 	sys.exit(qApp.exec_())
 
 #MISSING: when application window is closed, stabiliser thread should also be stopped.

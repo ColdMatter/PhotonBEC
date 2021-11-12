@@ -14,6 +14,9 @@ import socket
 if socket.gethostname() == 'ph-photonbec3':
 	sys.path.append(r"Y:\\Control\\PythonPackages\\")
 	sys.path.append(r"Y:\\Control\CavityLock_minisetup")
+elif socket.gethostname() == 'ph-photonbec5':
+	sys.path.append(r"D:\\Control\\PythonPackages\\")
+	sys.path.append(r"D:\\Control\CavityLock_minisetup")
 else:
 	raise Exception("Unknown machine")
 

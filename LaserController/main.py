@@ -138,7 +138,9 @@ else:
 	ui.enable_checkBox.setCheckState(QtCore.Qt.Unchecked)
 
 	
+print("showing main window.......")
 mw.show()
+print("main window shpuld be visible now")
 
 #---------------------------------
 #FINAL COMMANDS FOR RUNNING IN NON-INTERACTIVE MODE

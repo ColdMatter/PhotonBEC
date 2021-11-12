@@ -1,10 +1,16 @@
 import sys
+sys.path.append("../")
 import socket
+from PythonPackages.pbec_experiment import getCameraByLabel
 
 if socket.gethostname() == 'ph-photonbec3':
 	sys.path.append("Y:\\Control\\CameraUSB3\\")
 	sys.path.append("Y:\\Control\\PythonPackages\\")
 	sys.path.append("Y:\\Control\CavityLock_minisetup")
+elif socket.gethostname() == 'ph-photonbec5':
+	sys.path.append("D:\\Control\\CameraUSB3\\")
+	sys.path.append("D:\\Control\\PythonPackages\\")
+	sys.path.append("D:\\Control\CavityLock_minisetup")
 else:
 	raise Exception("Unknown machine")
 
@@ -21,8 +27,10 @@ from sklearn.decomposition import PCA
 from fringes_utils import compute_locking_signal
 from CameraUSB3 import CameraUSB3
 
+#TODO: import FlyCapture (USB2 cameras)
+
 potential_divider = True
-number_images_for_PCA = 10
+number_images_for_PCA = 20#10
 led_lambda = 650 # in nm
 
 def set_cavity_length_voltage(v):
@@ -55,6 +63,35 @@ if gethostname()=="ph-photonbec3":
 	def set_cavity_length_voltage(v):
 		SingleChannelAO.SetAO1(v, device="Dev2", minval=default_control_range[0],maxval=default_control_range[1])
 		#Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
+
+if gethostname()=="ph-photonbec5":
+    #####camera_label = "bonus_chameleon" #Fails. Needs FlyCap driver not Spinnaker; maybe.
+    camera_label = "blackfly_minisetup"
+    hardwidth = 800
+    hardheight = 800 #image size for flea
+    import SingleChannelAO
+    if potential_divider is True:
+        default_P_gain = -0.005
+        default_I_gain = -1e-4
+        default_I_const = 10
+        default_II_gain = 300 #note sign is always positive: square of sign of I gain
+        default_II_const=1000
+        default_control_range = (0,0.2)
+	#elif potential_divider is False:
+	#	default_P_gain = 0.01
+	#	default_I_gain = 0.035
+	#	default_I_const = 10
+	#	default_II_gain = 400 #note sign is always positive: square of sign of I gain
+	#	default_II_const=1000
+	#	default_control_range = (0, 4.5)
+    else:
+        raise Exception("Invalid option for potential divider")
+
+    def set_cavity_length_voltage(v):
+        SingleChannelAO.SetAO1(v, device="Dev2", minval=default_control_range[0],maxval=default_control_range[1])
+        #Make sure DAQ board as well as the gui display knows about the min/max values to make best use of dynmaic range on output
+
+
 
 else:
 	raise Exception('Unknown machine')
@@ -183,7 +220,10 @@ class _StabiliserThread(threading.Thread):
 					parent.results.append(r)
 
 		finally:
-			cam.end_acquisition()
+			try:
+				cam.end_acquisition()
+			except:
+				end_acquisition(cam)
 			cam.close()
 		print("Finished\n")
 
@@ -239,6 +279,7 @@ class Stabiliser():
 		#self.cam = pbec_experiment.getCameraByLabel(self.cam_label) #the camera object
 		self.cam = CameraUSB3(verbose=True, camera_id=self.cam_label, timeout=1000, acquisition_mode='continuous')
 		print("Have got the camera")
+
 		#print self.cam.get_all_properties()
 		direct_gain_factor=1 #if the gain is too high, reduce this.
 		buffer_length=10 #was 200 a while ago...now mostly irrelevant
@@ -292,7 +333,10 @@ class Stabiliser():
 
 	def start_acquisition(self):
 		print("Startint camera aquisition")
-		self.cam.begin_acquisition()
+		try:
+			self.cam.begin_acquisition()
+		except:
+			begin_acquisition(self.cam)
 		self.thread.paused=False
 	
 	''' Called for USB2 cameras
@@ -305,7 +349,10 @@ class Stabiliser():
 	def stop_acquisition(self):
 		self.thread.paused=True
 		time.sleep(0)#avoid race condition. Should really use mutex
-		self.cam.end_acquisition()
+		try:
+			self.cam.end_acquisition()
+		except:
+			end_acquisition(self.cam)
 		self.cam.close()
 		
 

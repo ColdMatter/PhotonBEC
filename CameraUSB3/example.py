@@ -5,8 +5,9 @@ import time
 import numpy as np
 from scipy.misc import imsave
 
-camera_id = 'blackfly_minisetup'
+#camera_id = 'blackfly_minisetup'
 
+camera_id = 'bonus_chameleon'
 
 
 

@@ -1,8 +1,11 @@
 #modified by LZ to pass dll directory in setup functions for spectrometer and camera
 
 from pylab import *
-import pbec_analysis
 import sys, time, traceback
+try:
+	import pbec_analysis
+except:
+	import PythonPackages.pbec_analysis as pbec_analysis
 import numpy
 
 sys.path.append(pbec_analysis.control_root_folder + pbec_analysis.folder_separator+"camera")
